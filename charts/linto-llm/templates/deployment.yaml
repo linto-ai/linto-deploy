@@ -80,7 +80,13 @@ spec:
             {{- toYaml .Values.llmGatewayApi.resources | nindent 12 }}
       volumes:
         - name: cache
+          {{- if .Values.global.storage.files.hostPath }}
+          hostPath:
+            path: {{ .Values.global.storage.files.hostPath }}/models-cache
+            type: DirectoryOrCreate
+          {{- else }}
           emptyDir: {}
+          {{- end }}
         - name: data
           {{- if .Values.global.storage.files.hostPath }}
           hostPath:
@@ -162,7 +168,13 @@ spec:
             {{- toYaml .Values.celeryWorker.resources | nindent 12 }}
       volumes:
         - name: cache
+          {{- if .Values.global.storage.files.hostPath }}
+          hostPath:
+            path: {{ .Values.global.storage.files.hostPath }}/models-cache
+            type: DirectoryOrCreate
+          {{- else }}
           emptyDir: {}
+          {{- end }}
 {{- end }}
 ---
 {{- if .Values.llmGatewayFrontend.enabled }}
