@@ -11,6 +11,7 @@ from rich.table import Table
 
 from linto.model.profile import GPUMode, ProfileConfig, StreamingSTTVariant, TLSMode
 from linto.model.validation import ValidationError, load_profile, save_profile
+from linto.utils.cmd import run_cmd
 from linto.utils.kubeconfig import KubeconfigContext
 from linto.utils.secrets import generate_secrets
 
@@ -1343,7 +1344,7 @@ def apply_k3s(profile_name: str, base_dir: Path | None = None) -> None:
             console.print(f"[cyan]Installing/upgrading {chart_name}...[/cyan]")
 
             try:
-                result = subprocess.run(
+                result = run_cmd(
                     [
                         "helm",
                         "upgrade",
@@ -1358,8 +1359,6 @@ def apply_k3s(profile_name: str, base_dir: Path | None = None) -> None:
                         "--timeout",
                         "10m",
                     ],
-                    capture_output=True,
-                    text=True,
                     check=False,
                     timeout=600,
                 )
@@ -1432,7 +1431,7 @@ def destroy_k3s(
             release_name = f"linto-{chart_name.replace('linto-', '')}"
 
             try:
-                result = subprocess.run(
+                result = run_cmd(
                     [
                         "helm",
                         "uninstall",
@@ -1440,8 +1439,6 @@ def destroy_k3s(
                         "--namespace",
                         namespace,
                     ],
-                    capture_output=True,
-                    text=True,
                     check=False,
                     timeout=120,
                 )
@@ -1518,7 +1515,7 @@ def status_k3s(
     with KubeconfigContext(kubeconfig):
         try:
             # Get helm releases
-            result = subprocess.run(
+            result = run_cmd(
                 [
                     "helm",
                     "list",
@@ -1527,8 +1524,6 @@ def status_k3s(
                     "--output",
                     "json",
                 ],
-                capture_output=True,
-                text=True,
                 check=False,
                 timeout=30,
             )
@@ -1548,7 +1543,7 @@ def status_k3s(
                     )
 
             # Get pods
-            result = subprocess.run(
+            result = run_cmd(
                 [
                     "kubectl",
                     "get",
@@ -1558,8 +1553,6 @@ def status_k3s(
                     "-o",
                     "json",
                 ],
-                capture_output=True,
-                text=True,
                 check=False,
                 timeout=30,
             )
@@ -1648,6 +1641,12 @@ def logs_k3s(
     with KubeconfigContext(kubeconfig):
         try:
             if follow:
+                # For follow mode, print command then use Popen
+                from linto.utils.cmd import get_show_commands, quote_arg
+
+                if get_show_commands():
+                    cmd_str = " ".join(quote_arg(arg) for arg in cmd)
+                    console.print(f"[dim]$ {cmd_str}[/dim]", stderr=True)
                 process = subprocess.Popen(cmd)
                 try:
                     process.wait()
@@ -1655,7 +1654,7 @@ def logs_k3s(
                     process.terminate()
                     console.print("\n[yellow]Stopped following logs.[/yellow]")
             else:
-                subprocess.run(cmd, check=False)
+                run_cmd(cmd, check=False, capture_output=False)
         except subprocess.SubprocessError as e:
             raise ValidationError(
                 "LOGS_FAILED",

@@ -7,6 +7,8 @@ import time
 from pathlib import Path
 from typing import Annotated, Optional
 
+from linto.utils.cmd import run_cmd
+
 import typer
 import yaml
 from rich.console import Console
@@ -23,6 +25,19 @@ app = typer.Typer(
     no_args_is_help=True,
     rich_markup_mode="rich",
 )
+
+
+@app.callback()
+def main_callback(
+    quiet: Annotated[
+        bool,
+        typer.Option("--quiet", "-q", help="Hide kubectl/helm commands being executed"),
+    ] = False,
+) -> None:
+    """LinTO deployment tool."""
+    from linto.utils.cmd import set_show_commands
+
+    set_show_commands(not quiet)
 
 # Subcommand groups
 kubeconfig_app = typer.Typer(name="kubeconfig", help="Manage kubeconfig")
@@ -74,8 +89,12 @@ def _get_k3s_services(profile_name: str) -> list[str]:
         profile = load_profile(profile_name)
         namespace = profile.k3s_namespace
 
-        # Get deployments using profile's kubeconfig
         with KubeconfigContext(profile.kubeconfig):
+            chart_names = set()
+            deployments = []
+            pods = []
+
+            # Get deployments
             result = subprocess.run(
                 ["kubectl", "get", "deployments", "-n", namespace, "-o", "json"],
                 capture_output=True,
@@ -85,7 +104,30 @@ def _get_k3s_services(profile_name: str) -> list[str]:
             )
             if result.returncode == 0:
                 data = json.loads(result.stdout)
-                return [item["metadata"]["name"] for item in data.get("items", [])]
+                for item in data.get("items", []):
+                    name = item["metadata"]["name"]
+                    deployments.append(f"deployment/{name}")
+                    labels = item.get("metadata", {}).get("labels", {})
+                    chart_name = labels.get("app.kubernetes.io/name")
+                    if chart_name:
+                        chart_names.add(chart_name)
+
+            # Get pods
+            result = subprocess.run(
+                ["kubectl", "get", "pods", "-n", namespace, "-o", "json"],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=10,
+            )
+            if result.returncode == 0:
+                data = json.loads(result.stdout)
+                for item in data.get("items", []):
+                    name = item["metadata"]["name"]
+                    pods.append(f"pod/{name}")
+
+            # Order: chart names, deployments, pods
+            return sorted(chart_names) + sorted(deployments) + sorted(pods)
     except FileNotFoundError:
         # kubectl not installed - silent fail for completion
         pass
@@ -723,7 +765,7 @@ def redeploy(
             if chart:
                 # Get deployments for specific chart
                 chart_label = chart.replace("linto-", "")
-                result = subprocess.run(
+                result = run_cmd(
                     [
                         "kubectl",
                         "get",
@@ -735,8 +777,6 @@ def redeploy(
                         "-o",
                         "jsonpath={.items[*].metadata.name}",
                     ],
-                    capture_output=True,
-                    text=True,
                     check=False,
                     timeout=15,
                 )
@@ -744,7 +784,7 @@ def redeploy(
                     deployments_to_restart = result.stdout.strip().split()
             else:
                 # Get all deployments in namespace
-                result = subprocess.run(
+                result = run_cmd(
                     [
                         "kubectl",
                         "get",
@@ -754,8 +794,6 @@ def redeploy(
                         "-o",
                         "jsonpath={.items[*].metadata.name}",
                     ],
-                    capture_output=True,
-                    text=True,
                     check=False,
                     timeout=15,
                 )
@@ -775,7 +813,7 @@ def redeploy(
             ) as progress:
                 for deployment in deployments_to_restart:
                     task = progress.add_task(f"Restarting {deployment}...", total=None)
-                    result = subprocess.run(
+                    result = run_cmd(
                         [
                             "kubectl",
                             "rollout",
@@ -784,8 +822,6 @@ def redeploy(
                             "-n",
                             namespace,
                         ],
-                        capture_output=True,
-                        text=True,
                         check=False,
                         timeout=30,
                     )

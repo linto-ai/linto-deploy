@@ -1,5 +1,6 @@
 """Utility functions for LinTO deployment."""
 
+from linto.utils.cmd import run_cmd, set_show_commands
 from linto.utils.docker import check_docker_running, run_docker_compose
 from linto.utils.secrets import generate_password, generate_secrets
 
@@ -8,4 +9,6 @@ __all__ = [
     "generate_secrets",
     "check_docker_running",
     "run_docker_compose",
+    "run_cmd",
+    "set_show_commands",
 ]
