@@ -1,0 +1,17 @@
+# Ansible-lint configuration for linto-deploy project
+---
+# Enable checking of loop variable prefixes in roles
+loop_var_prefix: "{role}_"
+
+# Warn only (don't fail) on these rules during initial cleanup
+warn_list:
+  - var-naming[no-role-prefix]  # 76 violations - cross-role k3s/helm variables
+  - name[casing]                # 12 violations - lowercase task names
+  - key-order                   # 10 violations - non-standard key ordering
+  - yaml[truthy]                # YAML yes/no vs true/false
+
+# Use default rules for these critical issues:
+# - no-changed-when: Commands should declare changed_when
+# - ignore-errors: Use failed_when instead
+# - risky-shell-pipe: Shell pipes should set pipefail
+# - yaml[line-length]: Lines should be under 160 chars

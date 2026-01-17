@@ -1,0 +1,53 @@
+---
+# K3S Configuration - default values
+
+# K3S version (empty = use channel)
+k3s_version: ""
+
+# K3S channel: stable, latest, testing, or a specific version (v1.33)
+k3s_channel: "latest"
+
+# First master address (uses private_ip if defined, otherwise ansible_host)
+k3s_master_ip: "{{ hostvars[groups['masters'][0]]['private_ip'] | default(hostvars[groups['masters'][0]]['ansible_host']) }}"
+
+# SAN for API TLS certificate (public for external access)
+k3s_api_san: "{{ hostvars[groups['masters'][0]]['ansible_host'] }}"
+
+# Node IP - private IP for inter-node communication
+# Each node must define private_ip in the inventory
+k3s_node_ip: "{{ private_ip | default(ansible_host) }}"
+
+# Network interface for Flannel VXLAN (auto-detect or set manually)
+# If not defined, K3S uses the default interface
+k3s_flannel_iface: ""
+
+# Disable Traefik (we install our own)
+k3s_disable_traefik: true
+
+# Helm installation
+k3s_install_helm: true
+helm_version: ""
+
+# kubeconfig path
+k3s_kubeconfig_path: /etc/rancher/k3s/k3s.yaml
+
+# K3S server configuration
+k3s_server_options:
+  - "--cluster-init"
+  - "--disable traefik"
+  - "--write-kubeconfig-mode 644"
+
+# K3S agent configuration
+k3s_agent_options: []
+
+# Labels to apply to GPU nodes
+k3s_node_labels: []
+
+# Role to execute (server or agent)
+web_role: ""
+
+# Installation timeout
+k3s_install_timeout: 300
+
+# K3S configuration directory
+k3s_config_dir: /etc/rancher/k3s

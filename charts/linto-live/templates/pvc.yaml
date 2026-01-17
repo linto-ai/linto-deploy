@@ -1,0 +1,18 @@
+{{- if and .Values.postgres.enabled .Values.postgres.persistence.enabled (not .Values.global.storage.database.hostPath) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "linto-live.fullname" . }}-postgres-data
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if or .Values.postgres.persistence.storageClass .Values.global.storageClass }}
+  storageClassName: {{ .Values.postgres.persistence.storageClass | default .Values.global.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.postgres.persistence.size }}
+{{- end }}

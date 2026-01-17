@@ -1,0 +1,296 @@
+---
+# GPU role - NVIDIA driver installation with DKMS
+
+- name: Check if NVIDIA driver is already installed
+  ansible.builtin.shell: |
+    set -o pipefail
+    nvidia-smi --query-gpu=driver_version --format=csv,noheader 2>/dev/null | head -1
+  args:
+    executable: /bin/bash
+  register: nvidia_current_version
+  failed_when: false
+  changed_when: false
+  tags:
+    - gpu
+    - check
+
+- name: Set driver installation required fact
+  ansible.builtin.set_fact:
+    nvidia_driver_needs_install: "{{ nvidia_current_version.rc != 0 }}"
+  tags:
+    - gpu
+    - check
+
+- name: Display current NVIDIA driver status
+  ansible.builtin.debug:
+    msg: "NVIDIA driver {{ 'not installed' if nvidia_driver_needs_install else 'version ' + nvidia_current_version.stdout }}"
+  tags:
+    - gpu
+    - check
+
+- name: Install prerequisite packages
+  ansible.builtin.apt:
+    name: "{{ nvidia_prerequisite_packages }}"
+    state: present
+    update_cache: yes
+  tags:
+    - gpu
+    - prerequisites
+
+- name: Install kernel headers for current kernel
+  ansible.builtin.apt:
+    name: "linux-headers-{{ ansible_kernel }}"
+    state: present
+  tags:
+    - gpu
+    - prerequisites
+
+- name: Download NVIDIA CUDA keyring
+  ansible.builtin.get_url:
+    url: "{{ nvidia_cuda_keyring_url }}"
+    dest: /tmp/cuda-keyring.deb
+    mode: '0644'
+  tags:
+    - gpu
+    - repository
+
+- name: Install NVIDIA CUDA keyring
+  ansible.builtin.apt:
+    deb: /tmp/cuda-keyring.deb
+    state: present
+  tags:
+    - gpu
+    - repository
+
+- name: Update apt cache after adding CUDA repo
+  ansible.builtin.apt:
+    update_cache: yes
+  tags:
+    - gpu
+    - repository
+
+- name: Install NVIDIA driver (proprietary)
+  ansible.builtin.apt:
+    name: "nvidia-driver-{{ nvidia_driver_version }}"
+    state: present
+  register: nvidia_driver_installed
+  tags:
+    - gpu
+    - driver
+
+- name: Install CUDA toolkit
+  ansible.builtin.apt:
+    name: "cuda-toolkit-{{ cuda_version }}"
+    state: present
+  register: cuda_installed
+  when: cuda_install
+  tags:
+    - gpu
+    - cuda
+
+- name: Set driver installed fact
+  ansible.builtin.set_fact:
+    nvidia_driver_installed:
+      changed: "{{ cuda_installed.changed | default(false) or nvidia_driver_installed.changed | default(false) }}"
+  tags:
+    - gpu
+    - driver
+
+- name: Hold NVIDIA packages
+  ansible.builtin.dpkg_selections:
+    name: "{{ gpu_held_package }}"
+    selection: hold
+  loop: "{{ nvidia_packages_to_hold }}"
+  loop_control:
+    loop_var: gpu_held_package
+  when: nvidia_hold_packages
+  failed_when: false  # Package may not be installed yet, safe to ignore
+  tags:
+    - gpu
+    - hold
+
+- name: Hold kernel packages
+  ansible.builtin.dpkg_selections:
+    name: "{{ gpu_kernel_package }}"
+    selection: hold
+  loop:
+    - "linux-image-{{ ansible_kernel }}"
+    - "linux-headers-{{ ansible_kernel }}"
+  loop_control:
+    loop_var: gpu_kernel_package
+  when: nvidia_hold_kernel
+  failed_when: false  # Package may not be installed yet, safe to ignore
+  tags:
+    - gpu
+    - hold
+
+- name: Configure unattended-upgrades blacklist for NVIDIA
+  ansible.builtin.template:
+    src: 50-nvidia-unattended-upgrades.j2
+    dest: /etc/apt/apt.conf.d/50-nvidia-unattended-upgrades
+    owner: root
+    group: root
+    mode: '0644'
+  when: nvidia_blacklist_unattended
+  tags:
+    - gpu
+    - unattended-upgrades
+
+- name: Reboot to load NVIDIA driver
+  ansible.builtin.reboot:
+    reboot_timeout: "{{ nvidia_reboot_timeout }}"
+    msg: "Rebooting to load NVIDIA driver"
+  when:
+    - nvidia_reboot_after_install
+    - nvidia_driver_installed.changed
+  tags:
+    - gpu
+    - reboot
+
+- name: Wait for server to come back
+  ansible.builtin.wait_for_connection:
+    delay: 30
+    timeout: "{{ nvidia_reboot_timeout }}"
+  when:
+    - nvidia_reboot_after_install
+    - nvidia_driver_installed.changed
+  tags:
+    - gpu
+    - reboot
+
+- name: Verify NVIDIA driver is loaded
+  ansible.builtin.command: nvidia-smi
+  register: nvidia_smi_result
+  changed_when: false
+  tags:
+    - gpu
+    - verify
+
+- name: Display nvidia-smi output
+  ansible.builtin.debug:
+    var: nvidia_smi_result.stdout_lines
+  tags:
+    - gpu
+    - verify
+
+- name: Add NVIDIA Container Toolkit GPG key
+  ansible.builtin.shell: |
+    set -o pipefail
+    curl -fsSL {{ nvidia_container_toolkit_gpgkey }} | \
+      gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+  args:
+    executable: /bin/bash
+    creates: /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+  tags:
+    - gpu
+    - container-toolkit
+
+- name: Add NVIDIA Container Toolkit repository
+  ansible.builtin.shell: |
+    set -o pipefail
+    curl -s -L {{ nvidia_container_toolkit_list }} | \
+      sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+      tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+  args:
+    executable: /bin/bash
+    creates: /etc/apt/sources.list.d/nvidia-container-toolkit.list
+  tags:
+    - gpu
+    - container-toolkit
+
+- name: Install NVIDIA Container Toolkit
+  ansible.builtin.apt:
+    name: nvidia-container-toolkit
+    state: present
+    update_cache: yes
+  register: nvidia_container_toolkit_installed
+  tags:
+    - gpu
+    - container-toolkit
+
+- name: Check if K3S agent containerd config exists
+  ansible.builtin.stat:
+    path: /var/lib/rancher/k3s/agent/etc/containerd/config.toml
+  register: k3s_containerd_config
+  tags:
+    - gpu
+    - container-toolkit
+
+- name: Configure NVIDIA runtime for K3S containerd
+  ansible.builtin.command: >
+    nvidia-ctk runtime configure
+    --runtime=containerd
+    --config=/var/lib/rancher/k3s/agent/etc/containerd/config.toml
+    --set-as-default
+  when: k3s_containerd_config.stat.exists
+  register: nvidia_k3s_configured
+  changed_when: "'written' in nvidia_k3s_configured.stdout | default('') | lower or 'updated' in nvidia_k3s_configured.stdout | default('') | lower"
+  tags:
+    - gpu
+    - container-toolkit
+
+- name: Create K3S containerd config template for persistence
+  ansible.builtin.copy:
+    src: /var/lib/rancher/k3s/agent/etc/containerd/config.toml
+    dest: /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
+    remote_src: yes
+    owner: root
+    group: root
+    mode: '0644'
+  when: k3s_containerd_config.stat.exists and nvidia_k3s_configured.changed
+  notify: restart k3s agent
+  tags:
+    - gpu
+    - container-toolkit
+
+- name: Update config template header
+  ansible.builtin.lineinfile:
+    path: /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
+    regexp: '^# File generated by k3s'
+    line: '# Custom config with NVIDIA runtime - Generated by Ansible'
+  when: k3s_containerd_config.stat.exists and nvidia_k3s_configured.changed
+  tags:
+    - gpu
+    - container-toolkit
+
+- name: Check if standalone containerd exists (non-K3S)
+  ansible.builtin.stat:
+    path: /etc/containerd
+  register: containerd_dir
+  when: not k3s_containerd_config.stat.exists
+  tags:
+    - gpu
+    - container-toolkit
+
+- name: Configure containerd for NVIDIA runtime (standalone)
+  ansible.builtin.command: nvidia-ctk runtime configure --runtime=containerd
+  when: not k3s_containerd_config.stat.exists and containerd_dir.stat.exists | default(false)
+  register: nvidia_standalone_configured
+  changed_when: >
+    'written' in nvidia_standalone_configured.stdout | default('') | lower
+    or 'updated' in nvidia_standalone_configured.stdout | default('') | lower
+  notify: restart containerd
+  tags:
+    - gpu
+    - container-toolkit
+
+- name: Ensure services are restarted if needed
+  ansible.builtin.meta: flush_handlers
+  tags:
+    - gpu
+    - container-toolkit
+
+- name: Verify NVIDIA Container Toolkit
+  ansible.builtin.command: nvidia-ctk --version
+  register: nvidia_ctk_version
+  changed_when: false
+  tags:
+    - gpu
+    - verify
+
+- name: Display NVIDIA Container Toolkit version
+  ansible.builtin.debug:
+    var: nvidia_ctk_version.stdout
+  tags:
+    - gpu
+    - verify

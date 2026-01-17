@@ -1,0 +1,101 @@
+---
+# K3S Agent installation (worker)
+
+- name: Check if K3S is already installed
+  ansible.builtin.stat:
+    path: /usr/local/bin/k3s
+  register: k3s_binary
+  tags:
+    - k3s
+    - agent
+
+- name: Fetch node token from master
+  ansible.builtin.slurp:
+    src: /var/lib/rancher/k3s/server/node-token
+  register: k3s_token_raw
+  delegate_to: "{{ groups['masters'][0] }}"
+  tags:
+    - k3s
+    - agent
+
+- name: Set K3S token fact
+  ansible.builtin.set_fact:
+    k3s_token: "{{ k3s_token_raw.content | b64decode | trim }}"
+  tags:
+    - k3s
+    - agent
+
+- name: Download K3S install script
+  ansible.builtin.get_url:
+    url: https://get.k3s.io
+    dest: /tmp/k3s-install.sh
+    mode: '0755'
+  tags:
+    - k3s
+    - agent
+
+- name: Build agent options string
+  ansible.builtin.set_fact:
+    k3s_agent_options_str: "{{ k3s_agent_options | join(' ') }}"
+  tags:
+    - k3s
+    - agent
+
+- name: Install K3S agent
+  ansible.builtin.shell: |
+    {% if k3s_version %}
+    INSTALL_K3S_VERSION="{{ k3s_version }}" \
+    {% else %}
+    INSTALL_K3S_CHANNEL="{{ k3s_channel }}" \
+    {% endif %}
+    K3S_URL="https://{{ k3s_master_ip }}:6443" \
+    K3S_TOKEN="{{ k3s_token }}" \
+    sh /tmp/k3s-install.sh agent \
+      --node-ip {{ k3s_node_ip }} \
+      {{ '--flannel-iface ' + k3s_flannel_iface if k3s_flannel_iface else '' }} \
+      {{ k3s_agent_options_str }}
+  args:
+    creates: /usr/local/bin/k3s
+  register: k3s_agent_install
+  changed_when: k3s_agent_install.rc == 0
+  tags:
+    - k3s
+    - agent
+
+- name: Wait for K3S agent service to be active
+  ansible.builtin.systemd:
+    name: k3s-agent
+    state: started
+    enabled: yes
+  tags:
+    - k3s
+    - agent
+
+- name: Wait for node to join cluster
+  ansible.builtin.command: kubectl get nodes {{ inventory_hostname }} -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  delegate_to: "{{ groups['masters'][0] }}"
+  register: node_ready
+  until: node_ready.stdout == "True"
+  retries: 30
+  delay: 10
+  changed_when: false
+  tags:
+    - k3s
+    - agent
+
+- name: Apply node labels (GPU nodes)
+  ansible.builtin.command: kubectl label node {{ inventory_hostname }} {{ web_node_label }} --overwrite
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  delegate_to: "{{ groups['masters'][0] }}"
+  loop: "{{ k3s_node_labels | default([]) }}"
+  loop_control:
+    loop_var: web_node_label
+  when: k3s_node_labels is defined and k3s_node_labels | length > 0
+  changed_when: false
+  tags:
+    - k3s
+    - agent
+    - labels

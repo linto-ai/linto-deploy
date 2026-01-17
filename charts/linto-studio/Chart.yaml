@@ -1,0 +1,14 @@
+apiVersion: v2
+name: linto-studio
+description: LinTO Studio - Media management platform with transcription and collaborative editing
+type: application
+version: 0.1.0
+appVersion: "latest-unstable"
+keywords:
+  - linto
+  - transcription
+  - media
+  - collaboration
+maintainers:
+  - name: LinTO Team
+    url: https://linto.ai

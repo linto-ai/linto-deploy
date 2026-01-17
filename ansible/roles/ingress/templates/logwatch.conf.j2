@@ -1,0 +1,31 @@
+# Logwatch configuration
+# Managed by Ansible - do not edit manually
+
+# Output format (mail, stdout, file)
+Output = mail
+Format = html
+
+# Email settings
+MailTo = {{ logwatch_email }}
+MailFrom = Logwatch@{{ inventory_hostname }}
+
+# Report detail level (Low, Med, High)
+Detail = {{ logwatch_detail }}
+
+# Time range for report (yesterday, today, all)
+Range = {{ logwatch_range }}
+
+# Services to report on (All or specific)
+Service = All
+
+# Log directories
+LogDir = /var/log
+
+# Temp directory
+TmpDir = /var/cache/logwatch
+
+# Archives to search (yes/no)
+Archives = Yes
+
+# Hostname override
+HostLimit = {{ inventory_hostname }}

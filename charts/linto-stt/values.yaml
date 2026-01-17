@@ -1,0 +1,147 @@
+# Default values for linto-stt
+# This is a YAML-formatted file.
+
+global:
+  domain: localhost
+  imageTag: latest-unstable
+  tls:
+    enabled: true
+    mode: mkcert
+    acmeEmail: ""
+    secretName: linto-tls  # Shared TLS secret across all charts
+    createCertificate: false  # linto-studio creates the certificate
+  storage:
+    database:
+      hostPath: ""  # Local storage for MongoDB, Redis
+      nodeSelector: {}  # e.g., kubernetes.io/hostname: linto-gpu-01
+    files:
+      hostPath: ""  # NFS storage for models
+  storageClass: ""
+
+# API Gateway for STT services
+apiGateway:
+  enabled: true
+  replicas: 1
+  image:
+    repository: lintoai/linto-api-gateway
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: "1"
+      memory: 512Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  env:
+    COMPONENTS: ApiWatcher,WebServer  # No ServiceWatcher on Kubernetes (no docker.sock)
+  service:
+    port: 80
+  ingress:
+    path: /gateway
+    stripPrefix: false  # API Gateway routes already include /gateway prefix
+
+# Whisper API service
+whisper:
+  enabled: true
+  replicas: 1
+  image:
+    repository: lintoai/linto-transcription-service
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: "2"
+      memory: 4Gi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  env:
+    SERVICE_NAME: stt-all-whisper-v3-turbo
+    LANGUAGE: "*"
+    CONCURRENCY: "2"
+    BROKER_PASS: ""
+  service:
+    port: 80
+  ingress:
+    path: /stt-all-whisper-v3-turbo
+    stripPrefix: true
+
+# Whisper workers
+# replicasPerGpu: list where index = GPU index, value = replicas on that GPU
+# Example: [1, 1] = 1 worker on GPU 0, 1 worker on GPU 1
+# Example: [2, 2, 1, 1] = 2 workers on GPU 0 & 1, 1 worker on GPU 2 & 3
+whisperWorkers:
+  enabled: true
+  replicasPerGpu: [1]  # Default: 1 worker on GPU 0 (single GPU setup)
+  image:
+    repository: lintoai/linto-stt-whisper
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  env:
+    SERVICE_NAME: stt-all-whisper-v3-turbo
+    MODEL: large-v3-turbo
+    LANGUAGE: "*"
+    DEVICE: cuda
+    CONCURRENCY: "1"
+    BROKER_PASS: ""
+
+# Diarization service
+# replicasPerGpu: same pattern as whisperWorkers
+diarization:
+  enabled: true
+  replicasPerGpu: [1]  # Default: 1 diarization on GPU 0 (single GPU setup)
+  image:
+    repository: lintoai/linto-diarization-pyannote
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  env:
+    SERVICE_NAME: stt-diarization-pyannote
+    QUEUE_NAME: diarization-pyannote
+    DEVICE: cuda
+    CONCURRENCY: "1"
+    BROKER_PASS: ""
+    MODEL_INFO: '{"en": "Yes", "fr": "Oui"}'
+
+# Redis task broker (redis-stack-server required for JSON module used by diarization)
+redis:
+  enabled: true
+  image:
+    repository: redis/redis-stack-server
+    tag: latest
+    pullPolicy: IfNotPresent
+  password: ""
+  resources:
+    limits: {}  # No limits for databases - they manage their own memory
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClass: ""
+  service:
+    port: 6379
+
+# MongoDB for job metadata
+mongodb:
+  enabled: true
+  image:
+    repository: mongo
+    tag: "6.0.2"
+    pullPolicy: IfNotPresent
+  resources:
+    limits: {}  # No limits for databases - they manage their own memory
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: ""
+  service:
+    port: 27017

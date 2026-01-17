@@ -1,0 +1,10 @@
+// Automatic updates configuration
+// Managed by Ansible - do not edit manually
+
+// Enable the update/upgrade script
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+
+// Clean up downloaded packages
+APT::Periodic::Download-Upgradeable-Packages "1";
+APT::Periodic::AutocleanInterval "7";

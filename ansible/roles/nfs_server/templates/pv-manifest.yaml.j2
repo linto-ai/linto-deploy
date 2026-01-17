@@ -1,0 +1,41 @@
+---
+# PersistentVolume NFS pour LinTO
+# Genere par Ansible - Appliquer avec: kubectl apply -f nfs-pv-data.yaml
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: linto-data-pv
+  labels:
+    type: nfs
+    app: linto
+spec:
+  capacity:
+    storage: {{ nfs_pv_size }}
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  mountOptions:
+    - hard
+    - nfsvers=4.1
+  nfs:
+    server: {{ nfs_server_ip }}
+    path: {{ nfs_mount_path }}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: linto-data-pvc
+  labels:
+    app: linto
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs
+  resources:
+    requests:
+      storage: {{ nfs_pv_size }}
+  volumeName: linto-data-pv

@@ -1,0 +1,154 @@
+# Default values for linto-llm
+# This is a YAML-formatted file.
+
+global:
+  domain: localhost
+  imageTag: latest-unstable
+  tls:
+    enabled: true
+    mode: mkcert
+    acmeEmail: ""
+    secretName: linto-tls  # Shared TLS secret across all charts
+    createCertificate: false  # linto-studio creates the certificate
+  storage:
+    database:
+      hostPath: ""  # Local storage for PostgreSQL, Redis
+      nodeSelector: {}  # e.g., kubernetes.io/hostname: linto-gpu-01
+    files:
+      hostPath: ""  # NFS storage for models, uploads
+  storageClass: ""
+
+# LLM Gateway API
+llmGatewayApi:
+  enabled: true
+  replicas: 2
+  image:
+    repository: lintoai/llm-gateway
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: "4"
+      memory: 8Gi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  env:
+    # Redis password for Celery broker
+    REDIS_PASSWORD: ""
+    # Encryption key for storing provider credentials in DB (base64, 32 bytes)
+    ENCRYPTION_KEY: ""
+    # Debug mode
+    DEBUG: "false"
+    # CORS origins (frontend URL)
+    CORS_ORIGINS: ""
+  service:
+    port: 80
+  ingress:
+    path: /llm-gateway
+    stripPrefix: true
+
+# Celery Worker (background tasks)
+celeryWorker:
+  enabled: true
+  replicas: 2
+  image:
+    repository: lintoai/llm-gateway
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: "4"
+      memory: 8Gi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+# LLM Gateway Frontend (Admin UI - protected)
+llmGatewayFrontend:
+  enabled: true
+  replicas: 1
+  image:
+    repository: lintoai/llm-gateway-frontend
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: "1"
+      memory: 1Gi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  service:
+    port: 80
+  ingress:
+    path: /llm-admin
+    stripPrefix: false
+  # HTTP Basic Auth protection (required - frontend must not be public)
+  basicAuth:
+    enabled: true
+    # Username for admin access
+    username: admin
+    # Password (will be stored as htpasswd in secret)
+    # Generate with: htpasswd -nb admin yourpassword
+    password: ""
+
+# PostgreSQL
+postgres:
+  enabled: true
+  image:
+    repository: postgres
+    tag: "15-alpine"
+    pullPolicy: IfNotPresent
+  password: ""
+  resources:
+    limits: {}  # No limits for databases - they manage their own memory
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: ""
+  service:
+    port: 5432
+
+# Redis
+redis:
+  enabled: true
+  image:
+    repository: redis/redis-stack-server
+    tag: latest
+    pullPolicy: IfNotPresent
+  password: ""
+  resources:
+    limits: {}  # No limits for databases - they manage their own memory
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClass: ""
+  service:
+    port: 6379
+
+# vLLM (local LLM server)
+vllm:
+  enabled: false
+  replicas: 1
+  image:
+    repository: vllm/vllm-openai
+    tag: latest
+    pullPolicy: IfNotPresent
+  model: casperhansen/llama-3-8b-instruct-awq
+  quantization: awq
+  gpuMemoryUtilization: "0.65"
+  resources:
+    limits:
+      cpu: "8"
+      memory: 32Gi
+      nvidia.com/gpu: "1"
+    requests:
+      cpu: 10m
+      memory: 64Mi
+      nvidia.com/gpu: "1"
+  service:
+    port: 8000

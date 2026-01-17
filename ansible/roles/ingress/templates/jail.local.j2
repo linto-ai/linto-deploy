@@ -1,0 +1,63 @@
+# Fail2ban jail configuration
+# Managed by Ansible - do not edit manually
+
+[DEFAULT]
+# Ban duration in seconds (default: 1 hour)
+bantime = {{ fail2ban_bantime }}
+
+# Time window to count failures (10 minutes)
+findtime = {{ fail2ban_findtime }}
+
+# Max retries before ban
+maxretry = {{ fail2ban_maxretry }}
+
+# Ignore local addresses
+ignoreip = {{ fail2ban_ignoreip }}
+
+# Backend for monitoring logs
+backend = systemd
+
+# Action to take on ban (ban IP + send mail)
+banaction = ufw
+
+# ============================================================================
+# SSH Protection
+# ============================================================================
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = {{ fail2ban_maxretry }}
+bantime = {{ fail2ban_bantime }}
+findtime = {{ fail2ban_findtime }}
+
+# ============================================================================
+# HTTP Authentication Protection (optional)
+# ============================================================================
+[nginx-http-auth]
+enabled = false
+port = http,https
+filter = nginx-http-auth
+logpath = /var/log/nginx/error.log
+maxretry = 3
+bantime = {{ fail2ban_bantime }}
+
+[traefik-auth]
+enabled = false
+port = http,https
+filter = traefik-auth
+logpath = /var/log/traefik/access.log
+maxretry = 5
+bantime = {{ fail2ban_bantime }}
+
+# ============================================================================
+# Recidive - Persistent offenders get longer bans
+# ============================================================================
+[recidive]
+enabled = true
+filter = recidive
+logpath = /var/log/fail2ban.log
+bantime = 604800    # 1 week
+findtime = 86400    # 1 day
+maxretry = 3

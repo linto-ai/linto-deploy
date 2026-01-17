@@ -1,0 +1,87 @@
+{{- if .Values.sessionApi.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "linto-live.fullname" . }}-session-api-config
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: session-api
+data:
+  BROKER_HOST: {{ include "linto-live.brokerHost" . | quote }}
+  BROKER_PORT: "1883"
+  BROKER_PROTOCOL: mqtt
+  BROKER_KEEPALIVE: "60"
+  DB_HOST: {{ include "linto-live.postgresHost" . | quote }}
+  DB_PORT: "5432"
+  DB_NAME: session_DB
+  DB_USER: session_user
+  SESSION_API_BASE_PATH: /
+  SESSION_API_WEBSERVER_HTTP_PORT: "80"
+  STREAMING_HOST: {{ include "linto-live.transcriberHost" . | quote }}
+  STREAMING_PASSPHRASE: "false"
+  STREAMING_PROXY_RTMP_HOST: {{ .Values.global.domain | quote }}
+  STREAMING_PROXY_RTMP_TCP_PORT: "1935"
+  STREAMING_PROXY_SRT_HOST: {{ .Values.global.domain | quote }}
+  STREAMING_PROXY_SRT_UDP_PORT: "8889"
+  STREAMING_PROXY_WS_HOST: {{ .Values.global.domain | quote }}
+  STREAMING_PROXY_WS_TCP_PORT: "443"
+  STREAMING_WS_SECURE: "true"
+  LOG_FORMAT: text
+  LOG_LEVEL: debug
+{{- end }}
+---
+{{- if .Values.sessionScheduler.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "linto-live.fullname" . }}-session-scheduler-config
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: session-scheduler
+data:
+  BROKER_HOST: {{ include "linto-live.brokerHost" . | quote }}
+  BROKER_PORT: "1883"
+  BROKER_PROTOCOL: mqtt
+  BROKER_KEEPALIVE: "60"
+  DB_HOST: {{ include "linto-live.postgresHost" . | quote }}
+  DB_PORT: "5432"
+  DB_NAME: session_DB
+  DB_USER: session_user
+  LOG_FORMAT: text
+  LOG_LEVEL: debug
+  SCHEDULER_WEBSERVER_HTTP_PORT: "80"
+{{- end }}
+---
+{{- if .Values.sessionTranscriber.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "linto-live.fullname" . }}-session-transcriber-config
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: session-transcriber
+data:
+  BROKER_HOST: {{ include "linto-live.brokerHost" . | quote }}
+  BROKER_PORT: "1883"
+  BROKER_PROTOCOL: mqtt
+  BROKER_KEEPALIVE: "60"
+  AUDIO_STORAGE_PATH: /session_audio
+  STREAMING_PROTOCOLS: SRT,RTMP,WS
+  STREAMING_SRT_MODE: listener
+  STREAMING_SRT_UDP_PORT: "8889"
+  STREAMING_RTMP_TCP_PORT: "1935"
+  STREAMING_RTMP_SECURE: "false"
+  STREAMING_WS_TCP_PORT: "8080"
+  STREAMING_WS_ENDPOINT: transcriber-ws
+  STREAMING_WS_SECURE: "true"
+  STREAMING_PASSPHRASE: "false"
+  STREAMING_HEALTHCHECK_TCP: "9999"
+  STREAMING_PROXY_RTMP_HOST: {{ .Values.global.domain | quote }}
+  STREAMING_PROXY_RTMP_TCP_PORT: "1935"
+  STREAMING_PROXY_SRT_HOST: {{ .Values.global.domain | quote }}
+  STREAMING_PROXY_SRT_UDP_PORT: "8889"
+  STREAMING_PROXY_WS_HOST: {{ .Values.global.domain | quote }}
+  STREAMING_PROXY_WS_TCP_PORT: "443"
+  LOG_FORMAT: text
+  LOG_LEVEL: debug
+{{- end }}

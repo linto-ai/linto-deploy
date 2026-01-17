@@ -1,0 +1,43 @@
+---
+# NFS Server configuration with LVM - default values
+
+# LVM configuration
+# nfs_disk: "auto" = automatically detects first unformatted disk (lsblk)
+# nfs_disk: "/dev/sdb" = use a specific disk
+nfs_disk: "auto"
+nfs_vg_name: "vg_linto"
+nfs_lv_name: "lv_storage"
+nfs_lv_size: "100%FREE"  # Use all available space
+
+# NFS mount point on server (LVM storage)
+nfs_mount_path: "/srv/nfs/data"
+
+# Network allowed for NFS
+nfs_allowed_network: "192.168.1.0/24"
+
+# NFS export options
+nfs_export_options: "rw,sync,no_subtree_check,no_root_squash"
+
+# Client mount point (in user home)
+nfs_client_mount: "/home/{{ ansible_user }}/data"
+nfs_client_options: "rw,sync,hard,intr,timeo=600,retrans=2"
+
+# Kubernetes PersistentVolume size
+nfs_pv_size: "500Gi"
+
+# NFS server IP address (dynamically computed if not defined)
+nfs_server_ip: "{{ hostvars[groups['nfs_server'][0]]['ansible_host'] | default(ansible_default_ipv4.address) }}"
+
+# Generate Kubernetes PV manifest
+nfs_generate_pv_manifest: true
+nfs_pv_output_dir: "/root/k8s-manifests"
+
+# NFS packages
+nfs_server_packages:
+  - nfs-kernel-server
+  - nfs-common
+  - lvm2
+  - xfsprogs
+
+# Also create a symlink /home/user/data on the NFS server
+nfs_create_server_symlink: true

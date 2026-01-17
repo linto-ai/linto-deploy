@@ -1,0 +1,144 @@
+---
+# Playbook to fix K3S network configuration for cross-node communication
+#
+# This playbook reconfigures K3S nodes to use private IPs for flannel overlay network.
+# Use this when nodes have both public and private IPs and flannel is using the wrong one.
+#
+# Usage:
+#   ansible-playbook playbooks/k3s-network-fix.yml -i inventory/ovh-production.yml
+#
+# Prerequisites:
+#   - K3S already installed
+#   - private_ip defined for each node in inventory
+
+- name: Fix K3S network configuration on masters
+  hosts: masters
+  become: true
+  serial: 1
+  vars:
+    k3s_node_ip: "{{ private_ip | default(ansible_host) }}"
+    k3s_api_san: "{{ ansible_host }}"  # Public IP for external API access
+  tasks:
+    - name: Check current K3S configuration
+      ansible.builtin.command: cat /etc/systemd/system/k3s.service
+      register: current_config
+      changed_when: false
+
+    - name: Display current node-ip setting
+      ansible.builtin.debug:
+        msg: "Current config does not include --node-ip"
+      when: "'--node-ip' not in current_config.stdout"
+
+    - name: Stop K3S service
+      ansible.builtin.systemd:
+        name: k3s
+        state: stopped
+
+    - name: Create K3S config file with correct network settings
+      ansible.builtin.copy:
+        dest: /etc/rancher/k3s/config.yaml
+        content: |
+          node-ip: "{{ k3s_node_ip }}"
+          tls-san:
+            - "{{ k3s_api_san }}"
+          disable:
+            - traefik
+          write-kubeconfig-mode: "644"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Start K3S service
+      ansible.builtin.systemd:
+        name: k3s
+        state: started
+        daemon_reload: yes
+
+    - name: Wait for K3S to be ready
+      ansible.builtin.wait_for:
+        port: 6443
+        host: 127.0.0.1
+        timeout: 120
+
+    - name: Verify node configuration
+      ansible.builtin.command: kubectl get nodes -o wide
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: nodes_status
+      changed_when: false
+
+    - name: Display nodes status
+      ansible.builtin.debug:
+        msg: "{{ nodes_status.stdout_lines }}"
+
+- name: Fix K3S network configuration on workers
+  hosts: workers:!masters
+  become: true
+  vars:
+    k3s_node_ip: "{{ private_ip | default(ansible_host) }}"
+    k3s_master_ip: "{{ hostvars[groups['masters'][0]]['private_ip'] | default(hostvars[groups['masters'][0]]['ansible_host']) }}"
+  tasks:
+    - name: Check current K3S agent configuration
+      ansible.builtin.command: cat /etc/systemd/system/k3s-agent.service
+      register: current_config
+      changed_when: false
+      ignore_errors: true
+
+    - name: Stop K3S agent service
+      ansible.builtin.systemd:
+        name: k3s-agent
+        state: stopped
+
+    - name: Create K3S agent config file with correct network settings
+      ansible.builtin.copy:
+        dest: /etc/rancher/k3s/config.yaml
+        content: |
+          node-ip: "{{ k3s_node_ip }}"
+          server: "https://{{ k3s_master_ip }}:6443"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Start K3S agent service
+      ansible.builtin.systemd:
+        name: k3s-agent
+        state: started
+        daemon_reload: yes
+
+    - name: Wait for K3S agent to connect
+      ansible.builtin.pause:
+        seconds: 30
+
+- name: Verify cluster connectivity
+  hosts: masters[0]
+  become: true
+  tasks:
+    - name: Wait for all nodes to be ready
+      ansible.builtin.command: >
+        kubectl wait --for=condition=Ready node --all --timeout=300s
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      changed_when: false
+
+    - name: Get final cluster status
+      ansible.builtin.command: kubectl get nodes -o wide
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: final_status
+      changed_when: false
+
+    - name: Display cluster status
+      ansible.builtin.debug:
+        msg: "{{ final_status.stdout_lines }}"
+
+    - name: Test cross-node pod connectivity
+      ansible.builtin.shell: |
+        set -o pipefail
+        kubectl run test-connectivity --image=alpine --restart=Never --rm -it --timeout=60s -- \
+          ping -c 3 10.42.1.1 2>/dev/null || echo "Connectivity test may need pods running"
+      args:
+        executable: /bin/bash
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      changed_when: false
+      failed_when: false  # Test may fail if no pods running, this is expected

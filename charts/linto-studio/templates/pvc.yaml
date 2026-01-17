@@ -1,0 +1,18 @@
+{{- if and .Values.mongodb.enabled .Values.mongodb.persistence.enabled (not .Values.global.storage.database.hostPath) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "linto-studio.fullname" . }}-mongodb-data
+  labels:
+    {{- include "linto-studio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mongodb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if or .Values.mongodb.persistence.storageClass .Values.global.storageClass }}
+  storageClassName: {{ .Values.mongodb.persistence.storageClass | default .Values.global.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.mongodb.persistence.size }}
+{{- end }}

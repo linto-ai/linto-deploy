@@ -1,0 +1,24 @@
+---
+# Base playbook - Base configuration only
+#
+# Usage:
+#   ansible-playbook playbooks/base.yml
+#   ansible-playbook playbooks/base.yml --limit linto-master-01
+#   ansible-playbook playbooks/base.yml --check --diff
+#
+# This playbook applies base configuration on all nodes:
+# - /etc/hosts configuration
+# - Timezone and locale
+# - Common packages installation
+# - Swap disable
+# - Sysctl configuration for Kubernetes
+# - Kernel module loading
+# - UFW firewall configuration
+
+- name: Apply base configuration
+  hosts: all
+  become: true
+  roles:
+    - role: base
+      tags:
+        - base

@@ -1,0 +1,156 @@
+{{- if .Values.llmGatewayApi.enabled }}
+---
+# Ingress for LLM Gateway API under /llm-admin/api (protected with Basic Auth)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "linto-llm.fullname" . }}-api
+  labels:
+    {{- include "linto-llm.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.global.tls.enabled }}
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    {{- end }}
+    {{- if and .Values.global.tls.enabled (eq .Values.global.tls.mode "acme") .Values.global.tls.createCertificate }}
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    {{- end }}
+    {{- if .Values.llmGatewayFrontend.basicAuth.enabled }}
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "linto-llm.fullname" . }}-basic-auth@kubernetescrd,{{ .Release.Namespace }}-{{ include "linto-llm.fullname" . }}-strip-api@kubernetescrd
+    {{- else }}
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "linto-llm.fullname" . }}-strip-api@kubernetescrd
+    {{- end }}
+spec:
+  {{- if .Values.global.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.global.domain }}
+      secretName: {{ include "linto-llm.tlsSecretName" . }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.global.domain }}
+      http:
+        paths:
+          - path: {{ .Values.llmGatewayFrontend.ingress.path }}/api
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "linto-llm.fullname" . }}-llm-api
+                port:
+                  number: {{ .Values.llmGatewayApi.service.port }}
+---
+# Ingress for LLM Gateway WebSocket under /llm-admin/ws (protected with Basic Auth)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "linto-llm.fullname" . }}-ws
+  labels:
+    {{- include "linto-llm.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.global.tls.enabled }}
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    {{- end }}
+    {{- if and .Values.global.tls.enabled (eq .Values.global.tls.mode "acme") .Values.global.tls.createCertificate }}
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    {{- end }}
+    {{- if .Values.llmGatewayFrontend.basicAuth.enabled }}
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "linto-llm.fullname" . }}-basic-auth@kubernetescrd,{{ .Release.Namespace }}-{{ include "linto-llm.fullname" . }}-strip-ws@kubernetescrd
+    {{- else }}
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "linto-llm.fullname" . }}-strip-ws@kubernetescrd
+    {{- end }}
+spec:
+  {{- if .Values.global.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.global.domain }}
+      secretName: {{ include "linto-llm.tlsSecretName" . }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.global.domain }}
+      http:
+        paths:
+          - path: {{ .Values.llmGatewayFrontend.ingress.path }}/ws
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "linto-llm.fullname" . }}-llm-api
+                port:
+                  number: {{ .Values.llmGatewayApi.service.port }}
+{{- end }}
+{{- if .Values.llmGatewayFrontend.enabled }}
+---
+# Ingress for LLM Gateway Frontend (protected with Basic Auth)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "linto-llm.fullname" . }}-frontend
+  labels:
+    {{- include "linto-llm.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.global.tls.enabled }}
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    {{- end }}
+    {{- if and .Values.global.tls.enabled (eq .Values.global.tls.mode "acme") .Values.global.tls.createCertificate }}
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    {{- end }}
+    {{- if .Values.llmGatewayFrontend.basicAuth.enabled }}
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "linto-llm.fullname" . }}-basic-auth@kubernetescrd
+    {{- end }}
+spec:
+  {{- if .Values.global.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.global.domain }}
+      secretName: {{ include "linto-llm.tlsSecretName" . }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.global.domain }}
+      http:
+        paths:
+          - path: {{ .Values.llmGatewayFrontend.ingress.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "linto-llm.fullname" . }}-llm-frontend
+                port:
+                  number: {{ .Values.llmGatewayFrontend.service.port }}
+{{- end }}
+---
+{{- if .Values.llmGatewayApi.enabled }}
+# Middleware to strip /llm-admin/api prefix (for REST API)
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "linto-llm.fullname" . }}-strip-api
+  labels:
+    {{- include "linto-llm.labels" . | nindent 4 }}
+spec:
+  stripPrefix:
+    prefixes:
+      - {{ .Values.llmGatewayFrontend.ingress.path }}/api
+---
+# Middleware to strip /llm-admin prefix (for WebSocket - keeps /ws in path)
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "linto-llm.fullname" . }}-strip-ws
+  labels:
+    {{- include "linto-llm.labels" . | nindent 4 }}
+spec:
+  stripPrefix:
+    prefixes:
+      - {{ .Values.llmGatewayFrontend.ingress.path }}
+{{- end }}
+---
+{{- if and .Values.llmGatewayFrontend.enabled .Values.llmGatewayFrontend.basicAuth.enabled }}
+# Basic Auth Middleware for Frontend protection
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "linto-llm.fullname" . }}-basic-auth
+  labels:
+    {{- include "linto-llm.labels" . | nindent 4 }}
+spec:
+  basicAuth:
+    secret: {{ include "linto-llm.fullname" . }}-basic-auth
+    removeHeader: true
+{{- end }}

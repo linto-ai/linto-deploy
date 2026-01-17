@@ -1,0 +1,62 @@
+---
+# Base configuration - default values
+
+# Timezone and locale
+base_timezone: "UTC"
+base_locale: "en_US.UTF-8"
+
+# Common packages to install
+base_packages:
+  - curl
+  - wget
+  - htop
+  - vim
+  - git
+  - net-tools
+  - dnsutils
+  - jq
+  - unzip
+  - ca-certificates
+  - gnupg
+  - lsb-release
+  - apt-transport-https
+  - software-properties-common
+  - python3-pip
+
+# Longhorn support (iSCSI) - disabled by default when using NFS
+base_longhorn_support: false
+
+# Sysctl parameters for Kubernetes
+base_sysctl_params:
+  net.bridge.bridge-nf-call-iptables: 1
+  net.bridge.bridge-nf-call-ip6tables: 1
+  net.ipv4.ip_forward: 1
+  fs.inotify.max_user_watches: 524288
+  fs.inotify.max_user_instances: 512
+
+# Required kernel modules
+base_kernel_modules:
+  - br_netfilter
+  - overlay
+  - ip_vs
+  - ip_vs_rr
+  - ip_vs_wrr
+  - ip_vs_sh
+
+# UFW firewall configuration
+base_ufw_enabled: true
+base_ufw_default_incoming: deny
+base_ufw_default_outgoing: allow
+
+# Ports to open
+base_ufw_rules:
+  - { port: 22, proto: tcp, comment: "SSH" }
+  - { port: 6443, proto: tcp, comment: "K3S API Server" }
+  - { port: 8472, proto: udp, comment: "Flannel VXLAN" }
+  - { port: 10250, proto: tcp, comment: "Kubelet metrics" }
+  - { port: 10251, proto: tcp, comment: "Kube-scheduler" }
+  - { port: 10252, proto: tcp, comment: "Kube-controller-manager" }
+  - { port: "30000:32767", proto: tcp, comment: "NodePort range" }
+  - { port: 2049, proto: tcp, comment: "NFS" }
+  - { port: 51820, proto: udp, comment: "WireGuard (Flannel backend)" }
+  - { port: 51821, proto: udp, comment: "WireGuard IPv6" }

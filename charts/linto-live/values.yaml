@@ -1,0 +1,204 @@
+# Default values for linto-live
+# This is a YAML-formatted file.
+
+global:
+  domain: localhost
+  imageTag: latest-unstable
+  tls:
+    enabled: true
+    mode: mkcert
+    acmeEmail: ""
+    secretName: linto-tls  # Shared TLS secret across all charts
+    createCertificate: false  # linto-studio creates the certificate
+  storage:
+    database:
+      hostPath: ""  # Local storage for PostgreSQL
+      nodeSelector: {}  # e.g., kubernetes.io/hostname: linto-gpu-01
+    files:
+      hostPath: ""  # NFS storage
+  storageClass: ""
+
+# Database Migration (runs before other services)
+migration:
+  enabled: true
+  image:
+    repository: lintoai/studio-plugins-migration
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: "1"
+      memory: 512Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+# Session API
+sessionApi:
+  enabled: true
+  replicas: 2
+  image:
+    repository: lintoai/studio-plugins-sessionapi
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: "2"
+      memory: 2Gi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  env:
+    DB_PASSWORD: ""
+    SECURITY_CRYPT_KEY: ""
+  service:
+    port: 80
+  ingress:
+    path: /session-api
+    stripPrefix: true
+
+# Session Scheduler
+sessionScheduler:
+  enabled: true
+  replicas: 1
+  image:
+    repository: lintoai/studio-plugins-scheduler
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: "1"
+      memory: 1Gi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  env:
+    DB_PASSWORD: ""
+
+# Session Transcriber
+sessionTranscriber:
+  enabled: true
+  replicas: 4
+  image:
+    repository: lintoai/studio-plugins-transcriber
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: "16"
+      memory: 24Gi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  env:
+    SECURITY_CRYPT_KEY: ""
+  service:
+    httpPort: 8080
+    srtPort: 8889
+    rtmpPort: 1935
+  # Streaming protocols routing (requires Traefik with srt/rtmp entrypoints)
+  streaming:
+    srt:
+      enabled: true   # IngressRouteUDP on port 8889
+    rtmp:
+      enabled: true   # IngressRouteTCP on port 1935
+
+# PostgreSQL
+postgres:
+  enabled: true
+  image:
+    repository: postgres
+    tag: "15-alpine"
+    pullPolicy: IfNotPresent
+  password: ""
+  resources:
+    limits: {}  # No limits for databases - they manage their own memory
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: ""
+  service:
+    port: 5432
+
+# MQTT Broker
+broker:
+  enabled: true
+  image:
+    repository: eclipse-mosquitto
+    tag: "2"
+    pullPolicy: IfNotPresent
+  resources:
+    limits: {}  # No limits for broker - lightweight service
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  service:
+    port: 1883
+
+# Streaming STT variants
+streamingStt:
+  whisper:
+    enabled: false
+    replicas: 1
+    image:
+      repository: lintoai/linto-stt-whisper
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: "8"
+        memory: 16Gi
+      requests:
+        cpu: 10m
+        memory: 64Mi
+  kaldi_french:
+    enabled: false
+    replicas: 1
+    image:
+      repository: lintoai/linto-stt-kaldi
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: "4"
+        memory: 8Gi
+      requests:
+        cpu: 10m
+        memory: 64Mi
+  nemo_french:
+    enabled: false
+    replicas: 1
+    image:
+      repository: lintoai/linto-stt-nemo
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: "8"
+        memory: 16Gi
+      requests:
+        cpu: 10m
+        memory: 64Mi
+  nemo_english:
+    enabled: false
+    replicas: 1
+    image:
+      repository: lintoai/linto-stt-nemo
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: "8"
+        memory: 16Gi
+      requests:
+        cpu: 10m
+        memory: 64Mi
+  kyutai:
+    enabled: false
+    replicas: 1
+    gpuArchitecture: ampere  # hopper, ada, ampere
+    image:
+      repository: lintoai/kyutai-moshi-stt-server-cuda
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: "8"
+        memory: 16Gi
+      requests:
+        cpu: 10m
+        memory: 64Mi

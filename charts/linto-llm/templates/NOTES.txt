@@ -1,0 +1,17 @@
+LinTO {{ .Chart.Name }} has been installed.
+
+{{- if .Values.global.tls.enabled }}
+Access at: https://{{ .Values.global.domain }}/llm
+{{- else }}
+Access at: http://{{ .Values.global.domain }}/llm
+{{- end }}
+
+To check status:
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
+
+Components deployed:
+  - LLM Gateway API
+  - LLM Gateway Frontend
+  - Celery Worker
+  - PostgreSQL
+  - Redis

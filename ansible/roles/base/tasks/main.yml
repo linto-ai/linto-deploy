@@ -1,0 +1,211 @@
+---
+# Base role - Ubuntu 24.04 server preparation for K3S
+
+- name: Set hostname to match inventory
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+  tags:
+    - base
+    - hostname
+
+- name: Configure /etc/hosts with cluster nodes
+  ansible.builtin.template:
+    src: hosts.j2
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+  tags:
+    - base
+    - hosts
+
+- name: Set timezone
+  community.general.timezone:
+    name: "{{ base_timezone }}"
+  tags:
+    - base
+    - timezone
+
+- name: Set locale
+  community.general.locale_gen:
+    name: "{{ base_locale }}"
+    state: present
+  tags:
+    - base
+    - locale
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  tags:
+    - base
+    - packages
+
+- name: Upgrade all packages
+  ansible.builtin.apt:
+    upgrade: safe
+  tags:
+    - base
+    - packages
+
+- name: Install common packages
+  ansible.builtin.apt:
+    name: "{{ base_packages }}"
+    state: present
+  tags:
+    - base
+    - packages
+
+- name: Disable swap immediately
+  ansible.builtin.command: swapoff -a
+  when: ansible_swaptotal_mb > 0
+  changed_when: false
+  tags:
+    - base
+    - swap
+
+- name: Remove swap from fstab
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^([^#].*\s+swap\s+.*)$'
+    replace: '# \1'
+  tags:
+    - base
+    - swap
+
+- name: Disable swap service if exists
+  ansible.builtin.systemd:
+    name: "{{ base_swap_service }}"
+    state: stopped
+    enabled: no
+  loop:
+    - swap.target
+    - swapfile.swap
+  loop_control:
+    loop_var: base_swap_service
+  failed_when: false  # Services may not exist on all systems (swap.target, swapfile.swap)
+  tags:
+    - base
+    - swap
+
+- name: Load required kernel modules
+  community.general.modprobe:
+    name: "{{ base_kernel_module }}"
+    state: present
+  loop: "{{ base_kernel_modules }}"
+  loop_control:
+    loop_var: base_kernel_module
+  tags:
+    - base
+    - kernel
+
+- name: Persist kernel modules
+  ansible.builtin.lineinfile:
+    path: /etc/modules-load.d/k8s.conf
+    line: "{{ base_kernel_module }}"
+    create: yes
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ base_kernel_modules }}"
+  loop_control:
+    loop_var: base_kernel_module
+  tags:
+    - base
+    - kernel
+
+- name: Configure sysctl parameters for Kubernetes
+  ansible.posix.sysctl:
+    name: "{{ base_sysctl_param.key }}"
+    value: "{{ base_sysctl_param.value }}"
+    sysctl_file: /etc/sysctl.d/99-kubernetes.conf
+    reload: yes
+  loop: "{{ base_sysctl_params | dict2items }}"
+  loop_control:
+    loop_var: base_sysctl_param
+  tags:
+    - base
+    - sysctl
+
+- name: Install UFW firewall
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+  when: base_ufw_enabled
+  tags:
+    - base
+    - firewall
+
+- name: Set UFW default incoming policy
+  community.general.ufw:
+    direction: incoming
+    policy: "{{ base_ufw_default_incoming }}"
+  when: base_ufw_enabled
+  tags:
+    - base
+    - firewall
+
+- name: Set UFW default outgoing policy
+  community.general.ufw:
+    direction: outgoing
+    policy: "{{ base_ufw_default_outgoing }}"
+  when: base_ufw_enabled
+  tags:
+    - base
+    - firewall
+
+- name: Configure UFW rules
+  community.general.ufw:
+    rule: allow
+    port: "{{ base_ufw_rule.port }}"
+    proto: "{{ base_ufw_rule.proto }}"
+    comment: "{{ base_ufw_rule.comment }}"
+  loop: "{{ base_ufw_rules }}"
+  loop_control:
+    loop_var: base_ufw_rule
+  when: base_ufw_enabled
+  tags:
+    - base
+    - firewall
+
+- name: Allow cluster network traffic
+  community.general.ufw:
+    rule: allow
+    from_ip: "{{ nfs_allowed_network | default('192.168.1.0/24') }}"
+    comment: "Cluster internal network"
+  when: base_ufw_enabled
+  tags:
+    - base
+    - firewall
+
+- name: Enable UFW
+  community.general.ufw:
+    state: enabled
+  when: base_ufw_enabled
+  tags:
+    - base
+    - firewall
+
+# Longhorn support (optional - disabled by default when using NFS)
+- name: Install open-iscsi for Longhorn
+  ansible.builtin.apt:
+    name: open-iscsi
+    state: present
+  when: base_longhorn_support
+  tags:
+    - base
+    - storage
+    - longhorn
+
+- name: Ensure iscsid service is started (for Longhorn)
+  ansible.builtin.systemd:
+    name: iscsid
+    state: started
+    enabled: yes
+  when: base_longhorn_support
+  tags:
+    - base
+    - storage
+    - longhorn

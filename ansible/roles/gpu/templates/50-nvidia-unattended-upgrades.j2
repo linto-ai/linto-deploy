@@ -1,0 +1,20 @@
+// Configuration unattended-upgrades - Blacklist NVIDIA et kernel
+// Genere par Ansible - Ne pas modifier manuellement
+
+Unattended-Upgrade::Package-Blacklist {
+    // NVIDIA drivers et composants
+    "nvidia-.*";
+    "libnvidia-.*";
+    "xserver-xorg-video-nvidia-.*";
+
+    // Kernel packages (pour eviter incompatibilite DKMS)
+    "linux-image-.*";
+    "linux-headers-.*";
+    "linux-modules-.*";
+    "linux-modules-extra-.*";
+
+    // CUDA et autres composants NVIDIA
+    "cuda-.*";
+    "libcuda.*";
+    "libcudnn.*";
+};

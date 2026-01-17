@@ -1,0 +1,108 @@
+---
+# GPU Support Playbook - NVIDIA Device Plugin for Kubernetes
+#
+# Usage:
+#   ansible-playbook playbooks/gpu-support.yml
+#
+# This playbook:
+# 1. Installs the NVIDIA Device Plugin in Kubernetes
+# 2. Verifies that GPUs are detected
+#
+# Prerequisites:
+# - K3S must be installed and functional
+# - NVIDIA drivers must be installed on GPU nodes
+# - GPU role must have been run to configure containerd
+
+- name: Install NVIDIA Device Plugin for Kubernetes
+  hosts: masters[0]
+  become: true
+  tags:
+    - gpu
+    - kubernetes
+    - device-plugin
+  tasks:
+    - name: Check if K3S is running
+      ansible.builtin.stat:
+        path: /etc/rancher/k3s/k3s.yaml
+      register: k3s_config
+
+    - name: Fail if K3S is not running
+      ansible.builtin.fail:
+        msg: "K3S is not installed on this node. Run the k3s-cluster.yml playbook first."
+      when: not k3s_config.stat.exists
+
+    - name: Check if NVIDIA device plugin is already installed
+      ansible.builtin.command: >
+        kubectl get daemonset -n kube-system nvidia-device-plugin-daemonset
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: nvidia_plugin_check
+      failed_when: false
+      changed_when: false
+
+    - name: Install NVIDIA Device Plugin
+      ansible.builtin.command: >
+        kubectl apply -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.0/deployments/static/nvidia-device-plugin.yml
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      when: nvidia_plugin_check.rc != 0
+      register: plugin_installed
+      changed_when: plugin_installed.rc == 0
+
+    - name: Wait for NVIDIA Device Plugin pods to be ready
+      ansible.builtin.command: >
+        kubectl wait --for=condition=ready pod
+        -l app=nvidia-device-plugin-daemonset
+        -n kube-system
+        --timeout=120s
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      when: plugin_installed.changed | default(false)
+      register: plugin_ready
+      changed_when: false
+
+    - name: Get GPU nodes from inventory
+      ansible.builtin.set_fact:
+        gpu_node_names: "{{ groups['gpu_nodes'] | default([]) }}"
+
+    - name: Label GPU nodes with role and accelerator labels
+      ansible.builtin.command: >
+        kubectl label node {{ item }}
+        node-role.kubernetes.io/gpu=
+        accelerator=nvidia
+        nvidia.com/gpu=true
+        --overwrite
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      loop: "{{ gpu_node_names }}"
+      register: gpu_labels_result
+      changed_when: "'labeled' in gpu_labels_result.stdout or 'not labeled' not in gpu_labels_result.stderr"
+      failed_when: false
+
+    - name: Display labeling results
+      ansible.builtin.debug:
+        msg: "Labeled {{ item.item }} with GPU role and accelerator labels"
+      loop: "{{ gpu_labels_result.results }}"
+      when: gpu_labels_result.results is defined
+
+    - name: Get GPU nodes status
+      ansible.builtin.shell: |
+        kubectl get nodes -l nvidia.com/gpu=true -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.allocatable.nvidia\.com/gpu}{"\n"}{end}'
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: gpu_nodes_status
+      changed_when: false
+
+    - name: Display GPU nodes status
+      ansible.builtin.debug:
+        msg: |
+          === GPU Nodes Status ===
+          {{ gpu_nodes_status.stdout }}
+
+          GPUs are now available for Kubernetes workloads.
+          Use 'resources.limits.nvidia.com/gpu: 1' in your pods.
+
+          GPU nodes have been labeled with:
+          - node-role.kubernetes.io/gpu (shows 'gpu' in kubectl get nodes)
+          - accelerator=nvidia
+          - nvidia.com/gpu=true

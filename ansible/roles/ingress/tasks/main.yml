@@ -1,0 +1,231 @@
+---
+# Role ingress - Security hardening for public-facing nodes
+#
+# This role hardens machines exposed to the internet (DNS A record target)
+# Features: fail2ban, rkhunter, strict UFW, unattended-upgrades, logwatch
+
+- name: Install security packages
+  ansible.builtin.apt:
+    name:
+      - fail2ban
+      - rkhunter
+      - logwatch
+      - unattended-upgrades
+      - apt-listchanges
+      - mailutils
+    state: present
+    update_cache: yes
+  tags:
+    - ingress
+    - security
+    - packages
+
+# ============================================================================
+# FAIL2BAN - Brute force protection
+# ============================================================================
+
+- name: Configure fail2ban jail.local
+  ansible.builtin.template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.local
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+  notify: restart fail2ban
+  tags:
+    - ingress
+    - fail2ban
+
+- name: Enable and start fail2ban
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: started
+    enabled: yes
+  tags:
+    - ingress
+    - fail2ban
+
+# ============================================================================
+# RKHUNTER - Rootkit detection
+# ============================================================================
+
+- name: Configure rkhunter
+  ansible.builtin.template:
+    src: rkhunter.conf.j2
+    dest: /etc/rkhunter.conf
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+  notify: update rkhunter database
+  tags:
+    - ingress
+    - rkhunter
+
+- name: Update rkhunter properties database
+  ansible.builtin.command: rkhunter --propupd --skip-keypress
+  changed_when: false
+  tags:
+    - ingress
+    - rkhunter
+
+- name: Create rkhunter cron job
+  ansible.builtin.cron:
+    name: "rkhunter daily scan"
+    minute: "0"
+    hour: "3"
+    job: "/usr/bin/rkhunter --check --skip-keypress --report-warnings-only | mail -s 'rkhunter daily report - {{ inventory_hostname }}' {{ rkhunter_email }}"
+    user: root
+    state: "{{ 'present' if rkhunter_enable_cron else 'absent' }}"
+  tags:
+    - ingress
+    - rkhunter
+    - cron
+
+# ============================================================================
+# UFW STRICT MODE - Only allow 22, 80, 443 from public + cluster network
+# ============================================================================
+
+- name: Reset UFW to default (clean state)
+  community.general.ufw:
+    state: reset
+  when: ingress_ufw_enabled
+  tags:
+    - ingress
+    - firewall
+
+- name: Set UFW default incoming policy to deny
+  community.general.ufw:
+    direction: incoming
+    policy: "{{ ingress_ufw_default_incoming }}"
+  when: ingress_ufw_enabled
+  tags:
+    - ingress
+    - firewall
+
+- name: Set UFW default outgoing policy to allow
+  community.general.ufw:
+    direction: outgoing
+    policy: "{{ ingress_ufw_default_outgoing }}"
+  when: ingress_ufw_enabled
+  tags:
+    - ingress
+    - firewall
+
+- name: Allow public ports (SSH, HTTP, HTTPS)
+  community.general.ufw:
+    rule: allow
+    port: "{{ ingress_port.port }}"
+    proto: "{{ ingress_port.proto }}"
+    comment: "{{ ingress_port.comment }}"
+  loop: "{{ ingress_public_ports }}"
+  loop_control:
+    loop_var: ingress_port
+  when: ingress_ufw_enabled
+  tags:
+    - ingress
+    - firewall
+
+- name: Allow all traffic from cluster network (private)
+  community.general.ufw:
+    rule: allow
+    from_ip: "{{ cluster_network }}"
+    comment: "Cluster internal network - allow all"
+  when: ingress_ufw_enabled
+  tags:
+    - ingress
+    - firewall
+
+- name: Enable UFW
+  community.general.ufw:
+    state: enabled
+  when: ingress_ufw_enabled
+  notify: restart ufw
+  tags:
+    - ingress
+    - firewall
+
+# ============================================================================
+# UNATTENDED-UPGRADES - Security patches only
+# ============================================================================
+
+- name: Configure unattended-upgrades for security patches
+  ansible.builtin.template:
+    src: 50unattended-upgrades.j2
+    dest: /etc/apt/apt.conf.d/50unattended-upgrades
+    owner: root
+    group: root
+    mode: '0644'
+  when: ingress_unattended_upgrades
+  tags:
+    - ingress
+    - unattended-upgrades
+
+- name: Enable automatic updates
+  ansible.builtin.template:
+    src: 20auto-upgrades.j2
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    owner: root
+    group: root
+    mode: '0644'
+  when: ingress_unattended_upgrades
+  tags:
+    - ingress
+    - unattended-upgrades
+
+# ============================================================================
+# LOGWATCH - Daily security reports
+# ============================================================================
+
+- name: Configure logwatch
+  ansible.builtin.template:
+    src: logwatch.conf.j2
+    dest: /etc/logwatch/conf/logwatch.conf
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - ingress
+    - logwatch
+
+- name: Ensure logwatch conf directory exists
+  ansible.builtin.file:
+    path: /etc/logwatch/conf
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags:
+    - ingress
+    - logwatch
+
+# ============================================================================
+# K3S TRAEFIK - Configure hostPort for ingress
+# ============================================================================
+
+- name: Create K3S manifest directory
+  ansible.builtin.file:
+    path: /var/lib/rancher/k3s/server/manifests
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when: ingress_traefik_hostport
+  tags:
+    - ingress
+    - traefik
+    - k3s
+
+- name: Configure Traefik HelmChartConfig for hostPort
+  ansible.builtin.template:
+    src: traefik-config.yaml.j2
+    dest: /var/lib/rancher/k3s/server/manifests/traefik-config.yaml
+    owner: root
+    group: root
+    mode: '0644'
+  when: ingress_traefik_hostport
+  tags:
+    - ingress
+    - traefik
+    - k3s

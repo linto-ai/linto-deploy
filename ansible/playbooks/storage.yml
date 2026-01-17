@@ -1,0 +1,194 @@
+---
+# Storage playbook - NFS configuration
+#
+# Usage:
+#   ansible-playbook playbooks/storage.yml
+#   ansible-playbook playbooks/storage.yml --tags server
+#   ansible-playbook playbooks/storage.yml --tags client
+#
+# This playbook:
+# 1. Configures the NFS server with LVM
+# 2. Mounts NFS shares on clients
+# 3. Generates Kubernetes PersistentVolume manifests
+
+- name: Setup NFS server
+  hosts: nfs_server
+  become: true
+  roles:
+    - role: nfs_server
+      tags:
+        - nfs
+        - server
+        - storage
+
+- name: Mount NFS on clients
+  hosts: masters:workers:!nfs_server
+  become: true
+  tags:
+    - nfs
+    - client
+  tasks:
+    - name: Install NFS client
+      ansible.builtin.apt:
+        name: nfs-common
+        state: present
+
+    - name: Create mount directory
+      ansible.builtin.file:
+        path: "{{ nfs_client_mount }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Mount NFS share
+      ansible.posix.mount:
+        path: "{{ nfs_client_mount }}"
+        src: "{{ nfs_server_ip }}:{{ nfs_mount_path }}"
+        fstype: nfs
+        opts: "{{ nfs_client_options | default('rw,sync,hard,intr') }}"
+        state: mounted
+
+    - name: Verify NFS mount
+      ansible.builtin.command: df -h {{ nfs_client_mount }}
+      register: nfs_mount_check
+      changed_when: false
+
+    - name: Display mount status
+      ansible.builtin.debug:
+        msg: "{{ nfs_mount_check.stdout }}"
+
+- name: Setup LinTO application directories
+  hosts: nfs_server
+  become: true
+  tags:
+    - nfs
+    - linto
+    - directories
+  vars:
+    # Helm charts use hostPath: /home/ubuntu/data/linto (NFS mount)
+    # nfs_client_mount = /home/ubuntu/data, so we create linto/ subdirectory
+    linto_directories:
+      - linto
+      - linto/models-cache
+      - linto/stt-audio
+      - linto/live-audio
+      - linto/studio-storages
+      - linto/studio-storages/audios
+      - linto/studio-storages/exports
+      - linto/studio-storages/pictures
+      - linto/studio-storages/subtitles
+      - linto/studio-storages/audiowaveform
+  tasks:
+    - name: Ensure www-data group exists
+      ansible.builtin.group:
+        name: www-data
+        gid: 33
+        state: present
+
+    - name: Create LinTO application directories
+      ansible.builtin.file:
+        path: "{{ nfs_mount_path }}/{{ item }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0775'
+      loop: "{{ linto_directories }}"
+
+    - name: Create LLM data directory (appuser UID 1000)
+      ansible.builtin.file:
+        path: "{{ nfs_mount_path }}/linto/llm-data"
+        state: directory
+        owner: "1000"
+        group: "1000"
+        mode: '0775'
+
+- name: Setup database directories on master
+  hosts: database_nodes
+  become: true
+  tags:
+    - nfs
+    - linto
+    - databases
+  vars:
+    # Redis uses UID 999, Postgres uses UID 70, MongoDB runs as root
+    database_directories:
+      - { name: "stt-redis", owner: "999", group: "999" }
+      - { name: "stt-mongodb", owner: "999", group: "999" }
+      - { name: "studio-mongodb", owner: "999", group: "999" }
+      - { name: "llm-redis", owner: "999", group: "999" }
+      - { name: "llm-postgres", owner: "70", group: "70" }
+      - { name: "live-postgres", owner: "70", group: "70" }
+  tasks:
+    - name: Create databases parent directory
+      ansible.builtin.file:
+        path: /home/{{ ansible_user }}/databases
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Create database subdirectories with proper ownership
+      ansible.builtin.file:
+        path: "/home/{{ ansible_user }}/databases/{{ item.name }}"
+        state: directory
+        owner: "{{ item.owner }}"
+        group: "{{ item.group }}"
+        mode: '0755'
+      loop: "{{ database_directories }}"
+
+- name: Add user to www-data group
+  hosts: all
+  become: true
+  tags:
+    - nfs
+    - linto
+    - permissions
+  tasks:
+    - name: Ensure www-data group exists
+      ansible.builtin.group:
+        name: www-data
+        gid: 33
+        state: present
+
+    - name: Add ansible_user to www-data group
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: www-data
+        append: yes
+
+- name: Apply Kubernetes PersistentVolumes
+  hosts: masters[0]
+  become: true
+  tags:
+    - nfs
+    - kubernetes
+    - pv
+  tasks:
+    - name: Check if K3S is running
+      ansible.builtin.stat:
+        path: /etc/rancher/k3s/k3s.yaml
+      register: k3s_config
+
+    - name: Apply NFS PersistentVolumes
+      ansible.builtin.command: >
+        kubectl apply -f {{ nfs_pv_output_dir | default('/root/k8s-manifests') }}/nfs-pv-{{ item }}.yaml
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      loop: "{{ nfs_export_dirs }}"
+      when: k3s_config.stat.exists
+      register: pv_apply
+      changed_when: "'created' in pv_apply.stdout or 'configured' in pv_apply.stdout"
+
+    - name: Get PersistentVolumes status
+      ansible.builtin.command: kubectl get pv -l app=linto
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      when: k3s_config.stat.exists
+      register: pv_status
+      changed_when: false
+
+    - name: Display PersistentVolumes
+      ansible.builtin.debug:
+        msg: "{{ pv_status.stdout_lines }}"
+      when: k3s_config.stat.exists

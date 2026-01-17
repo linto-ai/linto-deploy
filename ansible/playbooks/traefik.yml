@@ -1,0 +1,167 @@
+---
+# Traefik playbook - Traefik ingress controller installation
+#
+# Usage:
+#   ansible-playbook playbooks/traefik.yml
+#
+# This playbook:
+# 1. Adds the Traefik Helm repository
+# 2. Installs Traefik with hostPort configuration
+# 3. Configures cert-manager integration if enabled
+#
+# Prerequisites:
+# - K3S must be installed and running
+# - Helm must be installed
+# - Ingress nodes must have the label node-role.kubernetes.io/ingress
+
+- name: Install Traefik Ingress Controller
+  hosts: masters[0]
+  become: true
+  tags:
+    - traefik
+    - ingress
+    - kubernetes
+  vars:
+    traefik_namespace: traefik
+    traefik_chart_version: "34.0.0"
+    traefik_enable_certmanager: true
+  tasks:
+    - name: Check if K3S is running
+      ansible.builtin.stat:
+        path: /etc/rancher/k3s/k3s.yaml
+      register: k3s_config
+
+    - name: Fail if K3S is not running
+      ansible.builtin.fail:
+        msg: "K3S is not installed on this node. Run the k3s-cluster.yml playbook first."
+      when: not k3s_config.stat.exists
+
+    - name: Add Traefik Helm repository
+      ansible.builtin.command: helm repo add traefik https://traefik.github.io/charts
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: repo_add
+      changed_when: "'has been added' in repo_add.stdout"
+      failed_when: false
+
+    - name: Update Helm repositories
+      ansible.builtin.command: helm repo update
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      changed_when: false
+
+    - name: Create Traefik namespace
+      ansible.builtin.command: kubectl create namespace {{ traefik_namespace }}
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: ns_create
+      changed_when: ns_create.rc == 0
+      failed_when: ns_create.rc != 0 and 'already exists' not in ns_create.stderr
+
+    - name: Create Traefik values file
+      ansible.builtin.copy:
+        dest: /tmp/traefik-values.yaml
+        content: |
+          # Traefik configuration for LinTO
+          # Managed by Ansible
+
+          # Use hostPort instead of LoadBalancer (no cloud LB)
+          service:
+            type: ClusterIP
+
+          # Bind to host ports 80 and 443
+          ports:
+            web:
+              hostPort: 80
+            websecure:
+              hostPort: 443
+
+          # Run as DaemonSet on ingress nodes only
+          deployment:
+            kind: DaemonSet
+
+          # Node selector - run only on ingress nodes
+          nodeSelector:
+            node-role.kubernetes.io/ingress: "true"
+
+          # Tolerate ingress node taints if any
+          tolerations:
+            - key: "node-role.kubernetes.io/ingress"
+              operator: "Exists"
+              effect: "NoSchedule"
+
+          # Enable CRD provider for IngressRoute/Middleware
+          providers:
+            kubernetesCRD:
+              enabled: true
+              allowCrossNamespace: true
+            kubernetesIngress:
+              enabled: true
+
+          # Enable Traefik dashboard (disabled by default for security)
+          ingressRoute:
+            dashboard:
+              enabled: false
+
+          # Logging
+          logs:
+            general:
+              level: INFO
+            access:
+              enabled: true
+
+          # Install CRDs
+          ingressClass:
+            enabled: true
+            isDefaultClass: true
+        mode: '0644'
+
+    - name: Install/Upgrade Traefik
+      ansible.builtin.command: >
+        helm upgrade --install traefik traefik/traefik
+        --namespace {{ traefik_namespace }}
+        --values /tmp/traefik-values.yaml
+        --version {{ traefik_chart_version }}
+        --wait
+        --timeout 5m
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: traefik_install
+      changed_when: "'has been upgraded' in traefik_install.stdout or 'has been installed' in traefik_install.stdout"
+
+    - name: Wait for Traefik pods to be ready
+      ansible.builtin.command: >
+        kubectl wait --for=condition=ready pod
+        -l app.kubernetes.io/name=traefik
+        -n {{ traefik_namespace }}
+        --timeout=120s
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      changed_when: false
+
+    - name: Verify Traefik CRDs are installed
+      ansible.builtin.command: kubectl get crd middlewares.traefik.io
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: crd_check
+      changed_when: false
+
+    - name: Display Traefik status
+      ansible.builtin.debug:
+        msg: |
+          === Traefik Ingress Controller ===
+          Namespace: {{ traefik_namespace }}
+          Chart Version: {{ traefik_chart_version }}
+
+          Traefik is now installed and listening on ports 80/443
+          on nodes with the label node-role.kubernetes.io/ingress
+
+          To verify:
+            kubectl get pods -n {{ traefik_namespace }}
+            kubectl get svc -n {{ traefik_namespace }}
+            kubectl get ingressroute -A
+
+    - name: Clean up values file
+      ansible.builtin.file:
+        path: /tmp/traefik-values.yaml
+        state: absent

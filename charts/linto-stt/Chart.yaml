@@ -1,0 +1,15 @@
+apiVersion: v2
+name: linto-stt
+description: LinTO STT - File-based transcription services with Whisper and diarization
+type: application
+version: 0.1.0
+appVersion: "latest-unstable"
+keywords:
+  - linto
+  - stt
+  - whisper
+  - transcription
+  - diarization
+maintainers:
+  - name: LinTO Team
+    url: https://linto.ai

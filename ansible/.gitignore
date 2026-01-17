@@ -1,0 +1,9 @@
+# Ansible cache (downloaded by ansible-galaxy)
+.ansible/
+
+# Vault password files
+.vault_pass
+.vault_password
+
+# Retry files
+*.retry

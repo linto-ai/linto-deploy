@@ -1,0 +1,303 @@
+{{- if .Values.studioApi.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-studio.fullname" . }}-api
+  labels:
+    {{- include "linto-studio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+spec:
+  replicas: {{ .Values.studioApi.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-studio.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "linto-studio.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: api
+    spec:
+      {{- if .Values.global.storage.files.hostPath }}
+      initContainers:
+        - name: init-storages
+          image: "{{ .Values.studioApi.image.repository }}:{{ include "linto-studio.imageTag" . }}"
+          command:
+            - /bin/sh
+            - -c
+            - |
+              # Create required directories
+              mkdir -p /storages/audios /storages/pictures /storages/exports /storages/subtitles /storages/audiowaveform
+              # Copy default.jpg if not exists
+              if [ ! -f /storages/pictures/default.jpg ]; then
+                cp /usr/src/app/conversation-manager/config/pictures/default.jpg /storages/pictures/
+              fi
+              # Set ownership to www-data (UID 33, GID 33)
+              chown -R 33:33 /storages
+              chmod -R 775 /storages
+          volumeMounts:
+            - name: storages
+              mountPath: /storages
+          securityContext:
+            runAsUser: 0
+      {{- end }}
+      containers:
+        - name: api
+          image: "{{ .Values.studioApi.image.repository }}:{{ include "linto-studio.imageTag" . }}"
+          imagePullPolicy: {{ include "linto-studio.imagePullPolicy" . }}
+          # Use Dockerfile ENTRYPOINT (handles gosu for non-root execution)
+          args: ["--run-cmd=npm start"]
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-studio.fullname" . }}-api-config
+          env:
+            - name: CM_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-studio.fullname" . }}-secrets
+                  key: jwt-secret
+            - name: CM_REFRESH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-studio.fullname" . }}-secrets
+                  key: jwt-refresh-secret
+            - name: SUPER_ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-studio.fullname" . }}-secrets
+                  key: admin-email
+            - name: SUPER_ADMIN_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-studio.fullname" . }}-secrets
+                  key: admin-password
+            {{- if .Values.studioApi.secrets.SMTP_PSWD }}
+            - name: SMTP_PSWD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-studio.fullname" . }}-secrets
+                  key: smtp-password
+            {{- end }}
+            {{- if .Values.studioApi.secrets.GOOGLE_CLIENT_SECRET }}
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-studio.fullname" . }}-secrets
+                  key: google-client-secret
+            {{- end }}
+            {{- if .Values.studioApi.secrets.GITHUB_CLIENT_SECRET }}
+            - name: GITHUB_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-studio.fullname" . }}-secrets
+                  key: github-client-secret
+            {{- end }}
+            {{- if .Values.studioApi.secrets.OIDC_CLIENT_SECRET }}
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-studio.fullname" . }}-secrets
+                  key: oidc-client-secret
+            {{- end }}
+          {{- if .Values.global.storage.files.hostPath }}
+          volumeMounts:
+            - name: storages
+              mountPath: /usr/src/app/conversation-manager/storages
+            - name: session-audio
+              mountPath: /usr/src/app/conversation-manager/storages/session_audio
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /healthcheck
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.studioApi.resources | nindent 12 }}
+      {{- if .Values.global.storage.files.hostPath }}
+      volumes:
+        - name: storages
+          hostPath:
+            path: {{ .Values.global.storage.files.hostPath }}/studio-storages
+            type: DirectoryOrCreate
+        - name: session-audio
+          hostPath:
+            path: {{ .Values.global.storage.files.hostPath }}/live-audio
+            type: DirectoryOrCreate
+      {{- end }}
+{{- end }}
+---
+{{- if .Values.studioFrontend.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-studio.fullname" . }}-frontend
+  labels:
+    {{- include "linto-studio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: {{ .Values.studioFrontend.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-studio.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: frontend
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "linto-studio.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.studioFrontend.image.repository }}:{{ include "linto-studio.imageTag" . }}"
+          imagePullPolicy: {{ include "linto-studio.imagePullPolicy" . }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-studio.fullname" . }}-frontend-config
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.studioFrontend.resources | nindent 12 }}
+{{- end }}
+---
+{{- if .Values.studioWebsocket.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-studio.fullname" . }}-websocket
+  labels:
+    {{- include "linto-studio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: websocket
+spec:
+  replicas: {{ .Values.studioWebsocket.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-studio.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: websocket
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "linto-studio.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: websocket
+    spec:
+      containers:
+        - name: websocket
+          image: "{{ .Values.studioWebsocket.image.repository }}:{{ include "linto-studio.imageTag" . }}"
+          imagePullPolicy: {{ include "linto-studio.imagePullPolicy" . }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-studio.fullname" . }}-websocket-config
+          env:
+            - name: CM_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-studio.fullname" . }}-secrets
+                  key: jwt-secret
+          resources:
+            {{- toYaml .Values.studioWebsocket.resources | nindent 12 }}
+{{- end }}
+---
+{{- if .Values.mongodb.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-studio.fullname" . }}-mongodb
+  labels:
+    {{- include "linto-studio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mongodb
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "linto-studio.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: mongodb
+  template:
+    metadata:
+      labels:
+        {{- include "linto-studio.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: mongodb
+    spec:
+      {{- if and .Values.global.storage.database.hostPath .Values.global.storage.database.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.global.storage.database.nodeSelector | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: mongodb
+          image: "{{ .Values.mongodb.image.repository }}:{{ .Values.mongodb.image.tag }}"
+          imagePullPolicy: {{ .Values.mongodb.image.pullPolicy }}
+          ports:
+            - name: mongodb
+              containerPort: 27017
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /data/db
+          livenessProbe:
+            exec:
+              command:
+                - mongosh
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - mongosh
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
+          resources:
+            {{- toYaml .Values.mongodb.resources | nindent 12 }}
+      volumes:
+        - name: data
+          {{- if .Values.global.storage.database.hostPath }}
+          hostPath:
+            path: {{ .Values.global.storage.database.hostPath }}/studio-mongodb
+            type: DirectoryOrCreate
+          {{- else if .Values.mongodb.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "linto-studio.fullname" . }}-mongodb-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}

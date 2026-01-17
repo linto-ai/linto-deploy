@@ -1,0 +1,386 @@
+{{- if .Values.sessionApi.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-live.fullname" . }}-session-api
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: session-api
+spec:
+  replicas: {{ .Values.sessionApi.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-live.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: session-api
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "linto-live.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: session-api
+    spec:
+      {{- if .Values.migration.enabled }}
+      initContainers:
+        - name: run-migrations
+          image: "{{ .Values.migration.image.repository }}:{{ include "linto-live.imageTag" . }}"
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          env:
+            - name: DB_HOST
+              value: {{ include "linto-live.postgresHost" . | quote }}
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: session_DB
+            - name: DB_USER
+              value: session_user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-live.fullname" . }}-secrets
+                  key: postgres-password
+            - name: NODE_ENV
+              value: production
+          resources:
+            {{- toYaml .Values.migration.resources | nindent 12 }}
+      {{- end }}
+      containers:
+        - name: session-api
+          image: "{{ .Values.sessionApi.image.repository }}:{{ include "linto-live.imageTag" . }}"
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-live.fullname" . }}-session-api-config
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-live.fullname" . }}-secrets
+                  key: postgres-password
+            - name: SECURITY_CRYPT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-live.fullname" . }}-secrets
+                  key: crypt-key
+          resources:
+            {{- toYaml .Values.sessionApi.resources | nindent 12 }}
+{{- end }}
+---
+{{- if .Values.sessionScheduler.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-live.fullname" . }}-session-scheduler
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: session-scheduler
+spec:
+  replicas: {{ .Values.sessionScheduler.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-live.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: session-scheduler
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "linto-live.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: session-scheduler
+    spec:
+      {{- if .Values.migration.enabled }}
+      initContainers:
+        - name: run-migrations
+          image: "{{ .Values.migration.image.repository }}:{{ include "linto-live.imageTag" . }}"
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          env:
+            - name: DB_HOST
+              value: {{ include "linto-live.postgresHost" . | quote }}
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: session_DB
+            - name: DB_USER
+              value: session_user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-live.fullname" . }}-secrets
+                  key: postgres-password
+            - name: NODE_ENV
+              value: production
+          resources:
+            {{- toYaml .Values.migration.resources | nindent 12 }}
+      {{- end }}
+      containers:
+        - name: session-scheduler
+          image: "{{ .Values.sessionScheduler.image.repository }}:{{ include "linto-live.imageTag" . }}"
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-live.fullname" . }}-session-scheduler-config
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-live.fullname" . }}-secrets
+                  key: postgres-password
+          resources:
+            {{- toYaml .Values.sessionScheduler.resources | nindent 12 }}
+{{- end }}
+---
+{{- if .Values.sessionTranscriber.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-live.fullname" . }}-session-transcriber
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: session-transcriber
+spec:
+  replicas: {{ .Values.sessionTranscriber.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-live.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: session-transcriber
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "linto-live.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: session-transcriber
+    spec:
+      {{- if .Values.global.storage.files.hostPath }}
+      initContainers:
+        - name: fix-permissions
+          image: busybox:latest
+          command: ["sh", "-c", "chown -R 33:33 /session_audio && chmod -R 775 /session_audio"]
+          volumeMounts:
+            - name: audio-data
+              mountPath: /session_audio
+          securityContext:
+            runAsUser: 0
+      {{- end }}
+      containers:
+        - name: session-transcriber
+          image: "{{ .Values.sessionTranscriber.image.repository }}:{{ include "linto-live.imageTag" . }}"
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: srt
+              containerPort: 8889
+              protocol: UDP
+            - name: rtmp
+              containerPort: 1935
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-live.fullname" . }}-session-transcriber-config
+          env:
+            - name: SECURITY_CRYPT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-live.fullname" . }}-secrets
+                  key: crypt-key
+          volumeMounts:
+            - name: audio-data
+              mountPath: /session_audio
+          resources:
+            {{- toYaml .Values.sessionTranscriber.resources | nindent 12 }}
+      volumes:
+        - name: audio-data
+          {{- if .Values.global.storage.files.hostPath }}
+          hostPath:
+            path: {{ .Values.global.storage.files.hostPath }}/live-audio
+            type: DirectoryOrCreate
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}
+---
+{{- if .Values.postgres.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-live.fullname" . }}-postgres
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "linto-live.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: postgres
+  template:
+    metadata:
+      labels:
+        {{- include "linto-live.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: postgres
+    spec:
+      {{- if and .Values.global.storage.database.hostPath .Values.global.storage.database.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.global.storage.database.nodeSelector | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: postgres
+          image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
+          imagePullPolicy: {{ .Values.postgres.image.pullPolicy }}
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_DB
+              value: session_DB
+            - name: POSTGRES_USER
+              value: session_user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-live.fullname" . }}-secrets
+                  key: postgres-password
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - session_user
+                - -d
+                - session_DB
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.postgres.resources | nindent 12 }}
+      volumes:
+        - name: data
+          {{- if .Values.global.storage.database.hostPath }}
+          hostPath:
+            path: {{ .Values.global.storage.database.hostPath }}/live-postgres
+            type: DirectoryOrCreate
+          {{- else if .Values.postgres.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "linto-live.fullname" . }}-postgres-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}
+---
+{{- if .Values.broker.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-live.fullname" . }}-broker
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "linto-live.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: broker
+  template:
+    metadata:
+      labels:
+        {{- include "linto-live.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: broker
+    spec:
+      containers:
+        - name: broker
+          image: "{{ .Values.broker.image.repository }}:{{ .Values.broker.image.tag }}"
+          imagePullPolicy: {{ .Values.broker.image.pullPolicy }}
+          command:
+            - mosquitto
+            - -c
+            - /mosquitto-no-auth.conf
+          ports:
+            - name: mqtt
+              containerPort: 1883
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.broker.resources | nindent 12 }}
+{{- end }}
+---
+{{/* Streaming STT services */}}
+{{- if .Values.streamingStt.whisper.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-live.fullname" . }}-stt-whisper
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: stt-whisper
+spec:
+  replicas: {{ .Values.streamingStt.whisper.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-live.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: stt-whisper
+  template:
+    metadata:
+      labels:
+        {{- include "linto-live.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: stt-whisper
+    spec:
+      containers:
+        - name: stt-whisper
+          image: "{{ .Values.streamingStt.whisper.image.repository }}:{{ include "linto-live.imageTag" . }}"
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          env:
+            - name: SERVICE_MODE
+              value: websocket
+            - name: MODEL
+              value: large-v3-turbo
+            - name: LANGUAGE
+              value: "*"
+            - name: DEVICE
+              value: cuda
+            - name: VAD
+              value: "true"
+          resources:
+            {{- toYaml .Values.streamingStt.whisper.resources | nindent 12 }}
+{{- end }}
+---
+{{- if .Values.streamingStt.kyutai.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-live.fullname" . }}-stt-kyutai
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: stt-kyutai
+spec:
+  replicas: {{ .Values.streamingStt.kyutai.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-live.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: stt-kyutai
+  template:
+    metadata:
+      labels:
+        {{- include "linto-live.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: stt-kyutai
+    spec:
+      containers:
+        - name: stt-kyutai
+          image: "{{ .Values.streamingStt.kyutai.image.repository }}:{{ include "linto-live.imageTag" . }}-{{ .Values.streamingStt.kyutai.gpuArchitecture }}"
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          env:
+            - name: DEVICE
+              value: cuda
+          resources:
+            {{- toYaml .Values.streamingStt.kyutai.resources | nindent 12 }}
+{{- end }}

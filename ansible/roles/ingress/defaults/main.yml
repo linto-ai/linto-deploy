@@ -1,0 +1,42 @@
+---
+# Ingress role - Default values
+# Security hardening for public-facing ingress nodes
+
+# Fail2ban configuration
+fail2ban_bantime: 3600
+fail2ban_maxretry: 5
+fail2ban_findtime: 600
+fail2ban_ignoreip: "127.0.0.1/8 ::1"
+
+# Rkhunter configuration
+rkhunter_email: "root@localhost"
+rkhunter_enable_cron: true
+rkhunter_cron_schedule: "0 3 * * *"
+
+# Logwatch configuration
+logwatch_email: "root@localhost"
+logwatch_detail: "Med"
+logwatch_range: "yesterday"
+
+# Cluster network (private network CIDR)
+cluster_network: "192.168.1.0/24"
+
+# UFW strict mode settings
+ingress_ufw_enabled: true
+ingress_ufw_default_incoming: deny
+ingress_ufw_default_outgoing: allow
+
+# Ports to allow from anywhere (public)
+ingress_public_ports:
+  - { port: 22, proto: tcp, comment: "SSH (protected by fail2ban)" }
+  - { port: 80, proto: tcp, comment: "HTTP" }
+  - { port: 443, proto: tcp, comment: "HTTPS" }
+
+# Unattended upgrades - security patches only
+ingress_unattended_upgrades: true
+ingress_unattended_reboot: false
+ingress_unattended_mail: "root@localhost"
+
+# Traefik ingress configuration
+ingress_enable_certmanager: false
+ingress_traefik_hostport: true

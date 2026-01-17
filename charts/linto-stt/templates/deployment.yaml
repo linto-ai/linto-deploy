@@ -1,0 +1,473 @@
+{{- if .Values.whisper.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-stt.fullname" . }}-whisper
+  labels:
+    {{- include "linto-stt.labels" . | nindent 4 }}
+    app.kubernetes.io/component: whisper
+spec:
+  replicas: {{ .Values.whisper.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-stt.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: whisper
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "linto-stt.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: whisper
+    spec:
+      initContainers:
+        - name: fix-permissions
+          image: busybox:latest
+          command: ["sh", "-c", "chown -R 33:33 /opt/audio && chmod -R 775 /opt/audio"]
+          volumeMounts:
+            - name: audio-shared
+              mountPath: /opt/audio
+          securityContext:
+            runAsUser: 0
+      containers:
+        - name: whisper
+          image: "{{ .Values.whisper.image.repository }}:{{ include "linto-stt.imageTag" . }}"
+          imagePullPolicy: {{ include "linto-stt.imagePullPolicy" . }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-stt.fullname" . }}-whisper-config
+          env:
+            - name: BROKER_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-stt.fullname" . }}-secrets
+                  key: redis-password
+          volumeMounts:
+            - name: audio-shared
+              mountPath: /opt/audio
+          livenessProbe:
+            exec:
+              command:
+                - /usr/src/app/heartbeat.sh
+            initialDelaySeconds: 30
+            periodSeconds: 60
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.whisper.resources | nindent 12 }}
+      volumes:
+        - name: audio-shared
+          {{- if .Values.global.storage.files.hostPath }}
+          hostPath:
+            path: {{ .Values.global.storage.files.hostPath }}/stt-audio
+            type: DirectoryOrCreate
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}
+---
+{{- if .Values.whisperWorkers.enabled }}
+{{- range $gpuIndex, $replicas := .Values.whisperWorkers.replicasPerGpu }}
+{{- if gt (int $replicas) 0 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-stt.fullname" $ }}-whisper-workers-gpu-{{ $gpuIndex }}
+  labels:
+    {{- include "linto-stt.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: whisper-workers
+    gpu-index: "{{ $gpuIndex }}"
+spec:
+  replicas: {{ $replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-stt.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: whisper-workers
+      gpu-index: "{{ $gpuIndex }}"
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum }}
+      labels:
+        {{- include "linto-stt.selectorLabels" $ | nindent 8 }}
+        app.kubernetes.io/component: whisper-workers
+        gpu-index: "{{ $gpuIndex }}"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/component: whisper-workers
+                    gpu-index: "{{ $gpuIndex }}"
+                topologyKey: kubernetes.io/hostname
+      initContainers:
+        - name: fix-permissions
+          image: busybox:latest
+          command: ["sh", "-c", "chown -R 33:33 /var/www/.cache && chmod -R 775 /var/www/.cache"]
+          volumeMounts:
+            - name: models-cache
+              mountPath: /var/www/.cache
+          securityContext:
+            runAsUser: 0
+      containers:
+        - name: whisper-workers
+          image: "{{ $.Values.whisperWorkers.image.repository }}:{{ include "linto-stt.imageTag" $ }}"
+          imagePullPolicy: {{ include "linto-stt.imagePullPolicy" $ }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-stt.fullname" $ }}-whisper-workers-config
+          env:
+            - name: BROKER_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-stt.fullname" $ }}-secrets
+                  key: redis-password
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: "{{ $gpuIndex }}"
+          volumeMounts:
+            - name: audio-shared
+              mountPath: /opt/audio
+            - name: models-cache
+              mountPath: /var/www/.cache
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+            requests:
+              {{- if $.Values.whisperWorkers.resources }}
+              {{- if $.Values.whisperWorkers.resources.requests }}
+              {{- toYaml $.Values.whisperWorkers.resources.requests | nindent 14 }}
+              {{- end }}
+              {{- end }}
+      volumes:
+        - name: audio-shared
+          {{- if $.Values.global.storage.files.hostPath }}
+          hostPath:
+            path: {{ $.Values.global.storage.files.hostPath }}/stt-audio
+            type: DirectoryOrCreate
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: models-cache
+          {{- if $.Values.global.storage.files.hostPath }}
+          hostPath:
+            path: {{ $.Values.global.storage.files.hostPath }}/models-cache
+            type: DirectoryOrCreate
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+---
+{{- if .Values.diarization.enabled }}
+{{- range $gpuIndex, $replicas := .Values.diarization.replicasPerGpu }}
+{{- if gt (int $replicas) 0 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-stt.fullname" $ }}-diarization-gpu-{{ $gpuIndex }}
+  labels:
+    {{- include "linto-stt.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: diarization
+    gpu-index: "{{ $gpuIndex }}"
+spec:
+  replicas: {{ $replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-stt.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: diarization
+      gpu-index: "{{ $gpuIndex }}"
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum }}
+      labels:
+        {{- include "linto-stt.selectorLabels" $ | nindent 8 }}
+        app.kubernetes.io/component: diarization
+        gpu-index: "{{ $gpuIndex }}"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/component: diarization
+                    gpu-index: "{{ $gpuIndex }}"
+                topologyKey: kubernetes.io/hostname
+      initContainers:
+        - name: fix-permissions
+          image: busybox:latest
+          command: ["sh", "-c", "chown -R 33:33 /var/www/.cache && chmod -R 775 /var/www/.cache"]
+          volumeMounts:
+            - name: models-cache
+              mountPath: /var/www/.cache
+          securityContext:
+            runAsUser: 0
+      containers:
+        - name: diarization
+          image: "{{ $.Values.diarization.image.repository }}:{{ include "linto-stt.imageTag" $ }}"
+          imagePullPolicy: {{ include "linto-stt.imagePullPolicy" $ }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-stt.fullname" $ }}-diarization-config
+          env:
+            - name: BROKER_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-stt.fullname" $ }}-secrets
+                  key: redis-password
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: "{{ $gpuIndex }}"
+          volumeMounts:
+            - name: audio-shared
+              mountPath: /opt/audio
+            - name: models-cache
+              mountPath: /var/www/.cache
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+            requests:
+              {{- if $.Values.diarization.resources }}
+              {{- if $.Values.diarization.resources.requests }}
+              {{- toYaml $.Values.diarization.resources.requests | nindent 14 }}
+              {{- end }}
+              {{- end }}
+      volumes:
+        - name: audio-shared
+          {{- if $.Values.global.storage.files.hostPath }}
+          hostPath:
+            path: {{ $.Values.global.storage.files.hostPath }}/stt-audio
+            type: DirectoryOrCreate
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: models-cache
+          {{- if $.Values.global.storage.files.hostPath }}
+          hostPath:
+            path: {{ $.Values.global.storage.files.hostPath }}/models-cache
+            type: DirectoryOrCreate
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+---
+{{- if .Values.redis.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-stt.fullname" . }}-redis
+  labels:
+    {{- include "linto-stt.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "linto-stt.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: redis
+  template:
+    metadata:
+      labels:
+        {{- include "linto-stt.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: redis
+    spec:
+      {{- if and .Values.global.storage.database.hostPath .Values.global.storage.database.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.global.storage.database.nodeSelector | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: init-permissions
+          image: busybox:latest
+          command: ["sh", "-c", "chown -R 999:999 /data"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          securityContext:
+            runAsUser: 0
+      containers:
+        - name: redis
+          image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
+          imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+            runAsNonRoot: true
+          ports:
+            - name: redis
+              containerPort: 6379
+              protocol: TCP
+          command:
+            - /bin/sh
+            - -c
+            - redis-stack-server --dir /data --requirepass $(REDIS_PASSWORD)
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-stt.fullname" . }}-secrets
+                  key: redis-password
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.redis.resources | nindent 12 }}
+      volumes:
+        - name: data
+          {{- if .Values.global.storage.database.hostPath }}
+          hostPath:
+            path: {{ .Values.global.storage.database.hostPath }}/stt-redis
+            type: DirectoryOrCreate
+          {{- else if .Values.redis.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "linto-stt.fullname" . }}-redis-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}
+---
+{{- if .Values.mongodb.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-stt.fullname" . }}-mongodb
+  labels:
+    {{- include "linto-stt.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mongodb
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "linto-stt.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: mongodb
+  template:
+    metadata:
+      labels:
+        {{- include "linto-stt.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: mongodb
+    spec:
+      {{- if and .Values.global.storage.database.hostPath .Values.global.storage.database.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.global.storage.database.nodeSelector | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: mongodb
+          image: "{{ .Values.mongodb.image.repository }}:{{ .Values.mongodb.image.tag }}"
+          imagePullPolicy: {{ .Values.mongodb.image.pullPolicy }}
+          ports:
+            - name: mongodb
+              containerPort: 27017
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /data/db
+          livenessProbe:
+            exec:
+              command:
+                - mongosh
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - mongosh
+                - --eval
+                - "db.adminCommand('ping')"
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
+          resources:
+            {{- toYaml .Values.mongodb.resources | nindent 12 }}
+      volumes:
+        - name: data
+          {{- if .Values.global.storage.database.hostPath }}
+          hostPath:
+            path: {{ .Values.global.storage.database.hostPath }}/stt-mongodb
+            type: DirectoryOrCreate
+          {{- else if .Values.mongodb.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "linto-stt.fullname" . }}-mongodb-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}
+---
+{{- if .Values.apiGateway.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-stt.fullname" . }}-api-gateway
+  labels:
+    {{- include "linto-stt.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api-gateway
+spec:
+  replicas: {{ .Values.apiGateway.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-stt.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api-gateway
+  template:
+    metadata:
+      labels:
+        {{- include "linto-stt.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: api-gateway
+    spec:
+      containers:
+        - name: api-gateway
+          image: "{{ .Values.apiGateway.image.repository }}:{{ include "linto-stt.imageTag" . }}"
+          imagePullPolicy: {{ include "linto-stt.imagePullPolicy" . }}
+          args: ["--run-cmd=node app.js"]
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          env:
+            - name: COMPONENTS
+              value: {{ .Values.apiGateway.env.COMPONENTS | quote }}
+          livenessProbe:
+            httpGet:
+              path: /gateway/healthcheck
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /gateway/healthcheck
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.apiGateway.resources | nindent 12 }}
+{{- end }}

@@ -1,0 +1,95 @@
+# =============================================================================
+# Python
+# =============================================================================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+*.whl
+
+# Type checking / Linting / Testing
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+.tox/
+.nox/
+
+# =============================================================================
+# IDE / Editor
+# =============================================================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# =============================================================================
+# OS
+# =============================================================================
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+*.orig
+*.log
+
+# =============================================================================
+# Ansible
+# =============================================================================
+# Cache (collections, modules, roles downloaded by ansible-galaxy)
+**/.ansible/
+
+# Production inventories (contain real IPs, hostnames, credentials)
+ansible/inventory/*-production.yml
+ansible/inventory/*-prod.yml
+ansible/inventory/*-staging.yml
+
+# Ansible vault password files
+.vault_pass
+.vault_password
+*.vault
+
+# Retry files
+*.retry
+
+# =============================================================================
+# Secrets / Credentials (safety net)
+# =============================================================================
+*.pem
+*.key
+!charts/*/templates/*.yaml
+*.crt
+*.p12
+*.pfx
+.env
+.env.*
+!.env.example
+credentials.json
+service-account*.json
+kubeconfig*.yaml
+kubeconfig*.yml
+
+# =============================================================================
+# Claude Code (AI assistant workspace)
+# =============================================================================
+.claude/
+CLAUDE.md
+
+# LinTO user data (profiles, credentials)
+.linto/

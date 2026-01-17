@@ -1,0 +1,48 @@
+[project]
+name = "linto-deploy"
+version = "1.0.0"
+description = "CLI tool for deploying LinTO AI services"
+readme = "README.md"
+license = {text = "AGPL-3.0-or-later"}
+requires-python = ">=3.11"
+dependencies = [
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.4.0",
+]
+
+[project.scripts]
+linto = "linto.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/linto"]
+artifacts = ["charts/*"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/",
+    "charts/",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

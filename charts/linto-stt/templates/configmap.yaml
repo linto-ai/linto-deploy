@@ -1,0 +1,59 @@
+{{- if .Values.whisper.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "linto-stt.fullname" . }}-whisper-config
+  labels:
+    {{- include "linto-stt.labels" . | nindent 4 }}
+    app.kubernetes.io/component: whisper
+data:
+  SERVICES_BROKER: {{ include "linto-stt.brokerUrl" . | quote }}
+  MONGO_HOST: {{ include "linto-stt.mongodbHost" . | quote }}
+  MONGO_PORT: "27017"
+  GATEWAY_HOST: {{ include "linto-stt.gatewayHost" . | quote }}
+  SERVICE_NAME: {{ .Values.whisper.env.SERVICE_NAME | quote }}
+  LANGUAGE: {{ .Values.whisper.env.LANGUAGE | quote }}
+  CONCURRENCY: {{ .Values.whisper.env.CONCURRENCY | quote }}
+  WEBSERVER_HTTP_PORT: "80"
+  # Gateway registration variables (for heartbeat.sh)
+  PROXIED_SERVICE_BASE_URL: "http://{{ include "linto-stt.fullname" . }}-whisper"
+  GATEWAY_SERVICE_BASE_URL: "http://{{ include "linto-stt.gatewayHost" . }}"
+  GATEWAY_PROXY_PATH: "/{{ .Values.whisper.env.SERVICE_NAME }}"
+  MODEL_TYPE: "whisper"
+{{- end }}
+---
+{{- if .Values.whisperWorkers.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "linto-stt.fullname" . }}-whisper-workers-config
+  labels:
+    {{- include "linto-stt.labels" . | nindent 4 }}
+    app.kubernetes.io/component: whisper-workers
+data:
+  SERVICES_BROKER: {{ include "linto-stt.brokerUrl" . | quote }}
+  SERVICE_NAME: {{ .Values.whisperWorkers.env.SERVICE_NAME | quote }}
+  SERVICE_MODE: "task"
+  MODEL: {{ .Values.whisperWorkers.env.MODEL | quote }}
+  LANGUAGE: {{ .Values.whisperWorkers.env.LANGUAGE | quote }}
+  DEVICE: {{ .Values.whisperWorkers.env.DEVICE | quote }}
+  CONCURRENCY: {{ .Values.whisperWorkers.env.CONCURRENCY | quote }}
+{{- end }}
+---
+{{- if .Values.diarization.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "linto-stt.fullname" . }}-diarization-config
+  labels:
+    {{- include "linto-stt.labels" . | nindent 4 }}
+    app.kubernetes.io/component: diarization
+data:
+  SERVICES_BROKER: {{ include "linto-stt.brokerUrl" . | quote }}
+  SERVICE_NAME: {{ .Values.diarization.env.SERVICE_NAME | quote }}
+  QUEUE_NAME: {{ .Values.diarization.env.QUEUE_NAME | quote }}
+  SERVICE_MODE: "task"
+  DEVICE: {{ .Values.diarization.env.DEVICE | quote }}
+  CONCURRENCY: {{ .Values.diarization.env.CONCURRENCY | quote }}
+  MODEL_INFO: {{ .Values.diarization.env.MODEL_INFO | quote }}
+{{- end }}

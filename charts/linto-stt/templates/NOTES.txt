@@ -1,0 +1,17 @@
+LinTO STT (Speech-to-Text) has been deployed.
+
+Services deployed:
+  - stt-api-gateway: API endpoint for transcription requests
+  - stt-whisper: Whisper transcription engine
+  - stt-diarization: Speaker diarization service
+  - mongodb: Transcription metadata storage
+  - redis: Task queue
+
+Check status:
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
+
+View logs:
+  kubectl logs -n {{ .Release.Namespace }} -l app.kubernetes.io/name=stt-whisper -f
+
+GPU verification:
+  kubectl exec -n {{ .Release.Namespace }} -it $(kubectl get pod -n {{ .Release.Namespace }} -l app.kubernetes.io/name=stt-whisper -o jsonpath='{.items[0].metadata.name}') -- nvidia-smi

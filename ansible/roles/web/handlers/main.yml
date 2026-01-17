@@ -1,0 +1,14 @@
+---
+# Handlers for the web role (K3S)
+
+- name: restart k3s
+  ansible.builtin.systemd:
+    name: k3s
+    state: restarted
+  when: "'masters' in group_names"
+
+- name: restart k3s agent
+  ansible.builtin.systemd:
+    name: k3s-agent
+    state: restarted
+  when: "'masters' not in group_names"

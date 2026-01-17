@@ -1,0 +1,43 @@
+---
+# NVIDIA GPU configuration - default values
+
+# NVIDIA driver version (proprietary, NOT "open")
+# CUDA 13.1 requires driver 590+
+nvidia_driver_version: "580"
+
+# CUDA version (format: "13-1" for CUDA 13.1)
+cuda_version: "13-1"
+cuda_install: true
+
+# Package management
+nvidia_hold_packages: true
+nvidia_hold_kernel: true
+nvidia_blacklist_unattended: true
+
+# NVIDIA packages to hold (verified dynamically)
+nvidia_packages_to_hold:
+  - "nvidia-driver-{{ nvidia_driver_version }}"
+  - "nvidia-kernel-common-{{ nvidia_driver_version }}"
+  - "nvidia-kernel-source-{{ nvidia_driver_version }}"
+  - "libnvidia-common-{{ nvidia_driver_version }}"
+
+# Prerequisite packages
+nvidia_prerequisite_packages:
+  - dkms
+  - build-essential
+  - pkg-config
+  - libglvnd-dev
+  - software-properties-common
+
+# NVIDIA CUDA repository URL (Ubuntu 24.04)
+nvidia_cuda_keyring_url: "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb"
+
+# NVIDIA Container Toolkit repository URL
+nvidia_container_toolkit_gpgkey: "https://nvidia.github.io/libnvidia-container/gpgkey"
+nvidia_container_toolkit_list: "https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list"
+
+# Reboot after driver installation
+nvidia_reboot_after_install: true
+
+# Reboot timeout
+nvidia_reboot_timeout: 300

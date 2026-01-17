@@ -1,0 +1,16 @@
+apiVersion: v2
+name: linto-live
+description: LinTO Live - Real-time streaming transcription services
+type: application
+version: 0.1.0
+appVersion: "latest-unstable"
+keywords:
+  - linto
+  - live
+  - streaming
+  - transcription
+  - rtmp
+  - srt
+maintainers:
+  - name: LinTO Team
+    url: https://linto.ai

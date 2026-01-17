@@ -1,0 +1,21 @@
+---
+# Handlers for the gpu role
+
+- name: restart containerd
+  ansible.builtin.systemd:
+    name: containerd
+    state: restarted
+    daemon_reload: yes
+  failed_when: false
+
+- name: restart k3s server
+  ansible.builtin.systemd:
+    name: k3s
+    state: restarted
+  when: "'masters' in group_names"
+
+- name: restart k3s agent
+  ansible.builtin.systemd:
+    name: k3s-agent
+    state: restarted
+  when: "'masters' not in group_names"

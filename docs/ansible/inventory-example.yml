@@ -1,0 +1,102 @@
+---
+# LinTO K3S Cluster Inventory - Example
+#
+# Copy this file to .linto/inventory/ and customize:
+#   mkdir -p .linto/inventory
+#   cp docs/ansible/inventory-example.yml .linto/inventory/production.yml
+#   vim .linto/inventory/production.yml
+#
+# NETWORK ARCHITECTURE:
+# - Internal machines (masters, workers, GPU): private IP only
+# - Ingress machine: public IP (DNS A record) + private IP (cluster communication)
+#
+# The cluster uses two addressing planes:
+# 1. Private network (192.0.2.0/24): K3S inter-node communication, NFS, API
+# 2. Public network: ingress machine only (ports 80, 443)
+#
+# IP addresses in this example use RFC 5737 documentation ranges:
+# - 192.0.2.0/24 (TEST-NET-1) - private cluster network
+# - 198.51.100.0/24 (TEST-NET-2) - alternative private network
+# - 203.0.113.0/24 (TEST-NET-3) - public IP range
+
+all:
+  children:
+    # K3S master nodes (server mode) - private IP only
+    # First master initializes the cluster, others join
+    # For HA: use 3 masters with embedded etcd
+    masters:
+      hosts:
+        linto-master-01:
+          ansible_host: 192.0.2.10       # Private IP for SSH
+          private_ip: 192.0.2.10         # Used for K3S communication
+
+    # NFS server (can be a master or dedicated node)
+    # Provides shared storage for models, audio files, and media
+    # Auto-detects first unformatted disk by default
+    nfs_server:
+      hosts:
+        linto-master-01:
+          # nfs_disk: "auto"             # (default) detect first unformatted disk
+          # nfs_disk: /dev/sdb           # or specify explicitly
+          # nfs_disk: /dev/nvme1n1       # NVMe disk
+          nfs_vg_name: vg_linto          # LVM volume group name
+          # nfs_lv_size: "100%FREE"      # (default) use all space
+          # nfs_lv_size: "500G"          # or specify a size
+
+    # Database nodes (MongoDB, PostgreSQL, Redis)
+    # These nodes have local storage (hostPath) for persistent data
+    # Kubernetes label: linto.ai/role=database
+    # Database pods are scheduled exclusively on these nodes
+    database_nodes:
+      hosts:
+        linto-master-01:
+
+    # GPU nodes with NVIDIA GPUs - private IP only
+    # Used for Whisper transcription and other GPU workloads
+    # Kubernetes label: nvidia.com/gpu present
+    gpu_nodes:
+      hosts:
+        linto-gpu-01:
+          ansible_host: 192.0.2.11       # Private IP
+          private_ip: 192.0.2.11
+          nvidia_driver_version: "550"   # NVIDIA driver version (550 recommended)
+          # cuda_version: "12-4"         # Optional: specific CUDA version
+
+    # Ingress node (public entry point) - public + private IP
+    # This machine is exposed to the Internet (DNS A record points here)
+    # Receives security hardening (fail2ban, rkhunter, strict UFW)
+    # Kubernetes label: node-role.kubernetes.io/ingress
+    ingress:
+      hosts:
+        linto-ingress-01:
+          ansible_host: 203.0.113.50     # Public IP for initial SSH
+          private_ip: 192.0.2.12         # Private IP for cluster communication
+          public_ip: 203.0.113.50        # Public IP (DNS A record target)
+
+    # K3S workers (agents) - includes GPU and ingress nodes
+    # All non-master nodes that run workloads
+    workers:
+      hosts:
+        linto-gpu-01:
+        linto-ingress-01:
+
+  # Global variables for all nodes
+  vars:
+    # SSH configuration
+    ansible_user: ubuntu                           # SSH user (must have sudo)
+    ansible_ssh_private_key_file: ~/.ssh/id_ed25519  # SSH private key
+    ansible_become: true                           # Use sudo
+    ansible_python_interpreter: /usr/bin/python3
+
+    # Private cluster network (CIDR)
+    # Used by UFW to allow inter-node traffic
+    cluster_network: "192.0.2.0/24"
+
+    # NFS allowed network (usually same as cluster_network)
+    nfs_allowed_network: "192.0.2.0/24"
+
+    # Optional: K3S version (empty = latest stable)
+    # k3s_version: "v1.29.0+k3s1"
+
+    # Optional: Timezone for all nodes
+    # base_timezone: "Europe/Paris"

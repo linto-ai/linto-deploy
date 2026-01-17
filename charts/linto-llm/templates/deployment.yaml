@@ -1,0 +1,415 @@
+{{- if .Values.llmGatewayApi.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-llm.fullname" . }}-llm-api
+  labels:
+    {{- include "linto-llm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: llm-api
+spec:
+  replicas: {{ .Values.llmGatewayApi.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-llm.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: llm-api
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "linto-llm.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: llm-api
+    spec:
+      {{- if .Values.global.storage.files.hostPath }}
+      initContainers:
+        - name: init-permissions
+          image: busybox:latest
+          command: ["sh", "-c", "chown -R 1000:1000 /var/www/data"]
+          volumeMounts:
+            - name: data
+              mountPath: /var/www/data
+          securityContext:
+            runAsUser: 0
+      {{- end }}
+      containers:
+        - name: llm-api
+          image: "{{ .Values.llmGatewayApi.image.repository }}:{{ include "linto-llm.imageTag" . }}"
+          imagePullPolicy: {{ include "linto-llm.imagePullPolicy" . }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-llm.fullname" . }}-llm-api-config
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-llm.fullname" . }}-secrets
+                  key: redis-password
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-llm.fullname" . }}-secrets
+                  key: postgres-password
+            - name: DATABASE_URL
+              value: "postgresql+asyncpg://llm_user:$(POSTGRES_PASSWORD)@{{ include "linto-llm.postgresHost" . }}:5432/llm_DB"
+            - name: ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-llm.fullname" . }}-secrets
+                  key: encryption-key
+            - name: CELERY_BROKER_URL
+              value: "redis://:$(REDIS_PASSWORD)@{{ include "linto-llm.redisHost" . }}:6379/0"
+            - name: CELERY_RESULT_BACKEND
+              value: "redis://:$(REDIS_PASSWORD)@{{ include "linto-llm.redisHost" . }}:6379/0"
+            - name: SERVICES_BROKER
+              value: "redis://{{ include "linto-llm.redisHost" . }}:6379"
+            - name: SERVICES_BROKER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-llm.fullname" . }}-secrets
+                  key: redis-password
+          volumeMounts:
+            - name: cache
+              mountPath: /root/.cache
+            - name: data
+              mountPath: /var/www/data
+          resources:
+            {{- toYaml .Values.llmGatewayApi.resources | nindent 12 }}
+      volumes:
+        - name: cache
+          emptyDir: {}
+        - name: data
+          {{- if .Values.global.storage.files.hostPath }}
+          hostPath:
+            path: {{ .Values.global.storage.files.hostPath }}/llm-data
+            type: DirectoryOrCreate
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}
+---
+{{- if .Values.celeryWorker.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-llm.fullname" . }}-celery-worker
+  labels:
+    {{- include "linto-llm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: celery-worker
+spec:
+  replicas: {{ .Values.celeryWorker.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-llm.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: celery-worker
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "linto-llm.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: celery-worker
+    spec:
+      containers:
+        - name: celery-worker
+          image: "{{ .Values.celeryWorker.image.repository }}:{{ include "linto-llm.imageTag" . }}"
+          imagePullPolicy: {{ include "linto-llm.imagePullPolicy" . }}
+          command:
+            - celery
+            - -A
+            - app.http_server.celery_app
+            - worker
+            - --loglevel=info
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-llm.fullname" . }}-llm-api-config
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-llm.fullname" . }}-secrets
+                  key: redis-password
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-llm.fullname" . }}-secrets
+                  key: postgres-password
+            - name: DATABASE_URL
+              value: "postgresql+asyncpg://llm_user:$(POSTGRES_PASSWORD)@{{ include "linto-llm.postgresHost" . }}:5432/llm_DB"
+            - name: ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-llm.fullname" . }}-secrets
+                  key: encryption-key
+            - name: CELERY_BROKER_URL
+              value: "redis://:$(REDIS_PASSWORD)@{{ include "linto-llm.redisHost" . }}:6379/0"
+            - name: CELERY_RESULT_BACKEND
+              value: "redis://:$(REDIS_PASSWORD)@{{ include "linto-llm.redisHost" . }}:6379/0"
+            - name: SERVICES_BROKER
+              value: "redis://{{ include "linto-llm.redisHost" . }}:6379"
+            - name: SERVICES_BROKER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-llm.fullname" . }}-secrets
+                  key: redis-password
+          volumeMounts:
+            - name: cache
+              mountPath: /root/.cache
+          resources:
+            {{- toYaml .Values.celeryWorker.resources | nindent 12 }}
+      volumes:
+        - name: cache
+          emptyDir: {}
+{{- end }}
+---
+{{- if .Values.llmGatewayFrontend.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-llm.fullname" . }}-llm-frontend
+  labels:
+    {{- include "linto-llm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: llm-frontend
+spec:
+  replicas: {{ .Values.llmGatewayFrontend.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-llm.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: llm-frontend
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "linto-llm.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: llm-frontend
+    spec:
+      containers:
+        - name: llm-frontend
+          image: "{{ .Values.llmGatewayFrontend.image.repository }}:{{ include "linto-llm.imageTag" . }}"
+          imagePullPolicy: {{ include "linto-llm.imagePullPolicy" . }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-llm.fullname" . }}-llm-frontend-config
+          resources:
+            {{- toYaml .Values.llmGatewayFrontend.resources | nindent 12 }}
+{{- end }}
+---
+{{- if .Values.postgres.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-llm.fullname" . }}-postgres
+  labels:
+    {{- include "linto-llm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "linto-llm.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: postgres
+  template:
+    metadata:
+      labels:
+        {{- include "linto-llm.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: postgres
+    spec:
+      {{- if and .Values.global.storage.database.hostPath .Values.global.storage.database.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.global.storage.database.nodeSelector | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: postgres
+          image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
+          imagePullPolicy: {{ .Values.postgres.image.pullPolicy }}
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_DB
+              value: llm_DB
+            - name: POSTGRES_USER
+              value: llm_user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-llm.fullname" . }}-secrets
+                  key: postgres-password
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - llm_user
+                - -d
+                - llm_DB
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.postgres.resources | nindent 12 }}
+      volumes:
+        - name: data
+          {{- if .Values.global.storage.database.hostPath }}
+          hostPath:
+            path: {{ .Values.global.storage.database.hostPath }}/llm-postgres
+            type: DirectoryOrCreate
+          {{- else if .Values.postgres.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "linto-llm.fullname" . }}-postgres-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}
+---
+{{- if .Values.redis.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-llm.fullname" . }}-redis
+  labels:
+    {{- include "linto-llm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "linto-llm.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: redis
+  template:
+    metadata:
+      labels:
+        {{- include "linto-llm.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: redis
+    spec:
+      {{- if and .Values.global.storage.database.hostPath .Values.global.storage.database.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.global.storage.database.nodeSelector | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: init-permissions
+          image: busybox:latest
+          command: ["sh", "-c", "chown -R 999:999 /data"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          securityContext:
+            runAsUser: 0
+      containers:
+        - name: redis
+          image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
+          imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+            runAsNonRoot: true
+          ports:
+            - name: redis
+              containerPort: 6379
+              protocol: TCP
+          command:
+            - /bin/sh
+            - -c
+            - redis-stack-server --dir /data --requirepass $(REDIS_PASSWORD)
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-llm.fullname" . }}-secrets
+                  key: redis-password
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.redis.resources | nindent 12 }}
+      volumes:
+        - name: data
+          {{- if .Values.global.storage.database.hostPath }}
+          hostPath:
+            path: {{ .Values.global.storage.database.hostPath }}/llm-redis
+            type: DirectoryOrCreate
+          {{- else if .Values.redis.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "linto-llm.fullname" . }}-redis-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}
+---
+{{- if .Values.vllm.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-llm.fullname" . }}-vllm
+  labels:
+    {{- include "linto-llm.labels" . | nindent 4 }}
+    app.kubernetes.io/component: vllm
+spec:
+  replicas: {{ .Values.vllm.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-llm.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: vllm
+  template:
+    metadata:
+      labels:
+        {{- include "linto-llm.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: vllm
+    spec:
+      containers:
+        - name: vllm
+          image: "{{ .Values.vllm.image.repository }}:{{ .Values.vllm.image.tag }}"
+          imagePullPolicy: {{ .Values.vllm.image.pullPolicy }}
+          args:
+            - "--model"
+            - "{{ .Values.vllm.model }}"
+            - "--quantization"
+            - "{{ .Values.vllm.quantization }}"
+            - "--gpu-memory-utilization"
+            - "{{ .Values.vllm.gpuMemoryUtilization }}"
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: all
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: "0"
+          volumeMounts:
+            - name: cache
+              mountPath: /root/.cache/huggingface
+          resources:
+            {{- toYaml .Values.vllm.resources | nindent 12 }}
+      volumes:
+        - name: cache
+          {{- if .Values.global.storage.files.hostPath }}
+          hostPath:
+            path: {{ .Values.global.storage.files.hostPath }}/models/huggingface
+            type: DirectoryOrCreate
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}

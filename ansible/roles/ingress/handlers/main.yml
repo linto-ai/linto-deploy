@@ -1,0 +1,20 @@
+---
+# Handlers for ingress role
+
+- name: restart fail2ban
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: restarted
+  listen: "restart fail2ban"
+
+- name: restart ufw
+  ansible.builtin.systemd:
+    name: ufw
+    state: restarted
+  listen: "restart ufw"
+
+- name: update rkhunter database
+  ansible.builtin.command: rkhunter --update --skip-keypress
+  listen: "update rkhunter database"
+  failed_when: false
+  changed_when: false

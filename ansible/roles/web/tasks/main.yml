@@ -1,0 +1,24 @@
+---
+# Web role - K3S installation (server or agent)
+
+- name: Check web_role is defined
+  ansible.builtin.fail:
+    msg: "Variable web_role must be set to 'server' or 'agent'"
+  when: web_role not in ['server', 'agent']
+  tags:
+    - k3s
+    - validation
+
+- name: Include server tasks
+  ansible.builtin.include_tasks: server.yml
+  when: web_role == 'server'
+  tags:
+    - k3s
+    - server
+
+- name: Include agent tasks
+  ansible.builtin.include_tasks: agent.yml
+  when: web_role == 'agent'
+  tags:
+    - k3s
+    - agent

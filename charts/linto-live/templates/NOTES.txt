@@ -1,0 +1,16 @@
+LinTO {{ .Chart.Name }} has been installed.
+
+{{- if .Values.global.tls.enabled }}
+Access at: https://{{ .Values.global.domain }}/livekit
+{{- else }}
+Access at: http://{{ .Values.global.domain }}/livekit
+{{- end }}
+
+To check status:
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
+
+Components deployed:
+  - Session API
+  - Session Scheduler
+  - Session Transcriber
+  - PostgreSQL

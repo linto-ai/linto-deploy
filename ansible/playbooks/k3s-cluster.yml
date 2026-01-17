@@ -1,0 +1,96 @@
+---
+# K3S playbook - Kubernetes cluster deployment
+#
+# Usage:
+#   ansible-playbook playbooks/k3s-cluster.yml
+#   ansible-playbook playbooks/k3s-cluster.yml --tags masters
+#   ansible-playbook playbooks/k3s-cluster.yml --tags workers
+#
+# Prerequisites:
+#   - base.yml playbook executed successfully
+#   - Network connectivity between all nodes
+#
+# This playbook:
+# 1. Installs K3S server on masters (one by one)
+# 2. Installs K3S agent on workers
+# 3. Labels GPU nodes
+
+- name: Deploy K3S masters
+  hosts: masters
+  become: true
+  serial: 1
+  roles:
+    - role: web
+      web_role: server
+      tags:
+        - k3s
+        - masters
+        - server
+
+- name: Deploy K3S workers
+  hosts: workers:!masters
+  become: true
+  roles:
+    - role: web
+      web_role: agent
+      tags:
+        - k3s
+        - workers
+        - agent
+
+- name: Label GPU nodes
+  hosts: masters[0]
+  become: true
+  tasks:
+    - name: Wait for all workers to be ready
+      ansible.builtin.command: >
+        kubectl wait --for=condition=Ready node/{{ item }} --timeout=300s
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      loop: "{{ groups['workers'] }}"
+      changed_when: false
+      tags:
+        - k3s
+        - labels
+
+    - name: Label GPU nodes
+      ansible.builtin.command: >
+        kubectl label node {{ item }} nvidia.com/gpu=true --overwrite
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      loop: "{{ groups['gpu_nodes'] }}"
+      changed_when: false
+      tags:
+        - k3s
+        - gpu
+        - labels
+
+    - name: Label database nodes
+      ansible.builtin.command: >
+        kubectl label node {{ item }} linto.ai/role=database --overwrite
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      loop: "{{ groups['database_nodes'] | default([]) }}"
+      when: groups['database_nodes'] is defined and groups['database_nodes'] | length > 0
+      changed_when: false
+      tags:
+        - k3s
+        - database
+        - labels
+
+    - name: Get cluster status
+      ansible.builtin.command: kubectl get nodes -o wide
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: cluster_status
+      changed_when: false
+      tags:
+        - k3s
+        - status
+
+    - name: Display cluster status
+      ansible.builtin.debug:
+        msg: "{{ cluster_status.stdout_lines }}"
+      tags:
+        - k3s
+        - status

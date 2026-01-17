@@ -1,0 +1,13 @@
+---
+# Handlers for the base role
+
+- name: Restart sysctl
+  ansible.builtin.command: sysctl --system
+  listen: "reload sysctl"
+  changed_when: false
+
+- name: Restart ufw
+  ansible.builtin.systemd:
+    name: ufw
+    state: restarted
+  listen: "restart firewall"

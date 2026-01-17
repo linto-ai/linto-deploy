@@ -1,0 +1,48 @@
+# Traefik HelmChartConfig for K3S
+# Configures Traefik to use hostPort 80/443 on ingress nodes
+# Managed by Ansible - do not edit manually
+
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    # Use hostPort instead of LoadBalancer
+    service:
+      type: ClusterIP
+
+    # Bind to host ports 80 and 443
+    ports:
+      web:
+        hostPort: 80
+      websecure:
+        hostPort: 443
+
+    # Node selector - run only on ingress nodes
+    nodeSelector:
+      node-role.kubernetes.io/ingress: "true"
+
+    # Tolerate ingress node taints if any
+    tolerations:
+      - key: "node-role.kubernetes.io/ingress"
+        operator: "Exists"
+        effect: "NoSchedule"
+
+    # Single replica (one per ingress node with DaemonSet)
+    deployment:
+      kind: DaemonSet
+
+    # Log settings
+    logs:
+      general:
+        level: INFO
+      access:
+        enabled: true
+
+{% if ingress_enable_certmanager %}
+    # Cert-manager integration for Let's Encrypt
+    additionalArguments:
+      - "--providers.kubernetescrd.allowCrossNamespace=true"
+{% endif %}

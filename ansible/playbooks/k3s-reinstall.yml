@@ -1,0 +1,102 @@
+---
+# Playbook to completely reinstall K3S cluster
+#
+# This playbook:
+# 1. Uninstalls K3S on all nodes (agents first, then masters)
+# 2. Cleans up residual configuration
+# 3. Reinstalls K3S with correct network configuration
+#
+# Usage:
+#   ansible-playbook playbooks/k3s-reinstall.yml -i inventory/ovh-production.yml
+
+- name: Uninstall K3S on workers
+  hosts: workers:!masters
+  become: true
+  tasks:
+    - name: Check if k3s-agent-uninstall.sh exists
+      ansible.builtin.stat:
+        path: /usr/local/bin/k3s-agent-uninstall.sh
+      register: agent_uninstall
+
+    - name: Uninstall K3S agent
+      ansible.builtin.command: /usr/local/bin/k3s-agent-uninstall.sh
+      when: agent_uninstall.stat.exists
+      register: agent_uninstall_result
+      changed_when: agent_uninstall_result.rc == 0
+      failed_when: false  # Uninstall may fail if service already removed
+
+    - name: Clean up K3S directories
+      ansible.builtin.file:
+        path: "{{ k3s_cleanup_dir }}"
+        state: absent
+      loop:
+        - /etc/rancher/k3s
+        - /var/lib/rancher/k3s
+      loop_control:
+        loop_var: k3s_cleanup_dir
+      failed_when: false  # Directories may not exist
+
+- name: Uninstall K3S on masters
+  hosts: masters
+  become: true
+  serial: 1
+  tasks:
+    - name: Check if k3s-uninstall.sh exists
+      ansible.builtin.stat:
+        path: /usr/local/bin/k3s-uninstall.sh
+      register: server_uninstall
+
+    - name: Uninstall K3S server
+      ansible.builtin.command: /usr/local/bin/k3s-uninstall.sh
+      when: server_uninstall.stat.exists
+      register: server_uninstall_result
+      changed_when: server_uninstall_result.rc == 0
+      failed_when: false  # Uninstall may fail if service already removed
+
+    - name: Clean up K3S directories
+      ansible.builtin.file:
+        path: "{{ k3s_server_cleanup_dir }}"
+        state: absent
+      loop:
+        - /etc/rancher/k3s
+        - /var/lib/rancher/k3s
+      loop_control:
+        loop_var: k3s_server_cleanup_dir
+      failed_when: false  # Directories may not exist
+
+    - name: Clean up flannel interfaces
+      ansible.builtin.shell: |
+        ip link delete flannel.1 2>/dev/null || true
+        ip link delete cni0 2>/dev/null || true
+      register: flannel_cleanup
+      changed_when: false
+      failed_when: false  # Interfaces may not exist
+
+    - name: Clean up iptables rules
+      ansible.builtin.shell: |
+        iptables -t nat -F CNI-HOSTPORT-MASQ 2>/dev/null || true
+        iptables -t nat -F KUBE-POSTROUTING 2>/dev/null || true
+        iptables -t nat -F FLANNEL-POSTRTG 2>/dev/null || true
+      register: iptables_cleanup
+      changed_when: false
+      failed_when: false  # Rules may not exist
+
+    - name: Remove SNAT service if exists
+      ansible.builtin.file:
+        path: /etc/systemd/system/k3s-snat-fix.service
+        state: absent
+
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+- name: Pause before reinstallation
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Wait for cleanup to settle
+      ansible.builtin.pause:
+        seconds: 10
+
+- name: Reinstall K3S cluster
+  ansible.builtin.import_playbook: k3s-cluster.yml

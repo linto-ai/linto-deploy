@@ -1,0 +1,238 @@
+---
+# Main playbook - Full LinTO K3S cluster deployment
+#
+# Usage:
+#   ansible-playbook playbooks/site.yml
+#   ansible-playbook playbooks/site.yml --tags base
+#   ansible-playbook playbooks/site.yml --limit masters
+#
+# This playbook executes in order:
+# 1. Base configuration on all nodes
+# 2. Security hardening on ingress nodes
+# 3. NFS server installation
+# 4. GPU drivers installation
+# 5. K3S cluster deployment
+
+- name: Apply base configuration to all nodes
+  hosts: all
+  become: true
+  roles:
+    - role: base
+      tags:
+        - base
+        - always
+
+- name: Harden ingress nodes (public-facing)
+  hosts: ingress
+  become: true
+  roles:
+    - role: ingress
+      tags:
+        - ingress
+        - security
+
+- name: Setup NFS server
+  hosts: nfs_server
+  become: true
+  roles:
+    - role: nfs_server
+      tags:
+        - nfs
+        - storage
+
+- name: Install GPU drivers on GPU nodes
+  hosts: gpu_nodes
+  become: true
+  roles:
+    - role: gpu
+      tags:
+        - gpu
+
+- name: Deploy K3S masters
+  hosts: masters
+  become: true
+  serial: 1
+  roles:
+    - role: web
+      web_role: server
+      tags:
+        - k3s
+        - masters
+
+- name: Deploy K3S workers
+  hosts: workers:!masters
+  become: true
+  roles:
+    - role: web
+      web_role: agent
+      tags:
+        - k3s
+        - workers
+
+- name: Label nodes in Kubernetes
+  hosts: masters[0]
+  become: true
+  tasks:
+    - name: Label GPU nodes
+      ansible.builtin.command: >
+        kubectl label node {{ item }} nvidia.com/gpu=true --overwrite
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      loop: "{{ groups['gpu_nodes'] | default([]) }}"
+      changed_when: false
+      tags:
+        - k3s
+        - gpu
+        - labels
+
+    - name: Label ingress nodes
+      ansible.builtin.command: >
+        kubectl label node {{ item }} node-role.kubernetes.io/ingress=true --overwrite
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      loop: "{{ groups['ingress'] | default([]) }}"
+      changed_when: false
+      tags:
+        - k3s
+        - ingress
+        - labels
+
+- name: Mount NFS on client nodes
+  hosts: workers:!nfs_server
+  become: true
+  tasks:
+    - name: Install NFS client
+      ansible.builtin.apt:
+        name: nfs-common
+        state: present
+      tags:
+        - nfs
+        - client
+
+    - name: Create mount directory
+      ansible.builtin.file:
+        path: "/home/{{ ansible_user }}/data"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+      tags:
+        - nfs
+        - client
+
+    - name: Mount NFS share
+      ansible.posix.mount:
+        path: "/home/{{ ansible_user }}/data"
+        src: "{{ nfs_server_ip }}:{{ nfs_mount_path }}"
+        fstype: nfs
+        opts: "{{ nfs_client_options | default('rw,sync,hard,intr') }}"
+        state: mounted
+      tags:
+        - nfs
+        - client
+
+    - name: Fix ownership after mount
+      ansible.builtin.file:
+        path: "/home/{{ ansible_user }}/data"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+      tags:
+        - nfs
+        - client
+
+- name: Install NVIDIA Device Plugin for Kubernetes
+  hosts: masters[0]
+  become: true
+  tags:
+    - gpu
+    - kubernetes
+    - device-plugin
+  tasks:
+    - name: Check if GPU nodes exist in cluster
+      ansible.builtin.command: >
+        kubectl get nodes -l nvidia.com/gpu=true -o name
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: gpu_nodes_exist
+      changed_when: false
+      failed_when: false
+
+    - name: Skip NVIDIA device plugin if no GPU nodes
+      ansible.builtin.debug:
+        msg: "No GPU nodes detected, NVIDIA device plugin not installed"
+      when: gpu_nodes_exist.stdout | length == 0
+
+    - name: Check if NVIDIA device plugin is already installed
+      ansible.builtin.command: >
+        kubectl get daemonset -n kube-system nvidia-device-plugin-daemonset
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: nvidia_plugin_check
+      failed_when: false
+      changed_when: false
+      when: gpu_nodes_exist.stdout | length > 0
+
+    - name: Install NVIDIA Device Plugin
+      ansible.builtin.command: >
+        kubectl apply -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.0/deployments/static/nvidia-device-plugin.yml
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      when:
+        - gpu_nodes_exist.stdout | length > 0
+        - nvidia_plugin_check.rc != 0
+      register: plugin_installed
+      changed_when: plugin_installed.rc == 0
+
+    - name: Wait for NVIDIA Device Plugin pods to be ready
+      ansible.builtin.command: >
+        kubectl wait --for=condition=ready pod
+        -l app=nvidia-device-plugin-daemonset
+        -n kube-system
+        --timeout=120s
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      when: plugin_installed.changed | default(false)
+      changed_when: false
+
+- name: Display cluster status
+  hosts: masters[0]
+  become: true
+  tasks:
+    - name: Get cluster nodes
+      ansible.builtin.command: kubectl get nodes -o wide
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: cluster_nodes
+      changed_when: false
+      tags:
+        - status
+
+    - name: Display cluster nodes
+      ansible.builtin.debug:
+        var: cluster_nodes.stdout_lines
+      tags:
+        - status
+
+    - name: Get GPU allocations
+      ansible.builtin.shell: |
+        set -o pipefail
+        kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.allocatable.nvidia\.com/gpu}{"\n"}{end}' \
+          | grep -v "^$" || echo "No GPU detected"
+      args:
+        executable: /bin/bash
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: gpu_allocations
+      changed_when: false
+      tags:
+        - status
+        - gpu
+
+    - name: Display GPU allocations
+      ansible.builtin.debug:
+        msg: |
+          === GPUs available in Kubernetes ===
+          {{ gpu_allocations.stdout }}
+      tags:
+        - status
+        - gpu

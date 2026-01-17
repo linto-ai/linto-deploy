@@ -1,0 +1,264 @@
+---
+# nfs_server role - NFS configuration with LVM
+
+- name: Install LVM and NFS packages
+  ansible.builtin.apt:
+    name: "{{ nfs_server_packages }}"
+    state: present
+    update_cache: yes
+  tags:
+    - nfs
+    - packages
+
+# Check if VG already exists (idempotency)
+- name: Check if VG already exists
+  ansible.builtin.command: vgs {{ nfs_vg_name }}
+  register: vg_exists_check
+  failed_when: false
+  changed_when: false
+  tags:
+    - nfs
+    - lvm
+
+- name: Skip disk detection if VG already exists
+  ansible.builtin.set_fact:
+    nfs_vg_already_exists: "{{ vg_exists_check.rc == 0 }}"
+  tags:
+    - nfs
+    - lvm
+
+# Auto-detect first unformatted disk without partitions
+- name: Detect available unformatted disks
+  ansible.builtin.shell: |
+    set -o pipefail
+    for disk in $(lsblk -dpno NAME,TYPE | awk '$2=="disk" {print $1}'); do
+      # Skip if disk has partitions
+      if lsblk -no NAME "$disk" | grep -q "^$(basename $disk)[0-9]"; then
+        continue
+      fi
+      # Skip if disk has filesystem
+      if lsblk -no FSTYPE "$disk" | grep -q .; then
+        continue
+      fi
+      echo "$disk"
+      exit 0
+    done
+  args:
+    executable: /bin/bash
+  register: detected_disk
+  changed_when: false
+  when: nfs_disk == "auto" and not nfs_vg_already_exists
+  tags:
+    - nfs
+    - lvm
+    - detect
+
+- name: Set nfs_disk from auto-detection
+  ansible.builtin.set_fact:
+    nfs_disk_actual: "{{ detected_disk.stdout | trim }}"
+  when: nfs_disk == "auto" and not nfs_vg_already_exists and detected_disk.stdout | default('') | trim | length > 0
+  tags:
+    - nfs
+    - lvm
+
+- name: Use manually specified disk
+  ansible.builtin.set_fact:
+    nfs_disk_actual: "{{ nfs_disk }}"
+  when: nfs_disk != "auto" and not nfs_vg_already_exists
+  tags:
+    - nfs
+    - lvm
+
+- name: Display detected disk
+  ansible.builtin.debug:
+    msg: "Using disk: {{ nfs_disk_actual | default('VG already exists - skipping') }}"
+  tags:
+    - nfs
+    - lvm
+
+- name: Fail if no disk available
+  ansible.builtin.fail:
+    msg: |
+      No unformatted disk found for NFS storage.
+      Either:
+        1. Add an unformatted disk to this server
+        2. Specify nfs_disk explicitly in inventory (e.g., nfs_disk: /dev/sdb)
+
+      To see available disks: lsblk -dpno NAME,TYPE,FSTYPE
+  when: not nfs_vg_already_exists and (nfs_disk_actual is not defined or nfs_disk_actual | length == 0)
+  tags:
+    - nfs
+    - lvm
+
+- name: Check if disk exists
+  ansible.builtin.stat:
+    path: "{{ nfs_disk_actual }}"
+  register: nfs_disk_check
+  when: not nfs_vg_already_exists
+  tags:
+    - nfs
+    - lvm
+
+- name: Fail if disk does not exist
+  ansible.builtin.fail:
+    msg: "Disk {{ nfs_disk_actual }} does not exist. Please check your configuration."
+  when: not nfs_vg_already_exists and nfs_disk_check.stat is defined and not nfs_disk_check.stat.exists
+  tags:
+    - nfs
+    - lvm
+
+# Using command instead of module: LVM module doesn't handle all pvcreate scenarios
+- name: Create LVM physical volume
+  ansible.builtin.command: pvcreate {{ nfs_disk_actual }}
+  register: nfs_pvcreate_result
+  changed_when: nfs_pvcreate_result.rc == 0
+  when: not nfs_vg_already_exists
+  tags:
+    - nfs
+    - lvm
+
+- name: Create LVM volume group
+  community.general.lvg:
+    vg: "{{ nfs_vg_name }}"
+    pvs: "{{ nfs_disk_actual }}"
+  when: not nfs_vg_already_exists
+  tags:
+    - nfs
+    - lvm
+
+- name: Create LVM logical volume
+  community.general.lvol:
+    vg: "{{ nfs_vg_name }}"
+    lv: "{{ nfs_lv_name }}"
+    size: "{{ nfs_lv_size }}"
+  when: not nfs_vg_already_exists
+  tags:
+    - nfs
+    - lvm
+
+- name: Format logical volume with XFS
+  community.general.filesystem:
+    fstype: xfs
+    dev: "/dev/{{ nfs_vg_name }}/{{ nfs_lv_name }}"
+  tags:
+    - nfs
+    - filesystem
+
+- name: Create NFS mount directory
+  ansible.builtin.file:
+    path: "{{ nfs_mount_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  tags:
+    - nfs
+    - mount
+
+- name: Mount NFS volume
+  ansible.posix.mount:
+    path: "{{ nfs_mount_path }}"
+    src: "/dev/{{ nfs_vg_name }}/{{ nfs_lv_name }}"
+    fstype: xfs
+    opts: defaults
+    state: mounted
+  tags:
+    - nfs
+    - mount
+
+- name: Set permissions on NFS export directory
+  ansible.builtin.file:
+    path: "{{ nfs_mount_path }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+  tags:
+    - nfs
+    - directories
+
+- name: Create symlink in user home for easy access
+  ansible.builtin.file:
+    src: "{{ nfs_mount_path }}"
+    dest: "/home/{{ ansible_user }}/data"
+    state: link
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  when: nfs_create_server_symlink
+  tags:
+    - nfs
+    - symlink
+
+- name: Configure NFS exports
+  ansible.builtin.template:
+    src: exports.j2
+    dest: /etc/exports
+    owner: root
+    group: root
+    mode: '0644'
+  notify: reload nfs exports
+  tags:
+    - nfs
+    - exports
+
+- name: Enable and start NFS server
+  ansible.builtin.systemd:
+    name: nfs-kernel-server
+    state: started
+    enabled: yes
+  tags:
+    - nfs
+    - service
+
+- name: Ensure NFS exports are applied
+  ansible.builtin.meta: flush_handlers
+  tags:
+    - nfs
+    - exports
+
+- name: Verify NFS exports
+  ansible.builtin.command: exportfs -v
+  register: nfs_exports_output
+  changed_when: false
+  tags:
+    - nfs
+    - verify
+
+- name: Display NFS exports
+  ansible.builtin.debug:
+    var: nfs_exports_output.stdout_lines
+  tags:
+    - nfs
+    - verify
+
+- name: Create K8s manifests directory
+  ansible.builtin.file:
+    path: "{{ nfs_pv_output_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when: nfs_generate_pv_manifest
+  tags:
+    - nfs
+    - kubernetes
+
+- name: Generate PersistentVolume manifest
+  ansible.builtin.template:
+    src: pv-manifest.yaml.j2
+    dest: "{{ nfs_pv_output_dir }}/nfs-pv-data.yaml"
+    owner: root
+    group: root
+    mode: '0644'
+  when: nfs_generate_pv_manifest
+  tags:
+    - nfs
+    - kubernetes
+
+- name: Display PV manifest location
+  ansible.builtin.debug:
+    msg: "Kubernetes PersistentVolume manifest: {{ nfs_pv_output_dir }}/nfs-pv-data.yaml"
+  when: nfs_generate_pv_manifest
+  tags:
+    - nfs
+    - kubernetes

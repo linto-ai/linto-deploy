@@ -1,0 +1,37 @@
+{{- if and .Values.redis.enabled .Values.redis.persistence.enabled (not .Values.global.storage.database.hostPath) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "linto-stt.fullname" . }}-redis-data
+  labels:
+    {{- include "linto-stt.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if or .Values.redis.persistence.storageClass .Values.global.storageClass }}
+  storageClassName: {{ .Values.redis.persistence.storageClass | default .Values.global.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.redis.persistence.size }}
+{{- end }}
+---
+{{- if and .Values.mongodb.enabled .Values.mongodb.persistence.enabled (not .Values.global.storage.database.hostPath) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "linto-stt.fullname" . }}-mongodb-data
+  labels:
+    {{- include "linto-stt.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mongodb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if or .Values.mongodb.persistence.storageClass .Values.global.storageClass }}
+  storageClassName: {{ .Values.mongodb.persistence.storageClass | default .Values.global.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.mongodb.persistence.size }}
+{{- end }}

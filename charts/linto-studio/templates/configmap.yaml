@@ -1,0 +1,97 @@
+{{- if .Values.studioApi.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "linto-studio.fullname" . }}-api-config
+  labels:
+    {{- include "linto-studio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+data:
+  DB_HOST: {{ include "linto-studio.mongodbHost" . | quote }}
+  DB_PORT: "27017"
+  DB_NAME: "conversations"
+  DB_REQUIRE_LOGIN: "false"
+  WEBSERVER_HTTP_PORT: "80"
+  NODE_ENV: "production"
+  CORS_API_WHITELIST: "{{ include "linto-studio.scheme" . }}://{{ .Values.global.domain }}"
+  COMPONENTS: "WebServer,MongoMigration,BrokerClient,IoHandler"
+  SESSION_API_ENDPOINT: "http://linto-live-session-api:80/v1"
+  DEBUG: "linto:*"
+  BROKER_HOST: "linto-live-broker"
+  BROKER_PORT: "1883"
+  BROKER_PROTOCOL: "mqtt"
+  BROKER_KEEPALIVE: "60"
+  {{- if .Values.studioApi.env.GATEWAY_SERVICES }}
+  GATEWAY_SERVICES: {{ .Values.studioApi.env.GATEWAY_SERVICES | quote }}
+  {{- end }}
+  {{- if .Values.studioApi.env.LLM_GATEWAY_SERVICES }}
+  LLM_GATEWAY_SERVICES: {{ .Values.studioApi.env.LLM_GATEWAY_SERVICES | quote }}
+  {{- end }}
+  {{- /* SMTP Configuration - only if SMTP_HOST is set */ -}}
+  {{- if .Values.studioApi.env.SMTP_HOST }}
+  SMTP_HOST: {{ .Values.studioApi.env.SMTP_HOST | quote }}
+  SMTP_PORT: {{ .Values.studioApi.env.SMTP_PORT | quote }}
+  SMTP_SECURE: {{ .Values.studioApi.env.SMTP_SECURE | quote }}
+  SMTP_REQUIRE_TLS: {{ .Values.studioApi.env.SMTP_REQUIRE_TLS | quote }}
+  SMTP_AUTH: {{ .Values.studioApi.env.SMTP_AUTH | quote }}
+  {{- end }}
+  {{- if .Values.studioApi.env.NO_REPLY_EMAIL }}
+  NO_REPLY_EMAIL: {{ .Values.studioApi.env.NO_REPLY_EMAIL | quote }}
+  {{- end }}
+  {{- /* Google OIDC Configuration */ -}}
+  {{- if or (eq (toString .Values.studioApi.env.OIDC_GOOGLE_ENABLED) "true") .Values.studioApi.env.GOOGLE_CLIENT_ID }}
+  OIDC_GOOGLE_ENABLED: {{ .Values.studioApi.env.OIDC_GOOGLE_ENABLED | quote }}
+  GOOGLE_CLIENT_ID: {{ .Values.studioApi.env.GOOGLE_CLIENT_ID | quote }}
+  GOOGLE_OIDC_CALLBACK_URI: {{ .Values.studioApi.env.GOOGLE_OIDC_CALLBACK_URI | quote }}
+  {{- end }}
+  {{- /* GitHub OIDC Configuration */ -}}
+  {{- if or (eq (toString .Values.studioApi.env.OIDC_GITHUB_ENABLED) "true") .Values.studioApi.env.GITHUB_CLIENT_ID }}
+  OIDC_GITHUB_ENABLED: {{ .Values.studioApi.env.OIDC_GITHUB_ENABLED | quote }}
+  GITHUB_CLIENT_ID: {{ .Values.studioApi.env.GITHUB_CLIENT_ID | quote }}
+  GITHUB_OIDC_CALLBACK_URI: {{ .Values.studioApi.env.GITHUB_OIDC_CALLBACK_URI | quote }}
+  {{- end }}
+  {{- /* Native OIDC Configuration - only if OIDC_TYPE is set */ -}}
+  {{- if .Values.studioApi.env.OIDC_TYPE }}
+  OIDC_TYPE: {{ .Values.studioApi.env.OIDC_TYPE | quote }}
+  OIDC_CLIENT_ID: {{ .Values.studioApi.env.OIDC_CLIENT_ID | quote }}
+  OIDC_CALLBACK_URI: {{ .Values.studioApi.env.OIDC_CALLBACK_URI | quote }}
+  OIDC_URL: {{ .Values.studioApi.env.OIDC_URL | quote }}
+  OIDC_SCOPE: {{ .Values.studioApi.env.OIDC_SCOPE | quote }}
+  {{- end }}
+{{- end }}
+---
+{{- if .Values.studioFrontend.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "linto-studio.fullname" . }}-frontend-config
+  labels:
+    {{- include "linto-studio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+data:
+  VUE_APP_CONVO_API: "{{ include "linto-studio.scheme" . }}://{{ .Values.global.domain }}/cm-api/api"
+  VUE_APP_CONVO_AUTH: "{{ include "linto-studio.scheme" . }}://{{ .Values.global.domain }}/cm-api/auth"
+  VUE_APP_PUBLIC_MEDIA: "/cm-api/media"
+  VUE_APP_WEBSOCKET_SERVER: "{{ if .Values.global.tls.enabled }}wss{{ else }}ws{{ end }}://{{ .Values.global.domain }}"
+  VUE_APP_WEBSOCKET_PATH: "/ws/socket.io"
+  VUE_APP_SESSION_WS: "{{ include "linto-studio.scheme" . }}://{{ .Values.global.domain }}"
+  VUE_APP_SESSION_WS_PATH: "/cm-api/socket.io"
+  VUE_APP_ENABLE_SESSION: "true"
+  VUE_APP_MAX_CARACTERS_PER_PAGE: "20000"
+  VUE_APP_TURN_SIZE: "2000"
+{{- end }}
+---
+{{- if .Values.studioWebsocket.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "linto-studio.fullname" . }}-websocket-config
+  labels:
+    {{- include "linto-studio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: websocket
+data:
+  COMPONENTS: "WebServer,Websocket"
+  CONVO_API: "http://{{ include "linto-studio.fullname" . }}-api:80/api"
+  WEBSERVER_HTTP_PORT: "80"
+  WEBSERVER_WS_PATH: "/socket.io"
+{{- end }}

@@ -1,0 +1,15 @@
+apiVersion: v2
+name: linto-llm
+description: LinTO LLM - LLM Gateway for document processing and summarization
+type: application
+version: 0.1.0
+appVersion: "latest-unstable"
+keywords:
+  - linto
+  - llm
+  - summarization
+  - document-processing
+  - vllm
+maintainers:
+  - name: LinTO Team
+    url: https://linto.ai
