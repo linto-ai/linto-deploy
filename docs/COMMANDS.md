@@ -18,6 +18,9 @@ This document provides comprehensive documentation for all linto CLI commands wi
 | `linto version` | Show version information |
 | `linto profile set-kubeconfig <profile> <file>` | Set kubeconfig for a profile |
 | `linto kubeconfig export <profile>` | Export kubeconfig for manual kubectl/helm |
+| `linto exec <profile> <service>` | Interactive shell access to pods |
+| `linto port-forward <profile> <service>` | Port forwarding to services (alias: `pf`) |
+| `linto backup <profile>` | Database backup (MongoDB/PostgreSQL) |
 
 ## Cluster Access
 
@@ -896,6 +899,177 @@ kubectl get pvc -n <namespace>
 - PVC cannot be provisioned (wrong StorageClass)
 - Node selector doesn't match any nodes
 - GPU requested but not available
+
+---
+
+## Operations Commands
+
+Commands for debugging, development, and maintenance workflows.
+
+### linto exec \<profile\> \<service\>
+
+Execute an interactive shell inside a running pod.
+
+**Usage:**
+```bash
+linto exec <profile> <service> [OPTIONS]
+```
+
+**Arguments:**
+| Argument | Description |
+|----------|-------------|
+| `profile` | Name of the profile |
+| `service` | Service/pod name (tab-completion supported) |
+
+**Options:**
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--container` | `-c` | Container name for multi-container pods |
+| `--command` | | Command to execute (default: `/bin/sh`) |
+
+**What it does:**
+- Opens an interactive shell session inside a running pod
+- Default shell is `/bin/sh`
+- Supports multi-container pods via `--container` flag
+- Non-interactive mode available with `--command` flag
+
+**Examples:**
+```bash
+# Open shell in studio-api pod
+linto exec production studio-api
+
+# Open shell in specific container
+linto exec production studio-api --container nginx
+
+# Run a single command (non-interactive)
+linto exec production studio-api --command "cat /etc/hosts"
+
+# Access a specific pod by name
+linto exec production pod/linto-studio-api-54ccb7d-xyz
+```
+
+---
+
+### linto port-forward \<profile\> \<service\>
+
+Forward local ports to cluster services for debugging and development.
+
+**Aliases:** `pf`
+
+**Usage:**
+```bash
+linto port-forward <profile> <service> [port_spec] [OPTIONS]
+linto pf <profile> <service> [port_spec] [OPTIONS]
+```
+
+**Arguments:**
+| Argument | Description |
+|----------|-------------|
+| `profile` | Name of the profile |
+| `service` | Service/pod name (tab-completion supported) |
+| `port_spec` | Port specification: `[local_port:]remote_port` (optional) |
+
+**Options:**
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--address` | `-a` | Local address to bind to (default: `127.0.0.1`) |
+
+**Port Specification:**
+- `8080:80` - Forward local port 8080 to remote port 80
+- `8080` - Forward local port 8080 to remote port 8080
+- If omitted and service has a single port, auto-detect
+
+**What it does:**
+- Creates a tunnel from your local machine to a service in the cluster
+- Displays connection info with clear URL
+- Gracefully shuts down on Ctrl+C
+
+**Examples:**
+```bash
+# Forward local 8080 to studio-api port 80
+linto port-forward production studio-api 8080:80
+
+# Same as above using the alias
+linto pf production studio-api 8080:80
+
+# Forward to MongoDB (same port locally and remotely)
+linto port-forward production studio-mongodb 27017
+
+# Bind to all interfaces (accessible from other machines)
+linto port-forward production studio-api 8080:80 --address 0.0.0.0
+```
+
+**Output:**
+```
+Forwarding localhost:8080 -> linto-studio-api:80
+Press Ctrl+C to stop
+```
+
+---
+
+### linto backup \<profile\>
+
+Backup MongoDB and PostgreSQL databases to local files.
+
+**Usage:**
+```bash
+linto backup <profile> [OPTIONS]
+```
+
+**Arguments:**
+| Argument | Description |
+|----------|-------------|
+| `profile` | Name of the profile |
+
+**Options:**
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--output` | `-o` | Output directory (default: `.linto/backups/<profile>/<timestamp>/`) |
+| `--databases` | `-d` | Comma-separated list of specific databases to backup |
+
+**Auto-detected Databases:**
+| Service | Database Type |
+|---------|--------------|
+| linto-studio-mongodb | MongoDB |
+| linto-stt-mongodb | MongoDB |
+| linto-live-postgres | PostgreSQL |
+| linto-llm-postgres | PostgreSQL |
+
+**What it does:**
+1. Auto-detects deployed databases from the profile
+2. Creates compressed backups using `mongodump` and `pg_dumpall`
+3. Generates a manifest file with metadata
+4. Shows progress with Rich progress bar
+5. Displays summary with file sizes
+
+**Output Structure:**
+```
+.linto/backups/<profile>/<timestamp>/
+├── studio-mongodb.gz           # MongoDB dump (gzip compressed)
+├── stt-mongodb.gz              # MongoDB dump (gzip compressed)
+├── live-postgres.sql.gz        # PostgreSQL dump (gzip compressed)
+├── llm-postgres.sql.gz         # PostgreSQL dump (gzip compressed)
+└── manifest.json               # Metadata (timestamps, sizes, status)
+```
+
+**Examples:**
+```bash
+# Backup all databases for production profile
+linto backup production
+
+# Backup to a specific directory
+linto backup production --output ./backups/2024-01-18
+
+# Backup only specific databases
+linto backup production --databases studio-mongodb,live-postgres
+```
+
+**Exit Codes:**
+| Code | Description |
+|------|-------------|
+| 0 | All backups successful |
+| 1 | Profile not found / no databases found / all backups failed |
+| 2 | Partial failure (some backups succeeded, some failed) |
 
 ---
 

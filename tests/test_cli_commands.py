@@ -109,3 +109,121 @@ class TestErrorHandling:
         result = cli_runner.invoke(app, ["status", "nonexistent-profile"])
         assert result.exit_code == 1
         assert "PROFILE_NOT_FOUND" in result.output or "not found" in result.output.lower()
+
+
+class TestExecCommand:
+    """Test exec command."""
+
+    def test_exec_help(self, cli_runner):
+        """exec --help shows usage information."""
+        result = cli_runner.invoke(app, ["exec", "--help"])
+        assert result.exit_code == 0
+        assert "PROFILE" in result.output
+        assert "SERVICE" in result.output
+        assert "--container" in result.output
+        assert "--command" in result.output
+
+    def test_exec_requires_arguments(self, cli_runner):
+        """exec requires profile and service arguments."""
+        result = cli_runner.invoke(app, ["exec"])
+        assert result.exit_code != 0
+        assert "Missing argument" in result.output
+
+    def test_exec_requires_service_argument(self, cli_runner):
+        """exec requires service argument when profile provided."""
+        result = cli_runner.invoke(app, ["exec", "some-profile"])
+        assert result.exit_code != 0
+        assert "Missing argument" in result.output
+
+    def test_exec_nonexistent_profile(self, cli_runner, tmp_path, monkeypatch):
+        """exec shows error for nonexistent profile."""
+        monkeypatch.chdir(tmp_path)
+        result = cli_runner.invoke(app, ["exec", "nonexistent", "some-pod"])
+        assert result.exit_code == 1
+        assert "PROFILE_NOT_FOUND" in result.output or "not found" in result.output.lower()
+
+
+class TestPortForwardCommand:
+    """Test port-forward command."""
+
+    def test_port_forward_help(self, cli_runner):
+        """port-forward --help shows usage information."""
+        result = cli_runner.invoke(app, ["port-forward", "--help"])
+        assert result.exit_code == 0
+        assert "PROFILE" in result.output
+        assert "SERVICE" in result.output
+        assert "--address" in result.output
+
+    def test_pf_alias_exists(self, cli_runner):
+        """pf alias is registered for port-forward."""
+        result = cli_runner.invoke(app, ["pf", "--help"])
+        assert result.exit_code == 0
+        # Should show same help as port-forward
+        assert "SERVICE" in result.output
+        assert "--address" in result.output
+
+    def test_port_forward_requires_arguments(self, cli_runner):
+        """port-forward requires profile and service arguments."""
+        result = cli_runner.invoke(app, ["port-forward"])
+        assert result.exit_code != 0
+        assert "Missing argument" in result.output
+
+    def test_port_forward_requires_service_argument(self, cli_runner):
+        """port-forward requires service argument when profile provided."""
+        result = cli_runner.invoke(app, ["port-forward", "some-profile"])
+        assert result.exit_code != 0
+        assert "Missing argument" in result.output
+
+    def test_port_forward_nonexistent_profile(self, cli_runner, tmp_path, monkeypatch):
+        """port-forward shows error for nonexistent profile."""
+        monkeypatch.chdir(tmp_path)
+        result = cli_runner.invoke(app, ["port-forward", "nonexistent", "some-svc", "8080"])
+        assert result.exit_code == 1
+        assert "PROFILE_NOT_FOUND" in result.output or "not found" in result.output.lower()
+
+
+class TestBackupCommand:
+    """Test backup command."""
+
+    def test_backup_help(self, cli_runner):
+        """backup --help shows usage information."""
+        result = cli_runner.invoke(app, ["backup", "--help"])
+        assert result.exit_code == 0
+        assert "PROFILE" in result.output
+        assert "--output" in result.output
+        assert "--databases" in result.output
+
+    def test_backup_requires_profile(self, cli_runner):
+        """backup requires profile argument."""
+        result = cli_runner.invoke(app, ["backup"])
+        assert result.exit_code != 0
+        assert "Missing argument" in result.output
+
+    def test_backup_nonexistent_profile(self, cli_runner, tmp_path, monkeypatch):
+        """backup shows error for nonexistent profile."""
+        monkeypatch.chdir(tmp_path)
+        result = cli_runner.invoke(app, ["backup", "nonexistent"])
+        assert result.exit_code == 1
+        assert "PROFILE_NOT_FOUND" in result.output or "not found" in result.output.lower()
+
+
+class TestOpsCommandsInMainHelp:
+    """Test that new ops commands appear in main help."""
+
+    def test_exec_in_main_help(self, cli_runner):
+        """exec command appears in main help."""
+        result = cli_runner.invoke(app, ["--help"])
+        assert result.exit_code == 0
+        assert "exec" in result.output
+
+    def test_port_forward_in_main_help(self, cli_runner):
+        """port-forward command appears in main help."""
+        result = cli_runner.invoke(app, ["--help"])
+        assert result.exit_code == 0
+        assert "port-forward" in result.output
+
+    def test_backup_in_main_help(self, cli_runner):
+        """backup command appears in main help."""
+        result = cli_runner.invoke(app, ["--help"])
+        assert result.exit_code == 0
+        assert "backup" in result.output

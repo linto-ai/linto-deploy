@@ -7,8 +7,6 @@ import time
 from pathlib import Path
 from typing import Annotated, Optional
 
-from linto.utils.cmd import run_cmd
-
 import typer
 import yaml
 from rich.console import Console
@@ -18,6 +16,7 @@ from rich.prompt import Confirm
 from rich.table import Table
 
 from linto.model.validation import ValidationError
+from linto.utils.cmd import run_cmd
 
 app = typer.Typer(
     name="linto",
@@ -1059,6 +1058,336 @@ def kubeconfig_export(
         else:
             # Output to stdout
             print(yaml.dump(profile_data.kubeconfig, default_flow_style=False))
+
+    except ValidationError as e:
+        _handle_error(e)
+
+
+def _resolve_pod_name(
+    service: str,
+    namespace: str,
+    kubeconfig: dict | None = None,
+) -> str | None:
+    """Resolve a service/label to a pod name.
+
+    Args:
+        service: Service identifier (pod/name, deployment/name, or label value)
+        namespace: Kubernetes namespace
+        kubeconfig: Optional kubeconfig dict
+
+    Returns:
+        Pod name or None if not found
+    """
+    from linto.utils.kubeconfig import KubeconfigContext
+
+    with KubeconfigContext(kubeconfig):
+        # If already a pod reference, extract the name
+        if service.startswith("pod/"):
+            return service[4:]
+
+        # If deployment reference, get pods for the deployment
+        if service.startswith("deployment/"):
+            deployment_name = service[11:]
+            result = subprocess.run(
+                [
+                    "kubectl", "get", "pods", "-n", namespace,
+                    "-l", f"app.kubernetes.io/name={deployment_name}",
+                    "-o", "jsonpath={.items[0].metadata.name}",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=15,
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                return result.stdout.strip()
+
+        # Try as a label selector (app.kubernetes.io/name=<service>)
+        result = subprocess.run(
+            [
+                "kubectl", "get", "pods", "-n", namespace,
+                "-l", f"app.kubernetes.io/name={service}",
+                "-o", "jsonpath={.items[0].metadata.name}",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=15,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+
+        # Try as direct pod name
+        result = subprocess.run(
+            [
+                "kubectl", "get", "pod", service, "-n", namespace,
+                "-o", "jsonpath={.metadata.name}",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=15,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+
+        return None
+
+
+# Note: 'exec' is a Python reserved word, so we use exec_ as the function name
+@app.command(name="exec")
+def exec_(
+    profile: Annotated[
+        str,
+        typer.Argument(
+            help="Profile name",
+            autocompletion=_complete_profile,
+        ),
+    ],
+    service: Annotated[
+        str,
+        typer.Argument(
+            help="Service/pod name",
+            autocompletion=_complete_service,
+        ),
+    ],
+    container: Annotated[
+        Optional[str],
+        typer.Option("--container", "-c", help="Container name for multi-container pods"),
+    ] = None,
+    command: Annotated[
+        str,
+        typer.Option("--command", help="Command to execute (non-interactive)"),
+    ] = "/bin/sh",
+) -> None:
+    """Execute an interactive shell inside a running pod.
+
+    [bold]Example:[/bold]
+        linto exec my-profile studio-api
+        linto exec my-profile studio-api --command "ls -la"
+        linto exec my-profile pod/studio-api-xyz -c nginx
+    """
+    try:
+        from linto.model.validation import load_profile
+        from linto.utils.kubeconfig import KubeconfigContext
+
+        profile_data = load_profile(profile)
+        _check_backend_supported(profile_data)
+
+        namespace = profile_data.k3s_namespace
+
+        # Resolve service to pod name
+        pod_name = _resolve_pod_name(service, namespace, profile_data.kubeconfig)
+        if not pod_name:
+            console.print(f"[red]Error:[/red] No running pod found for '{service}'")
+            raise typer.Exit(1)
+
+        # Build kubectl exec command
+        kubectl_cmd = ["kubectl", "exec"]
+
+        # Determine if interactive (no --command option means interactive)
+        # Check if command was explicitly provided vs default
+        is_interactive = command == "/bin/sh"
+        if is_interactive:
+            kubectl_cmd.extend(["-it"])
+
+        kubectl_cmd.extend([pod_name, "-n", namespace])
+
+        if container:
+            kubectl_cmd.extend(["--container", container])
+
+        kubectl_cmd.extend(["--", command])
+
+        with KubeconfigContext(profile_data.kubeconfig):
+            try:
+                # Use Popen for interactive sessions
+                process = subprocess.Popen(
+                    kubectl_cmd,
+                    stdin=sys.stdin,
+                    stdout=sys.stdout,
+                    stderr=sys.stderr,
+                )
+                process.wait()
+                raise typer.Exit(process.returncode)
+            except KeyboardInterrupt:
+                process.terminate()
+                console.print("\n[yellow]Session terminated.[/yellow]")
+                raise typer.Exit(0)
+
+    except ValidationError as e:
+        _handle_error(e)
+
+
+@app.command(name="port-forward")
+def port_forward(
+    profile: Annotated[
+        str,
+        typer.Argument(
+            help="Profile name",
+            autocompletion=_complete_profile,
+        ),
+    ],
+    service: Annotated[
+        str,
+        typer.Argument(
+            help="Service/pod name",
+            autocompletion=_complete_service,
+        ),
+    ],
+    port_spec: Annotated[
+        Optional[str],
+        typer.Argument(help="Port specification: [local_port:]remote_port"),
+    ] = None,
+    address: Annotated[
+        str,
+        typer.Option("--address", "-a", help="Local address to bind to"),
+    ] = "127.0.0.1",
+) -> None:
+    """Forward local ports to cluster services.
+
+    [bold]Example:[/bold]
+        linto port-forward my-profile studio-api 8080:80
+        linto port-forward my-profile studio-api 8080
+        linto pf my-profile studio-api 8080:80
+    """
+    try:
+        from linto.model.validation import load_profile
+        from linto.utils.kubeconfig import KubeconfigContext
+
+        profile_data = load_profile(profile)
+        _check_backend_supported(profile_data)
+
+        namespace = profile_data.k3s_namespace
+
+        # Resolve service to pod name
+        pod_name = _resolve_pod_name(service, namespace, profile_data.kubeconfig)
+        if not pod_name:
+            console.print(f"[red]Error:[/red] No running pod found for '{service}'")
+            raise typer.Exit(1)
+
+        # Parse port specification
+        local_port: str
+        remote_port: str
+
+        if port_spec:
+            if ":" in port_spec:
+                local_port, remote_port = port_spec.split(":", 1)
+            else:
+                local_port = remote_port = port_spec
+        else:
+            # Auto-detect port from pod spec
+            with KubeconfigContext(profile_data.kubeconfig):
+                result = subprocess.run(
+                    [
+                        "kubectl", "get", "pod", pod_name, "-n", namespace,
+                        "-o", "jsonpath={.spec.containers[0].ports[0].containerPort}",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    timeout=15,
+                )
+                if result.returncode == 0 and result.stdout.strip():
+                    local_port = remote_port = result.stdout.strip()
+                else:
+                    console.print("[red]Error:[/red] Could not auto-detect port. Please specify port_spec.")
+                    raise typer.Exit(1)
+
+        # Build kubectl port-forward command
+        kubectl_cmd = [
+            "kubectl", "port-forward",
+            pod_name,
+            f"{local_port}:{remote_port}",
+            "-n", namespace,
+            "--address", address,
+        ]
+
+        console.print(f"Forwarding {address}:{local_port} -> {service}:{remote_port}")
+        console.print("[dim]Press Ctrl+C to stop[/dim]")
+
+        with KubeconfigContext(profile_data.kubeconfig):
+            try:
+                process = subprocess.Popen(
+                    kubectl_cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+                process.wait()
+            except KeyboardInterrupt:
+                process.terminate()
+                console.print("\n[yellow]Port-forward stopped.[/yellow]")
+                raise typer.Exit(0)
+
+    except ValidationError as e:
+        _handle_error(e)
+
+
+# Register pf as alias for port-forward
+def _port_forward_alias(
+    profile: Annotated[
+        str,
+        typer.Argument(
+            help="Profile name",
+            autocompletion=_complete_profile,
+        ),
+    ],
+    service: Annotated[
+        str,
+        typer.Argument(
+            help="Service/pod name",
+            autocompletion=_complete_service,
+        ),
+    ],
+    port_spec: Annotated[
+        Optional[str],
+        typer.Argument(help="Port specification: [local_port:]remote_port"),
+    ] = None,
+    address: Annotated[
+        str,
+        typer.Option("--address", "-a", help="Local address to bind to"),
+    ] = "127.0.0.1",
+) -> None:
+    """Alias for port-forward command."""
+    port_forward(profile, service, port_spec, address)
+
+
+app.command(name="pf", hidden=True)(_port_forward_alias)
+
+
+@app.command()
+def backup(
+    profile: Annotated[
+        str,
+        typer.Argument(
+            help="Profile name",
+            autocompletion=_complete_profile,
+        ),
+    ],
+    output: Annotated[
+        Optional[str],
+        typer.Option("--output", "-o", help="Output directory"),
+    ] = None,
+    databases: Annotated[
+        Optional[str],
+        typer.Option("--databases", "-d", help="Comma-separated list of databases to backup"),
+    ] = None,
+) -> None:
+    """Backup MongoDB and PostgreSQL databases to local files.
+
+    [bold]Example:[/bold]
+        linto backup my-profile
+        linto backup my-profile -o ./backups
+        linto backup my-profile -d studio-mongodb,live-postgres
+    """
+    try:
+        from linto.backup import run_backup
+        from linto.model.validation import load_profile
+
+        profile_data = load_profile(profile)
+        _check_backend_supported(profile_data)
+
+        exit_code = run_backup(profile, output, databases)
+        raise typer.Exit(exit_code)
 
     except ValidationError as e:
         _handle_error(e)
