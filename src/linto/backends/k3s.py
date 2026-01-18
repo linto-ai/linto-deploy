@@ -1563,11 +1563,43 @@ def status_k3s(
                 pods_data = json.loads(result.stdout)
                 for pod in pods_data.get("items", []):
                     pod_name = pod.get("metadata", {}).get("name", "unknown")
+                    creation_timestamp = pod.get("metadata", {}).get("creationTimestamp")
                     phase = pod.get("status", {}).get("phase", "unknown")
+
+                    # Get detailed status from containerStatuses
+                    detailed_status = None
+                    container_statuses = pod.get("status", {}).get("containerStatuses", [])
+                    for cs in container_statuses:
+                        state = cs.get("state", {})
+                        if "waiting" in state:
+                            reason = state["waiting"].get("reason", "Waiting")
+                            detailed_status = reason
+                            break
+                        elif "terminated" in state:
+                            reason = state["terminated"].get("reason", "Terminated")
+                            detailed_status = reason
+                            break
+
+                    # Check init containers too (image pull often happens there)
+                    if not detailed_status:
+                        init_statuses = pod.get("status", {}).get("initContainerStatuses", [])
+                        for cs in init_statuses:
+                            state = cs.get("state", {})
+                            if "waiting" in state:
+                                reason = state["waiting"].get("reason", "Waiting")
+                                detailed_status = f"Init:{reason}"
+                                break
+
+                    # Check if pod is terminating (deletionTimestamp set)
+                    if pod.get("metadata", {}).get("deletionTimestamp"):
+                        detailed_status = "Terminating"
+
                     services.append(
                         {
                             "name": f"pod/{pod_name}",
                             "status": phase,
+                            "detailed_status": detailed_status,
+                            "creation_timestamp": creation_timestamp,
                             "type": "pod",
                         }
                     )

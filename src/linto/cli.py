@@ -398,6 +398,40 @@ def destroy(
         _handle_error(e)
 
 
+def _format_age(timestamp_str: str | None) -> str:
+    """Format a Kubernetes timestamp as a human-readable age (e.g., '2d3h', '5m', '30s')."""
+    if not timestamp_str:
+        return "-"
+
+    from datetime import datetime, timezone
+
+    try:
+        # Parse ISO 8601 timestamp from Kubernetes
+        created = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
+        now = datetime.now(timezone.utc)
+        delta = now - created
+
+        total_seconds = int(delta.total_seconds())
+        if total_seconds < 0:
+            return "-"
+
+        days = total_seconds // 86400
+        hours = (total_seconds % 86400) // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = total_seconds % 60
+
+        if days > 0:
+            return f"{days}d{hours}h" if hours > 0 else f"{days}d"
+        elif hours > 0:
+            return f"{hours}h{minutes}m" if minutes > 0 else f"{hours}h"
+        elif minutes > 0:
+            return f"{minutes}m{seconds}s" if seconds > 0 else f"{minutes}m"
+        else:
+            return f"{seconds}s"
+    except (ValueError, TypeError):
+        return "-"
+
+
 def _get_pod_metrics(namespace: str, kubeconfig: dict | None = None) -> dict[str, dict]:
     """Get pod resource metrics from kubectl top."""
     from linto.utils.kubeconfig import KubeconfigContext
@@ -459,42 +493,11 @@ def _get_pod_resource_limits(namespace: str, kubeconfig: dict | None = None) -> 
     return limits
 
 
-def _get_ingress_endpoints(namespace: str, domain: str, kubeconfig: dict | None = None) -> dict[str, str]:
-    """Get service endpoints from Kubernetes Ingress resources."""
-    from linto.utils.kubeconfig import KubeconfigContext
-
-    endpoints = {}
-    try:
-        with KubeconfigContext(kubeconfig):
-            result = subprocess.run(
-                ["kubectl", "get", "ingress", "-n", namespace, "-o", "json"],
-                capture_output=True,
-                text=True,
-                check=False,
-                timeout=15,
-            )
-            if result.returncode == 0:
-                data = json.loads(result.stdout)
-                for ingress in data.get("items", []):
-                    for rule in ingress.get("spec", {}).get("rules", []):
-                        if rule.get("host") == domain:
-                            for path in rule.get("http", {}).get("paths", []):
-                                service_name = path.get("backend", {}).get("service", {}).get("name", "")
-                                path_value = path.get("path", "/")
-                                if service_name:
-                                    endpoints[service_name] = path_value
-    except Exception as e:
-        console.print(f"[dim]Debug: {type(e).__name__}: {e}[/dim]", style="dim")
-    return endpoints
-
-
 def _build_status_display(
     profile_name: str,
     profile_data,
     backend,
     compact: bool,
-    base_url: str,
-    fallback_endpoint_map: dict[str, str],
 ) -> Table | str:
     """Build the status display table.
 
@@ -503,8 +506,6 @@ def _build_status_display(
         profile_data: Profile configuration data
         backend: Backend module
         compact: Whether to hide resource metrics
-        base_url: Base URL for service endpoints
-        fallback_endpoint_map: Fallback endpoint mappings
 
     Returns:
         Rich Table with service status or message string if no services
@@ -539,41 +540,57 @@ def _build_status_display(
         metrics = _get_pod_metrics(profile_data.k3s_namespace, profile_data.kubeconfig)
         limits = _get_pod_resource_limits(profile_data.k3s_namespace, profile_data.kubeconfig)
 
-    # Try to get endpoint map from Ingress resources
-    endpoint_map = _get_ingress_endpoints(profile_data.k3s_namespace, profile_data.domain, profile_data.kubeconfig)
-    if not endpoint_map:
-        endpoint_map = fallback_endpoint_map
-
     # Build table
     table = Table(title="Services")
     table.add_column("Service", style="cyan")
-    table.add_column("Status", style="green")
+    table.add_column("Status")  # No default style - we color based on status value
 
     if not compact:
         table.add_column("CPU", style="yellow")
         table.add_column("Memory", style="yellow")
         table.add_column("GPU", style="magenta")
 
-    table.add_column("URL", style="dim")
+    table.add_column("Age", style="dim")
 
     for svc in services:
         name = svc.get("name", "unknown")
         status_str = svc.get("status", svc.get("replicas", "unknown"))
-        if svc.get("health"):
-            status_str = f"{status_str} ({svc['health']})"
 
-        # Determine URL
-        url = ""
+        # Add detailed status if available (e.g., ContainerCreating, ImagePullBackOff, Terminating)
+        detailed_status = svc.get("detailed_status")
+        if detailed_status:
+            # Color code based on status type
+            if detailed_status in ("ContainerCreating", "PodInitializing") or detailed_status.startswith("Init:"):
+                status_str = f"[yellow]{detailed_status}[/yellow]"
+            elif "Pull" in detailed_status or "Image" in detailed_status:
+                status_str = f"[yellow]{detailed_status}[/yellow]"
+            elif detailed_status == "Terminating":
+                status_str = f"[red]{detailed_status}[/red]"
+            elif detailed_status in ("CrashLoopBackOff", "Error", "OOMKilled"):
+                status_str = f"[red]{detailed_status}[/red]"
+            else:
+                status_str = f"{status_str} ({detailed_status})"
+        elif svc.get("health"):
+            status_str = f"{status_str} ({svc['health']})"
+        else:
+            # Color code base status for helm releases and pods
+            status_lower = status_str.lower() if isinstance(status_str, str) else ""
+            if status_lower in ("deployed", "running"):
+                status_str = f"[green]{status_str}[/green]"
+            elif status_lower == "failed":
+                status_str = f"[red]{status_str}[/red]"
+            elif status_lower in ("pending", "pending-install", "pending-upgrade", "pending-rollback"):
+                status_str = f"[yellow]{status_str}[/yellow]"
+            elif status_lower in ("superseded", "uninstalled"):
+                status_str = f"[dim]{status_str}[/dim]"
+
+        # Get age from creation timestamp
+        age_str = _format_age(svc.get("creation_timestamp"))
+
         # Strip stack prefix for swarm, pod/ prefix for k3s
         service_name = name.split("_")[-1] if "_" in name else name
         if service_name.startswith("pod/"):
             service_name = service_name[4:]
-
-        # Try to match endpoint
-        for key in endpoint_map:
-            if key in service_name.lower():
-                url = f"{base_url}{endpoint_map[key]}"
-                break
 
         if not compact:
             # Get metrics for this pod
@@ -593,9 +610,9 @@ def _build_status_display(
             if gpu_str == "0":
                 gpu_str = "-"
 
-            table.add_row(name, status_str, cpu_str, mem_str, gpu_str, url)
+            table.add_row(name, status_str, cpu_str, mem_str, gpu_str, age_str)
         else:
-            table.add_row(name, status_str, url)
+            table.add_row(name, status_str, age_str)
 
     header_lines.append(Text())
     return Group(*header_lines, table)
@@ -638,23 +655,6 @@ def status(
         _check_backend_supported(profile_data)
         backend = get_backend(profile_data.backend)
 
-        # Determine URL scheme based on TLS mode
-        scheme = "http" if profile_data.tls_mode.value == "off" else "https"
-        base_url = f"{scheme}://{profile_data.domain}"
-
-        # Fallback endpoint map (used when Ingress query fails)
-        fallback_endpoint_map = {
-            "traefik": "/",
-            "studio-api": "/cm-api/",
-            "studio-frontend": "/",
-            "studio-websocket": "/ws/",
-            "stt-all-whisper-v3-turbo": "/stt-all-whisper-v3-turbo/",
-            "session-api": "/session-api/",
-            "llm-gateway-api": "/llm-gateway/",
-            "llm-gateway-frontend": "/llm-admin/",
-            "llm-api": "/llm-gateway/",
-        }
-
         if follow:
             # Use Rich Live for smooth, flicker-free updates
             try:
@@ -665,8 +665,6 @@ def status(
                             profile_data,
                             backend,
                             compact,
-                            base_url,
-                            fallback_endpoint_map,
                         )
                         live.update(display)
                         time.sleep(interval)
@@ -679,8 +677,6 @@ def status(
                 profile_data,
                 backend,
                 compact,
-                base_url,
-                fallback_endpoint_map,
             )
             console.print(display)
     except ValidationError as e:
