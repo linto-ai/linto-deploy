@@ -16,6 +16,7 @@ from linto.utils.kubeconfig import KubeconfigContext
 from linto.utils.secrets import generate_secrets
 
 console = Console()
+stderr_console = Console(stderr=True)
 
 
 def _get_charts_dir() -> Path:
@@ -1678,7 +1679,7 @@ def logs_k3s(
 
                 if get_show_commands():
                     cmd_str = " ".join(quote_arg(arg) for arg in cmd)
-                    console.print(f"[dim]$ {cmd_str}[/dim]", stderr=True)
+                    stderr_console.print(f"[dim]$ {cmd_str}[/dim]")
                 process = subprocess.Popen(cmd)
                 try:
                     process.wait()
