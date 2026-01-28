@@ -1,0 +1,113 @@
+# LinTO Platform - Unstable Development Versions
+# This file uses latest-unstable tags for development/testing purposes.
+#
+# Available version files in versions/ directory:
+#   - latest.yaml           : Release Candidate (latest tags)
+#   - latest-unstable.yaml  : Development (latest-unstable tags) - THIS FILE
+#   - platform.YYYY.MM.yaml : Stable releases
+#
+# Usage:
+#   linto profile edit <profile> --versions-file versions/latest-unstable.yaml
+#   linto deploy <profile>
+#
+# DO NOT EDIT MANUALLY - This file is auto-generated
+
+# Current platform version
+platform_version: latest-unstable
+
+# LinTO Services - Docker images from lintoai/*
+linto:
+  # Studio (main web application)
+  studio-api:
+    image: lintoai/studio-api
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-studio
+  studio-frontend:
+    image: lintoai/studio-frontend
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-studio
+  studio-websocket:
+    image: lintoai/studio-websocket
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-studio
+
+  # STT (Speech-to-Text)
+  linto-api-gateway:
+    image: lintoai/linto-api-gateway
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-api-gateway
+  linto-transcription-service:
+    image: lintoai/linto-transcription-service
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-stt
+  linto-stt-whisper:
+    image: lintoai/linto-stt-whisper
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-stt
+  linto-diarization-pyannote:
+    image: lintoai/linto-diarization-pyannote
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-diarization
+
+  # STT Streaming variants
+  linto-stt-kaldi:
+    image: lintoai/linto-stt-kaldi
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-stt
+  linto-stt-nemo:
+    image: lintoai/linto-stt-nemo
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-stt
+  kyutai-moshi-stt-server-cuda:
+    image: lintoai/kyutai-moshi-stt-server-cuda
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/kyutai-moshi-stt-server
+
+  # LLM Gateway
+  llm-gateway:
+    image: lintoai/llm-gateway
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/llm-gateway
+  llm-gateway-frontend:
+    image: lintoai/llm-gateway-frontend
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/llm-gateway
+
+  # Live Session plugins
+  studio-plugins-migration:
+    image: lintoai/studio-plugins-migration
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-studio-plugins
+  studio-plugins-sessionapi:
+    image: lintoai/studio-plugins-sessionapi
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-studio-plugins
+  studio-plugins-scheduler:
+    image: lintoai/studio-plugins-scheduler
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-studio-plugins
+  studio-plugins-transcriber:
+    image: lintoai/studio-plugins-transcriber
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-studio-plugins
+
+# Third-party databases and services (pinned versions - same as stable)
+databases:
+  mongo:
+    image: mongo
+    tag: "6.0.2"
+  postgres:
+    image: postgres
+    tag: "15-alpine"
+  redis-stack-server:
+    image: redis/redis-stack-server
+    tag: "latest"
+  eclipse-mosquitto:
+    image: eclipse-mosquitto
+    tag: "2"
+
+# Optional LLM services
+llm:
+  vllm-openai:
+    image: vllm/vllm-openai
+    tag: "latest"

@@ -31,7 +31,7 @@ spec:
             runAsUser: 0
       containers:
         - name: whisper
-          image: "{{ .Values.whisper.image.repository }}:{{ include "linto-stt.imageTag" . }}"
+          image: "{{ .Values.whisper.image.repository }}:{{ .Values.whisper.image.tag | default (include "linto-stt.imageTag" .) }}"
           imagePullPolicy: {{ include "linto-stt.imagePullPolicy" . }}
           ports:
             - name: http
@@ -125,7 +125,7 @@ spec:
             runAsUser: 0
       containers:
         - name: whisper-workers
-          image: "{{ $.Values.whisperWorkers.image.repository }}:{{ include "linto-stt.imageTag" $ }}"
+          image: "{{ $.Values.whisperWorkers.image.repository }}:{{ $.Values.whisperWorkers.image.tag | default (include "linto-stt.imageTag" $) }}"
           imagePullPolicy: {{ include "linto-stt.imagePullPolicy" $ }}
           envFrom:
             - configMapRef:
@@ -222,7 +222,7 @@ spec:
             runAsUser: 0
       containers:
         - name: diarization
-          image: "{{ $.Values.diarization.image.repository }}:{{ include "linto-stt.imageTag" $ }}"
+          image: "{{ $.Values.diarization.image.repository }}:{{ $.Values.diarization.image.tag | default (include "linto-stt.imageTag" $) }}"
           imagePullPolicy: {{ include "linto-stt.imagePullPolicy" $ }}
           envFrom:
             - configMapRef:
@@ -446,7 +446,7 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: "{{ .Values.apiGateway.image.repository }}:{{ include "linto-stt.imageTag" . }}"
+          image: "{{ .Values.apiGateway.image.repository }}:{{ .Values.apiGateway.image.tag | default (include "linto-stt.imageTag" .) }}"
           imagePullPolicy: {{ include "linto-stt.imagePullPolicy" . }}
           args: ["--run-cmd=node app.js"]
           ports:

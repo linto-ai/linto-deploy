@@ -33,7 +33,7 @@ spec:
       {{- end }}
       containers:
         - name: llm-api
-          image: "{{ .Values.llmGatewayApi.image.repository }}:{{ include "linto-llm.imageTag" . }}"
+          image: "{{ .Values.llmGatewayApi.image.repository }}:{{ .Values.llmGatewayApi.image.tag | default (include "linto-llm.imageTag" .) }}"
           imagePullPolicy: {{ include "linto-llm.imagePullPolicy" . }}
           ports:
             - name: http
@@ -121,7 +121,7 @@ spec:
     spec:
       containers:
         - name: celery-worker
-          image: "{{ .Values.celeryWorker.image.repository }}:{{ include "linto-llm.imageTag" . }}"
+          image: "{{ .Values.celeryWorker.image.repository }}:{{ .Values.celeryWorker.image.tag | default (include "linto-llm.imageTag" .) }}"
           imagePullPolicy: {{ include "linto-llm.imagePullPolicy" . }}
           command:
             - celery
@@ -201,7 +201,7 @@ spec:
     spec:
       containers:
         - name: llm-frontend
-          image: "{{ .Values.llmGatewayFrontend.image.repository }}:{{ include "linto-llm.imageTag" . }}"
+          image: "{{ .Values.llmGatewayFrontend.image.repository }}:{{ .Values.llmGatewayFrontend.image.tag | default (include "linto-llm.imageTag" .) }}"
           imagePullPolicy: {{ include "linto-llm.imagePullPolicy" . }}
           ports:
             - name: http
