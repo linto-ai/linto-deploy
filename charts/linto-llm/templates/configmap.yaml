@@ -25,20 +25,5 @@ data:
   DEBUG: {{ .Values.llmGatewayApi.env.DEBUG | default "false" | quote }}
   CORS_ORIGINS: {{ .Values.llmGatewayApi.env.CORS_ORIGINS | default (printf "https://%s" .Values.global.domain) | quote }}
 {{- end }}
----
-{{- if .Values.llmGatewayFrontend.enabled }}
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ include "linto-llm.fullname" . }}-llm-frontend-config
-  labels:
-    {{- include "linto-llm.labels" . | nindent 4 }}
-    app.kubernetes.io/component: llm-frontend
-data:
-  # API and WebSocket URLs - relative to the frontend path, accessed via browser
-  # Frontend code adds /api/v1/ prefix to all API calls
-  NEXT_PUBLIC_API_URL: "{{ .Values.llmGatewayFrontend.ingress.path }}/api"
-  # WebSocket: frontend code adds /ws/jobs/{id}, so base URL is just the frontend path
-  NEXT_PUBLIC_WS_URL: "wss://{{ .Values.global.domain }}{{ .Values.llmGatewayFrontend.ingress.path }}"
-  BASE_PATH: {{ .Values.llmGatewayFrontend.ingress.path | quote }}
-{{- end }}
+# Note: Frontend ConfigMap removed - basePath is now baked into the Docker image at build time (/llm-admin)
+# and API/WS URLs are auto-detected from window.location at runtime

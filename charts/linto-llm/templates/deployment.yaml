@@ -193,8 +193,6 @@ spec:
       app.kubernetes.io/component: llm-frontend
   template:
     metadata:
-      annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
       labels:
         {{- include "linto-llm.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: llm-frontend
@@ -207,9 +205,8 @@ spec:
             - name: http
               containerPort: 3000
               protocol: TCP
-          envFrom:
-            - configMapRef:
-                name: {{ include "linto-llm.fullname" . }}-llm-frontend-config
+          # No environment variables needed - basePath is baked into Docker image (/llm-admin)
+          # and API/WS URLs are auto-detected from window.location at runtime
           resources:
             {{- toYaml .Values.llmGatewayFrontend.resources | nindent 12 }}
 {{- end }}
