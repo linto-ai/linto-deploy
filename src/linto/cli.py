@@ -795,14 +795,16 @@ def redeploy(
                 if result.returncode == 0 and result.stdout.strip():
                     deployments_to_restart = result.stdout.strip().split()
 
-            # Exclude stateful services (redis, postgres, mongodb, broker) from restart
+            # When redeploying a specific chart, exclude stateful services (redis, postgres, mongodb, broker)
             # Restarting these causes connection loss and can leave workers in broken state
-            STATEFUL_COMPONENTS = ("redis", "postgres", "mongodb", "broker")
-            excluded = [d for d in deployments_to_restart if any(s in d for s in STATEFUL_COMPONENTS)]
-            deployments_to_restart = [d for d in deployments_to_restart if not any(s in d for s in STATEFUL_COMPONENTS)]
+            # When redeploying ALL (no chart specified), include everything
+            if chart:
+                STATEFUL_COMPONENTS = ("redis", "postgres", "mongodb", "broker")
+                excluded = [d for d in deployments_to_restart if any(s in d for s in STATEFUL_COMPONENTS)]
+                deployments_to_restart = [d for d in deployments_to_restart if not any(s in d for s in STATEFUL_COMPONENTS)]
 
-            if excluded:
-                console.print(f"[dim]Skipping stateful services: {', '.join(excluded)}[/dim]")
+                if excluded:
+                    console.print(f"[dim]Skipping stateful services: {', '.join(excluded)}[/dim]")
 
             if not deployments_to_restart:
                 console.print("[yellow]No deployments found to restart[/yellow]")
