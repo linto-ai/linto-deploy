@@ -11,7 +11,7 @@ name: Update RC Version
 
 on:
   repository_dispatch:
-    types: [service-updated]
+    types: [update-service]
 
 jobs:
   update-rc:
