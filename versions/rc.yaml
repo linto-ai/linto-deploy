@@ -2,10 +2,10 @@ platform_version: RC-2026.01.30-v1.6.0-9d27af7
 linto:
   studio-api:
     image: lintoai/studio-api
-    tag: latest-unstable
+    tag: 1.6.0
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:b9c1b52ff7143e5667156bb37e5605177a0833f93bb562b0f099ca558fa6795e
-    commit: 42f72403b7999fb222fa6ae0d159ec3776ebc8c4
+    digest: sha256:aee909fb0444eae20e3983b7ae0ffb4610db0b0d5b41070d6c81861b85f5cc01
+    commit: 9d27af7b1c9ac822ece505fa3f551e07a0950b12
   studio-frontend:
     image: lintoai/studio-frontend
     tag: 1.6.0
@@ -105,7 +105,7 @@ databases:
     digest: sha256:f6498f214984ab10ad90d839204a19effa2ad3aff15fbacd12e43cd8b527c5e5
   redis-stack-server:
     image: redis/redis-stack-server
-    tag: latest
+    tag: 7.4.0-v8
     digest: sha256:75cb09fe427163df4ba306b8d9668ac6af75555d88e3145171bb0324a57b00c1
   eclipse-mosquitto:
     image: eclipse-mosquitto
@@ -114,5 +114,5 @@ databases:
 llm:
   vllm-openai:
     image: vllm/vllm-openai
-    tag: latest
+    tag: v0.15.0
     digest: sha256:a440fad4f27802e8b506d7053202661ce29df84167188078e0fe86c8245f9679
