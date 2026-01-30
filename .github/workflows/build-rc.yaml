@@ -1,0 +1,100 @@
+# Build RC (Release Candidate) version by querying DockerHub and GitHub
+#
+# This workflow is triggered MANUALLY to update the RC version file.
+# It queries DockerHub for each service's 'latest' tag and finds:
+# - The semver tag matching the digest (e.g., 1.6.0)
+# - The Docker image digest (sha256:...)
+# - The Git commit from GitHub
+#
+# When you're ready to release, use the "Create Release" workflow.
+
+name: Build RC Version
+
+on:
+  # Manual trigger only - we control when RC is updated
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no commit)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build-rc:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pyyaml requests
+
+      - name: Build RC version file
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          python scripts/build-rc.py
+
+      - name: Check for changes
+        id: changes
+        if: ${{ !inputs.dry_run }}
+        run: |
+          if git diff --quiet versions/rc.yaml 2>/dev/null; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes detected in rc.yaml"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Changes detected in rc.yaml:"
+            git diff versions/rc.yaml
+          fi
+
+      - name: Commit and push changes
+        if: ${{ !inputs.dry_run && steps.changes.outputs.changed == 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add versions/rc.yaml
+
+          # Extract RC version from file
+          RC_VERSION=$(grep "^# RC Version:" versions/rc.yaml | cut -d' ' -f4)
+
+          git commit -m "chore(versions): update RC to ${RC_VERSION}"
+          git push
+
+      - name: Summary
+        run: |
+          echo "## RC Version Built" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ inputs.dry_run }}" == "true" ]; then
+            echo "⚠️ **DRY RUN** - No changes committed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Extract info from rc.yaml
+          RC_VERSION=$(grep "^# RC Version:" versions/rc.yaml | cut -d' ' -f4)
+          GENERATED=$(grep "^# Generated:" versions/rc.yaml | cut -d' ' -f3)
+
+          echo "- **Version**: ${RC_VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Generated**: ${GENERATED}" >> $GITHUB_STEP_SUMMARY
+          echo "- **File**: versions/rc.yaml" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Service Versions" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`yaml" >> $GITHUB_STEP_SUMMARY
+          grep -E "^  [a-z]|tag:|commit:|digest:" versions/rc.yaml | head -40 >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Test this RC in your environment" >> $GITHUB_STEP_SUMMARY
+          echo "2. When ready, run **Create Release** workflow to publish a stable version" >> $GITHUB_STEP_SUMMARY

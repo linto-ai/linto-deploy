@@ -317,8 +317,148 @@ def prompt_custom_certs() -> tuple[str, str]:
     return cert_path, key_path
 
 
+def prompt_versions_file() -> tuple[str, dict[str, str]]:
+    """Prompt for versions file selection.
+
+    The versions files contain individual tags for each service.
+    Both the default image_tag and service-specific tags are extracted.
+
+    Returns:
+        Tuple of (image_tag, service_tags)
+        - image_tag: The platform_version (default tag)
+        - service_tags: Dict of service_name -> tag for each service
+    """
+    from pathlib import Path
+
+    import yaml
+
+    # Find versions directory
+    versions_dir = _find_versions_dir()
+
+    if not versions_dir or not versions_dir.exists():
+        console.print("\n[yellow]Versions directory not found, using default[/yellow]")
+        return "latest-unstable", {}
+
+    # List available version files
+    version_files = sorted(versions_dir.glob("*.yaml"))
+
+    if not version_files:
+        console.print("\n[yellow]No version files found, using default[/yellow]")
+        return "latest-unstable", {}
+
+    console.print("\n[bold]Select image version:[/bold]")
+
+    # Build options list with platform_version and full data from each file
+    options = []
+    file_data_list = []
+    for vf in version_files:
+        try:
+            with open(vf) as f:
+                data = yaml.safe_load(f)
+                platform_version = data.get("platform_version", vf.stem)
+                file_data_list.append(data)
+        except Exception:
+            platform_version = vf.stem
+            file_data_list.append({})
+
+        name = vf.stem
+        if name == "latest":
+            desc = "Release Candidate"
+        elif name == "latest-unstable":
+            desc = "Development"
+        elif name.startswith("platform."):
+            desc = "Stable Release"
+        else:
+            desc = ""
+
+        options.append((platform_version, desc))
+
+    # Display options
+    for i, (tag, desc) in enumerate(options, 1):
+        desc_str = f" - {desc}" if desc else ""
+        console.print(f"  [dim]{i}.[/dim] {tag}{desc_str}")
+
+    # Get choice (default to latest-unstable which should be index 2)
+    choices = [str(i) for i in range(1, len(options) + 1)]
+
+    # Find default (latest-unstable)
+    default_idx = 1
+    for i, (tag, _) in enumerate(options, 1):
+        if tag == "latest-unstable":
+            default_idx = i
+            break
+
+    choice = Prompt.ask(
+        "\n[cyan]Select version[/cyan]",
+        choices=choices,
+        default=str(default_idx),
+    )
+
+    idx = int(choice) - 1
+    selected_tag = options[idx][0]
+    selected_data = file_data_list[idx]
+    console.print(f"[green]Selected: {selected_tag}[/green]")
+
+    # Extract service tags from the selected file
+    service_tags = _extract_service_tags(selected_data)
+
+    return selected_tag, service_tags
+
+
+def _extract_service_tags(data: dict) -> dict[str, str]:
+    """Extract service tags from versions file data.
+
+    Args:
+        data: Parsed YAML data from versions file
+
+    Returns:
+        Dict mapping service names to their tags
+    """
+    service_tags = {}
+
+    # Extract LinTO service tags
+    linto_services = data.get("linto", {})
+    for service_name, service_config in linto_services.items():
+        if isinstance(service_config, dict) and "tag" in service_config:
+            service_tags[service_name] = service_config["tag"]
+
+    # Extract database tags
+    databases = data.get("databases", {})
+    for db_name, db_config in databases.items():
+        if isinstance(db_config, dict) and "tag" in db_config:
+            service_tags[f"db-{db_name}"] = db_config["tag"]
+
+    # Extract LLM service tags
+    llm_services = data.get("llm", {})
+    for llm_name, llm_config in llm_services.items():
+        if isinstance(llm_config, dict) and "tag" in llm_config:
+            service_tags[f"llm-{llm_name}"] = llm_config["tag"]
+
+    return service_tags
+
+
+def _find_versions_dir():
+    """Find the versions directory."""
+    from pathlib import Path
+
+    # Try relative to this file (installed package)
+    pkg_versions = Path(__file__).parent.parent.parent.parent / "versions"
+    if pkg_versions.exists():
+        return pkg_versions
+
+    # Try current working directory
+    cwd_versions = Path.cwd() / "versions"
+    if cwd_versions.exists():
+        return cwd_versions
+
+    return None
+
+
 def prompt_image_channel() -> str:
-    """Prompt for image channel (stable/unstable)."""
+    """Prompt for image channel (stable/unstable).
+
+    DEPRECATED: Use prompt_versions_file() instead.
+    """
     console.print("\n[bold]Image channel:[/bold]")
     console.print("  [dim]1.[/dim] stable (latest)")
     console.print("  [dim]2.[/dim] unstable (latest-unstable)")
@@ -755,7 +895,7 @@ def show_summary(
     if llm_enabled:
         table.add_row("Local vLLM", "Enabled" if vllm_enabled else "Disabled")
 
-    table.add_row("Image Channel", image_tag)
+    table.add_row("Image Tag", image_tag)
     table.add_row("Admin Email", admin_email)
 
     # SMTP settings

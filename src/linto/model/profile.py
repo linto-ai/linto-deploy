@@ -58,6 +58,8 @@ class ProfileConfig(BaseModel):
     # Embedded kubeconfig for cluster access
     kubeconfig: dict | None = Field(default=None)
     image_tag: str = Field(default="latest-unstable")
+    # Individual service tags (overrides image_tag for specific services)
+    service_tags: dict[str, str] = Field(default_factory=dict)
     tls_mode: TLSMode = Field(default=TLSMode.MKCERT)
 
     # Deployment backend

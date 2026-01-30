@@ -1,0 +1,121 @@
+# Create a stable platform release from the RC (Release Candidate)
+#
+# This workflow is triggered MANUALLY when you're ready to release.
+# It takes the current rc.yaml (with all version info) and creates
+# a stable release file (platform.YYYY.MM.yaml).
+#
+# Prerequisites:
+# - rc.yaml must exist (run "Build RC Version" workflow first)
+# - RC has been tested and validated
+
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., platform.2026.01). Leave empty for auto-generated.'
+        required: false
+        type: string
+      dry_run:
+        description: 'Dry run (preview only, no commit)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check RC exists
+        run: |
+          if [ ! -f versions/rc.yaml ]; then
+            echo "Error: versions/rc.yaml not found"
+            echo "Run 'Build RC Version' workflow first to generate rc.yaml"
+            exit 1
+          fi
+          echo "RC file found:"
+          head -10 versions/rc.yaml
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pyyaml
+
+      - name: Generate version name
+        id: version
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            # Auto-generate: platform.YYYY.MM
+            VERSION="platform.$(date +%Y.%m)"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Release version: $VERSION"
+
+      - name: Create release
+        run: |
+          python scripts/create-release.py "${{ steps.version.outputs.version }}" ${{ inputs.dry_run && '--dry-run' || '' }}
+
+      - name: Commit and push
+        if: ${{ !inputs.dry_run }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          VERSION="${{ steps.version.outputs.version }}"
+
+          # Commit on current branch
+          git add versions/${VERSION}.yaml
+          git add docs/releases/${VERSION}.md
+          git commit -m "release: ${VERSION}"
+          git push
+
+          # Create and push tag
+          git tag "${VERSION}"
+          git push origin "${VERSION}"
+
+      - name: Create GitHub Release
+        if: ${{ !inputs.dry_run }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: LinTO Platform ${{ steps.version.outputs.version }}
+          body_path: docs/releases/${{ steps.version.outputs.version }}.md
+          draft: false
+          prerelease: false
+
+      - name: Summary
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          echo "## Release Created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ inputs.dry_run }}" == "true" ]; then
+            echo "⚠️ **DRY RUN** - No changes committed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "- **Version**: ${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Versions file**: versions/${VERSION}.yaml" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release notes**: docs/releases/${VERSION}.md" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ inputs.dry_run }}" != "true" ]; then
+            echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+            echo "- Tag \`${VERSION}\` has been created" >> $GITHUB_STEP_SUMMARY
+            echo "- GitHub Release has been published" >> $GITHUB_STEP_SUMMARY
+            echo "- Users can now deploy with: \`linto profile edit <profile> --versions-file versions/${VERSION}.yaml\`" >> $GITHUB_STEP_SUMMARY
+          fi

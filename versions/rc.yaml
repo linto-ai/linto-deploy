@@ -1,0 +1,118 @@
+platform_version: RC-2026.01.30-v1.6.0-9d27af7
+linto:
+  studio-api:
+    image: lintoai/studio-api
+    tag: 1.6.0
+    repo: https://github.com/linto-ai/linto-studio
+    digest: sha256:aee909fb0444eae20e3983b7ae0ffb4610db0b0d5b41070d6c81861b85f5cc01
+    commit: 9d27af7b1c9ac822ece505fa3f551e07a0950b12
+  studio-frontend:
+    image: lintoai/studio-frontend
+    tag: 1.6.0
+    repo: https://github.com/linto-ai/linto-studio
+    digest: sha256:c60fca44f751ef7af04266ffe5857d042af3f9fc7106e8b454a4978386f68ade
+    commit: 9d27af7b1c9ac822ece505fa3f551e07a0950b12
+  studio-websocket:
+    image: lintoai/studio-websocket
+    tag: 1.6.0
+    repo: https://github.com/linto-ai/linto-studio
+    digest: sha256:db5a802d18a08c527662f85a5be615f2d622a7d92ab74903475009ac6f951f8e
+    commit: 9d27af7b1c9ac822ece505fa3f551e07a0950b12
+  linto-api-gateway:
+    image: lintoai/linto-api-gateway
+    tag: latest
+    repo: https://github.com/linto-ai/linto-api-gateway
+    digest: sha256:50a900c3057f67d13b892c961eaf6202414b9a42fd871d33fc9d33a32749909c
+    commit: 9f05b593f2cb9107581cc4a6fc09581d662d2afc
+  linto-transcription-service:
+    image: lintoai/linto-transcription-service
+    tag: 1.3.1
+    repo: https://github.com/linto-ai/linto-stt
+    digest: sha256:7827e7a0f6c3c200c93eaec75f7a6cb3fa390eef1e77db1ba08401d617a49fda
+    commit: bf0aa2ecc3530df19d1d0dfdde6d2cd97b3f2368
+  linto-stt-whisper:
+    image: lintoai/linto-stt-whisper
+    tag: 1.0.7
+    repo: https://github.com/linto-ai/linto-stt
+    digest: sha256:0367ef3d8829cd6f4148f0c4d14b1ec00271e19fb99c63eb1a5f1f93fac5985e
+    commit: bf0aa2ecc3530df19d1d0dfdde6d2cd97b3f2368
+  linto-diarization-pyannote:
+    image: lintoai/linto-diarization-pyannote
+    tag: 2.0.2
+    repo: https://github.com/linto-ai/linto-diarization
+    digest: sha256:bb34d7853233e27e2312678ab31bea0ef0c7ca7c1789adba1b7eaf0e19c9bc9e
+    commit: ab39797b5c106e8db6acefce4e2a4167e1043a24
+  linto-stt-kaldi:
+    image: lintoai/linto-stt-kaldi
+    tag: 1.1.0
+    repo: https://github.com/linto-ai/linto-stt
+    digest: sha256:fc23ba531d5b0f7b9012c9260892a6caff6dea15c4961a245fa0f196c2e48861
+    commit: 6f6b4d7895dc81ec57269d32af6eea5761425f09
+  linto-stt-nemo:
+    image: lintoai/linto-stt-nemo
+    tag: 1.0.2
+    repo: https://github.com/linto-ai/linto-stt
+    digest: sha256:ca07c097c81781e141bcf9e572248c292beeaab5cb81860126ee78280e3ee37d
+    commit: bf0aa2ecc3530df19d1d0dfdde6d2cd97b3f2368
+  kyutai-moshi-stt-server-cuda:
+    image: lintoai/kyutai-moshi-stt-server-cuda
+    tag: latest
+    repo: https://github.com/linto-ai/kyutai-moshi-stt-server
+  llm-gateway:
+    image: lintoai/llm-gateway
+    tag: 1.1.0
+    repo: https://github.com/linto-ai/llm-gateway
+    digest: sha256:176be5a921459d2da7c18d94a1fe2f09db46069b90b8704ba1d36cb764e0f41a
+    commit: c37e184b3b05b57cd079eacb8cbfddf3b1f0c843
+  llm-gateway-frontend:
+    image: lintoai/llm-gateway-frontend
+    tag: 2.0.0
+    repo: https://github.com/linto-ai/llm-gateway
+    digest: sha256:31a66f94c338d2244147c7f149794ed2f893dee78fcd6b0bfac97cd9ddb30161
+    commit: c37e184b3b05b57cd079eacb8cbfddf3b1f0c843
+  studio-plugins-migration:
+    image: lintoai/studio-plugins-migration
+    tag: latest
+    repo: https://github.com/linto-ai/linto-studio-plugins
+    digest: sha256:5e5ded3136e5ca18ea363db20b447901fb0d3649140df5337faf763a364a8bf2
+    commit: 6d72eaf3faa29cc10115ca0bab98a3d4025e2694
+  studio-plugins-sessionapi:
+    image: lintoai/studio-plugins-sessionapi
+    tag: latest
+    repo: https://github.com/linto-ai/linto-studio-plugins
+    digest: sha256:c8347807b7c3a7e1d90519f7cb5ab66f5c3dfb112d3ace3ec95ab2bec689f341
+    commit: 6d72eaf3faa29cc10115ca0bab98a3d4025e2694
+  studio-plugins-scheduler:
+    image: lintoai/studio-plugins-scheduler
+    tag: latest
+    repo: https://github.com/linto-ai/linto-studio-plugins
+    digest: sha256:55c983f53dddeca7a984de299f72d04509f9365814ce1ca2d6256bbfbc000223
+    commit: 6d72eaf3faa29cc10115ca0bab98a3d4025e2694
+  studio-plugins-transcriber:
+    image: lintoai/studio-plugins-transcriber
+    tag: latest
+    repo: https://github.com/linto-ai/linto-studio-plugins
+    digest: sha256:8fb5bfdeac5c88eb703b5a3da5d90afbf20932be16b23b992a5152edb511136d
+    commit: 6d72eaf3faa29cc10115ca0bab98a3d4025e2694
+databases:
+  mongo:
+    image: mongo
+    tag: 6.0.2
+    digest: sha256:53c4915c2c13524007a84b472f8c0b0a3c4f889afcb014306b628b2e82d0b658
+  postgres:
+    image: postgres
+    tag: 15-alpine
+    digest: sha256:f6498f214984ab10ad90d839204a19effa2ad3aff15fbacd12e43cd8b527c5e5
+  redis-stack-server:
+    image: redis/redis-stack-server
+    tag: 7.4.0-v8
+    digest: sha256:75cb09fe427163df4ba306b8d9668ac6af75555d88e3145171bb0324a57b00c1
+  eclipse-mosquitto:
+    image: eclipse-mosquitto
+    tag: '2'
+    digest: sha256:8fb8eacf4054ce5f8c0c38d52e480d34c47b73ce9b36267361e7e39aba7d599c
+llm:
+  vllm-openai:
+    image: vllm/vllm-openai
+    tag: v0.15.0
+    digest: sha256:a440fad4f27802e8b506d7053202661ce29df84167188078e0fe86c8245f9679

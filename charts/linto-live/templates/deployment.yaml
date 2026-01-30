@@ -23,7 +23,7 @@ spec:
       {{- if .Values.migration.enabled }}
       initContainers:
         - name: run-migrations
-          image: "{{ .Values.migration.image.repository }}:{{ include "linto-live.imageTag" . }}"
+          image: "{{ .Values.migration.image.repository }}:{{ .Values.migration.image.tag | default (include "linto-live.imageTag" .) }}"
           imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
           env:
             - name: DB_HOST
@@ -46,7 +46,7 @@ spec:
       {{- end }}
       containers:
         - name: session-api
-          image: "{{ .Values.sessionApi.image.repository }}:{{ include "linto-live.imageTag" . }}"
+          image: "{{ .Values.sessionApi.image.repository }}:{{ .Values.sessionApi.image.tag | default (include "linto-live.imageTag" .) }}"
           imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
           ports:
             - name: http
@@ -95,7 +95,7 @@ spec:
       {{- if .Values.migration.enabled }}
       initContainers:
         - name: run-migrations
-          image: "{{ .Values.migration.image.repository }}:{{ include "linto-live.imageTag" . }}"
+          image: "{{ .Values.migration.image.repository }}:{{ .Values.migration.image.tag | default (include "linto-live.imageTag" .) }}"
           imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
           env:
             - name: DB_HOST
@@ -118,7 +118,7 @@ spec:
       {{- end }}
       containers:
         - name: session-scheduler
-          image: "{{ .Values.sessionScheduler.image.repository }}:{{ include "linto-live.imageTag" . }}"
+          image: "{{ .Values.sessionScheduler.image.repository }}:{{ .Values.sessionScheduler.image.tag | default (include "linto-live.imageTag" .) }}"
           imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
           envFrom:
             - configMapRef:
@@ -168,7 +168,7 @@ spec:
       {{- end }}
       containers:
         - name: session-transcriber
-          image: "{{ .Values.sessionTranscriber.image.repository }}:{{ include "linto-live.imageTag" . }}"
+          image: "{{ .Values.sessionTranscriber.image.repository }}:{{ .Values.sessionTranscriber.image.tag | default (include "linto-live.imageTag" .) }}"
           imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
           ports:
             - name: http
@@ -337,7 +337,7 @@ spec:
     spec:
       containers:
         - name: stt-whisper
-          image: "{{ .Values.streamingStt.whisper.image.repository }}:{{ include "linto-live.imageTag" . }}"
+          image: "{{ .Values.streamingStt.whisper.image.repository }}:{{ .Values.streamingStt.whisper.image.tag | default (include "linto-live.imageTag" .) }}"
           imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
           env:
             - name: SERVICE_MODE
@@ -376,7 +376,7 @@ spec:
     spec:
       containers:
         - name: stt-kyutai
-          image: "{{ .Values.streamingStt.kyutai.image.repository }}:{{ include "linto-live.imageTag" . }}-{{ .Values.streamingStt.kyutai.gpuArchitecture }}"
+          image: "{{ .Values.streamingStt.kyutai.image.repository }}:{{ .Values.streamingStt.kyutai.image.tag | default (include "linto-live.imageTag" .) }}-{{ .Values.streamingStt.kyutai.gpuArchitecture }}"
           imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
           env:
             - name: DEVICE
