@@ -1,0 +1,115 @@
+# LinTO Platform - Software Versions
+# Type: Development (latest-unstable)
+#
+# Available version files in versions/ directory:
+#   - rc.yaml             : Release Candidate (versioned tags + digest + commit)
+#   - latest.yaml          : Latest stable (latest tags + digest)
+#   - latest-unstable.yaml : Development (latest-unstable tags + digest)
+#   - platform.YYYY.MM.yaml: Stable releases
+#
+# DO NOT EDIT MANUALLY - This file is auto-generated
+# Last updated: 2026-01-29T16:44:20.159963+00:00
+
+platform_version: latest-unstable
+linto:
+  studio-api:
+    image: lintoai/studio-api
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-studio
+    digest: sha256:0b4aaa37730579110fc7aea012cad532e87d5b71bb596c80f32adb53f539700c
+  studio-frontend:
+    image: lintoai/studio-frontend
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-studio
+    digest: sha256:4e1e7e0b7f93d6d2950d7c189cdfadce81e46d4f226c43422578c26de33517a7
+  studio-websocket:
+    image: lintoai/studio-websocket
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-studio
+    digest: sha256:28e4a05da478a0397621857ed0e68b6f37be237123fc0a5753aa4b002665c77c
+  linto-api-gateway:
+    image: lintoai/linto-api-gateway
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-api-gateway
+    digest: sha256:50a900c3057f67d13b892c961eaf6202414b9a42fd871d33fc9d33a32749909c
+  linto-transcription-service:
+    image: lintoai/linto-transcription-service
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-stt
+    digest: sha256:7827e7a0f6c3c200c93eaec75f7a6cb3fa390eef1e77db1ba08401d617a49fda
+  linto-stt-whisper:
+    image: lintoai/linto-stt-whisper
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-stt
+    digest: sha256:0367ef3d8829cd6f4148f0c4d14b1ec00271e19fb99c63eb1a5f1f93fac5985e
+  linto-diarization-pyannote:
+    image: lintoai/linto-diarization-pyannote
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-diarization
+    digest: sha256:bb34d7853233e27e2312678ab31bea0ef0c7ca7c1789adba1b7eaf0e19c9bc9e
+  linto-stt-kaldi:
+    image: lintoai/linto-stt-kaldi
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-stt
+    digest: sha256:2dea9ce9523dd6c3673590723952392d6c35fa6fd5840bd9a4ef14a65de83e87
+  linto-stt-nemo:
+    image: lintoai/linto-stt-nemo
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-stt
+    digest: sha256:ca07c097c81781e141bcf9e572248c292beeaab5cb81860126ee78280e3ee37d
+  kyutai-moshi-stt-server-cuda:
+    image: lintoai/kyutai-moshi-stt-server-cuda
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/kyutai-moshi-stt-server
+  llm-gateway:
+    image: lintoai/llm-gateway
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/llm-gateway
+    digest: sha256:5db7a7aa1568e6572408b87191e3dd49c06d17fe543657e9b48e38aa46893326
+  llm-gateway-frontend:
+    image: lintoai/llm-gateway-frontend
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/llm-gateway
+    digest: sha256:e44e59a31d9b950495cbb7bb5635aaf27777cf5ce2c162ff380d9b045b214dba
+  studio-plugins-migration:
+    image: lintoai/studio-plugins-migration
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-studio-plugins
+    digest: sha256:0bb7fadc147cadcd61167933e19869bd317ac59542813832f27ded4ad9ddb629
+  studio-plugins-sessionapi:
+    image: lintoai/studio-plugins-sessionapi
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-studio-plugins
+    digest: sha256:8694614df65688bf49a048b36ceee98cdba1b17e3699463bffc2e1caaf033c05
+  studio-plugins-scheduler:
+    image: lintoai/studio-plugins-scheduler
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-studio-plugins
+    digest: sha256:6fbf0d9fd6d8f078a3f3d9f429cb1be239e53a7560d1bea1c55aabff561ff306
+  studio-plugins-transcriber:
+    image: lintoai/studio-plugins-transcriber
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-studio-plugins
+    digest: sha256:3b5176d393263f0b0c308c47d8f6383178365b729fbb6c3654ae1b17a1665be1
+databases:
+  mongo:
+    image: mongo
+    tag: 6.0.2
+    digest: sha256:53c4915c2c13524007a84b472f8c0b0a3c4f889afcb014306b628b2e82d0b658
+  postgres:
+    image: postgres
+    tag: 15-alpine
+    digest: sha256:f6498f214984ab10ad90d839204a19effa2ad3aff15fbacd12e43cd8b527c5e5
+  redis-stack-server:
+    image: redis/redis-stack-server
+    tag: latest
+    digest: sha256:75cb09fe427163df4ba306b8d9668ac6af75555d88e3145171bb0324a57b00c1
+  eclipse-mosquitto:
+    image: eclipse-mosquitto
+    tag: '2'
+    digest: sha256:8fb8eacf4054ce5f8c0c38d52e480d34c47b73ce9b36267361e7e39aba7d599c
+llm:
+  vllm-openai:
+    image: vllm/vllm-openai
+    tag: latest
+    digest: sha256:718eb21bcb1bcf12d991f7909bb5316a86675cb3799757b52095889af4cba35d

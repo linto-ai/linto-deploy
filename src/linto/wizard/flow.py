@@ -21,7 +21,6 @@ from linto.wizard.prompts import (
     prompt_domain,
     prompt_gpu_count,
     prompt_gpu_mode,
-    prompt_image_channel,
     prompt_k3s_database_node_role,
     prompt_k3s_host_paths,
     prompt_k3s_install_cert_manager,
@@ -39,6 +38,7 @@ from linto.wizard.prompts import (
     prompt_sso,
     prompt_streaming_stt_variants,
     prompt_tls_mode,
+    prompt_versions_file,
     prompt_vllm,
     show_summary,
 )
@@ -125,8 +125,8 @@ def run_wizard() -> None:
     if tls_mode == TLSMode.CUSTOM:
         custom_cert_path, custom_key_path = prompt_custom_certs()
 
-    # Step 13: Image channel
-    image_tag = prompt_image_channel()
+    # Step 13: Versions/Image tag selection
+    image_tag, service_tags = prompt_versions_file()
 
     # Step 14: Admin credentials
     admin_email, admin_password = prompt_admin_credentials()
@@ -146,6 +146,7 @@ def run_wizard() -> None:
         domain=domain,
         kubeconfig=kubeconfig_data,
         image_tag=image_tag,
+        service_tags=service_tags,
         tls_mode=tls_mode,
         backend=backend,
         # K3S settings
