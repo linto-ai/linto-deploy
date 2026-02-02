@@ -75,10 +75,22 @@ TLS secret name - uses shared secret if configured
 {{- end }}
 
 {{/*
-Image tag helper
+Image tag helper - returns global tag
 */}}
 {{- define "linto-studio.imageTag" -}}
 {{- .Values.global.imageTag | default .Chart.AppVersion }}
+{{- end }}
+
+{{/*
+Service-specific image tag helper
+Usage: {{ include "linto-studio.serviceImageTag" (dict "service" .Values.studioApi "global" .Values.global "chart" .Chart) }}
+*/}}
+{{- define "linto-studio.serviceImageTag" -}}
+{{- if .service.image.tag }}
+{{- .service.image.tag }}
+{{- else }}
+{{- .global.imageTag | default .chart.AppVersion }}
+{{- end }}
 {{- end }}
 
 {{/*

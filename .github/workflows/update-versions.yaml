@@ -1,0 +1,81 @@
+# Update versions.yaml when triggered by service repositories
+# This workflow is triggered via repository_dispatch from service repos
+# or can be run manually to sync all versions from DockerHub
+
+name: Update Versions
+
+on:
+  # Triggered by service repositories on release/push to master
+  repository_dispatch:
+    types: [service-updated]
+
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to update (leave empty for all)'
+        required: false
+        type: string
+      tag:
+        description: 'Tag to set (leave empty for latest)'
+        required: false
+        type: string
+
+  # Scheduled sync every day at 6 AM UTC
+  schedule:
+    - cron: '0 6 * * *'
+
+jobs:
+  update-versions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pyyaml requests
+
+      - name: Update versions from DockerHub
+        env:
+          SERVICE: ${{ github.event.client_payload.service || inputs.service || '' }}
+          TAG: ${{ github.event.client_payload.tag || inputs.tag || '' }}
+          COMMIT_SHA: ${{ github.event.client_payload.commit_sha || '' }}
+          REPO: ${{ github.event.client_payload.repo || '' }}
+        run: |
+          python scripts/update-versions.py
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet versions/; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push changes
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add versions/
+
+          # Create commit message based on trigger
+          if [ -n "${{ github.event.client_payload.service }}" ]; then
+            MSG="chore(versions): update ${{ github.event.client_payload.service }} to ${{ github.event.client_payload.tag || 'latest' }}"
+          else
+            MSG="chore(versions): sync versions from DockerHub"
+          fi
+
+          git commit -m "$MSG"
+          git push

@@ -675,6 +675,58 @@ def restore_tls_certificates(
             return False
 
 
+def get_service_tag(profile: ProfileConfig, service_name: str) -> str:
+    """Get the tag for a specific service from profile.
+
+    Checks service_tags first, falls back to image_tag.
+
+    Args:
+        profile: Profile configuration
+        service_name: Service name (e.g., 'studio-api', 'linto-stt-whisper')
+
+    Returns:
+        Version tag for the service
+    """
+    return profile.service_tags.get(service_name, profile.image_tag)
+
+
+def get_database_tag(profile: ProfileConfig, db_name: str) -> str:
+    """Get the tag for a database from profile.
+
+    Args:
+        profile: Profile configuration
+        db_name: Database name (e.g., 'mongo', 'postgres')
+
+    Returns:
+        Version tag for the database
+    """
+    # Check for db-prefixed key first, then direct name
+    tag = profile.service_tags.get(f"db-{db_name}")
+    if tag:
+        return tag
+    # Default database versions
+    defaults = {
+        "mongo": "6.0.2",
+        "postgres": "15-alpine",
+        "redis-stack-server": "latest",
+        "eclipse-mosquitto": "2",
+    }
+    return defaults.get(db_name, "latest")
+
+
+def get_llm_service_tag(profile: ProfileConfig, service_name: str) -> str:
+    """Get the tag for an LLM service from profile.
+
+    Args:
+        profile: Profile configuration
+        service_name: LLM service name (e.g., 'vllm-openai')
+
+    Returns:
+        Version tag for the service
+    """
+    return profile.service_tags.get(f"llm-{service_name}", "latest")
+
+
 def generate_global_values(profile: ProfileConfig, create_certificate: bool = True) -> dict[str, Any]:
     """Generate global values shared across all charts.
 
@@ -742,6 +794,9 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
         "studioApi": {
             "enabled": True,
             "replicas": 1,
+            "image": {
+                "tag": get_service_tag(profile, "studio-api"),
+            },
             "env": {
                 "SUPER_ADMIN_EMAIL": profile.super_admin_email,
                 "SUPER_ADMIN_PWD": profile.super_admin_password or "",
@@ -758,16 +813,25 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
         "studioFrontend": {
             "enabled": True,
             "replicas": 1,
+            "image": {
+                "tag": get_service_tag(profile, "studio-frontend"),
+            },
         },
         "studioWebsocket": {
             "enabled": True,
             "replicas": 1,
+            "image": {
+                "tag": get_service_tag(profile, "studio-websocket"),
+            },
             "env": {
                 "CM_JWT_SECRET": profile.jwt_secret or "",
             },
         },
         "mongodb": {
             "enabled": True,
+            "image": {
+                "tag": get_database_tag(profile, "mongo"),
+            },
             "persistence": {
                 "enabled": True,
                 "size": "10Gi",
@@ -855,6 +919,9 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         "apiGateway": {
             "enabled": True,
             "replicas": 1,
+            "image": {
+                "tag": get_service_tag(profile, "linto-api-gateway"),
+            },
             "env": {
                 "COMPONENTS": "ApiWatcher,WebServer",
             },
@@ -865,6 +932,9 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         "whisper": {
             "enabled": True,
             "replicas": 1,
+            "image": {
+                "tag": get_service_tag(profile, "linto-transcription-service"),
+            },
             "env": {
                 "BROKER_PASS": profile.redis_password or "",
             },
@@ -874,6 +944,9 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         },
         "whisperWorkers": {
             "enabled": True,
+            "image": {
+                "tag": get_service_tag(profile, "linto-stt-whisper"),
+            },
             "env": {
                 "BROKER_PASS": profile.redis_password or "",
                 "DEVICE": "cuda" if gpu_enabled else "cpu",
@@ -881,6 +954,9 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         },
         "diarization": {
             "enabled": True,
+            "image": {
+                "tag": get_service_tag(profile, "linto-diarization-pyannote"),
+            },
             "env": {
                 "SERVICE_NAME": "stt-diarization-pyannote",
                 "QUEUE_NAME": "diarization-pyannote",
@@ -890,6 +966,9 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         },
         "redis": {
             "enabled": True,
+            "image": {
+                "tag": get_database_tag(profile, "redis-stack-server"),
+            },
             "password": profile.redis_password or "",
             "persistence": {
                 "enabled": True,
@@ -901,6 +980,9 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         },
         "mongodb": {
             "enabled": True,
+            "image": {
+                "tag": get_database_tag(profile, "mongo"),
+            },
             "persistence": {
                 "enabled": True,
                 "size": "10Gi",
@@ -944,9 +1026,18 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
 
     values: dict[str, Any] = {
         "global": generate_global_values(profile, create_certificate=False),
+        "migration": {
+            "enabled": True,
+            "image": {
+                "tag": get_service_tag(profile, "studio-plugins-migration"),
+            },
+        },
         "sessionApi": {
             "enabled": True,
             "replicas": 1,
+            "image": {
+                "tag": get_service_tag(profile, "studio-plugins-sessionapi"),
+            },
             "env": {
                 "DB_PASSWORD": profile.session_postgres_password or "",
                 "SECURITY_CRYPT_KEY": profile.session_crypt_key or "",
@@ -961,6 +1052,9 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
         "sessionScheduler": {
             "enabled": True,
             "replicas": 1,
+            "image": {
+                "tag": get_service_tag(profile, "studio-plugins-scheduler"),
+            },
             "env": {
                 "DB_PASSWORD": profile.session_postgres_password or "",
             },
@@ -968,6 +1062,9 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
         "sessionTranscriber": {
             "enabled": True,
             "replicas": profile.session_transcriber_replicas,
+            "image": {
+                "tag": get_service_tag(profile, "studio-plugins-transcriber"),
+            },
             "env": {
                 "SECURITY_CRYPT_KEY": profile.session_crypt_key or "",
             },
@@ -980,6 +1077,9 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
         },
         "postgres": {
             "enabled": True,
+            "image": {
+                "tag": get_database_tag(profile, "postgres"),
+            },
             "password": profile.session_postgres_password or "",
             "persistence": {
                 "enabled": True,
@@ -991,6 +1091,9 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
         },
         "broker": {
             "enabled": True,
+            "image": {
+                "tag": get_database_tag(profile, "eclipse-mosquitto"),
+            },
             "resources": {
                 "limits": {},
             },
@@ -998,12 +1101,23 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
         "streamingStt": {},
     }
 
-    # Add streaming STT variants
+    # Add streaming STT variants with version tags
+    variant_image_map = {
+        StreamingSTTVariant.WHISPER: "linto-stt-whisper",
+        StreamingSTTVariant.KALDI_FRENCH: "linto-stt-kaldi",
+        StreamingSTTVariant.NEMO_FRENCH: "linto-stt-nemo",
+        StreamingSTTVariant.NEMO_ENGLISH: "linto-stt-nemo",
+        StreamingSTTVariant.KYUTAI: "kyutai-moshi-stt-server-cuda",
+    }
+
     for variant in profile.streaming_stt_variants:
         variant_key = variant.value.replace("-", "_")
         variant_config: dict[str, Any] = {
             "enabled": True,
             "replicas": 1,
+            "image": {
+                "tag": get_service_tag(profile, variant_image_map.get(variant, "linto-stt-whisper")),
+            },
         }
 
         # GPU services need resource limits
@@ -1054,6 +1168,9 @@ def generate_llm_values(profile: ProfileConfig) -> dict[str, Any]:
         "llmGatewayApi": {
             "enabled": True,
             "replicas": 1,
+            "image": {
+                "tag": get_service_tag(profile, "llm-gateway"),
+            },
             "env": {
                 "REDIS_PASSWORD": profile.llm_redis_password or "",
                 "ENCRYPTION_KEY": profile.llm_encryption_key or "",
@@ -1064,10 +1181,16 @@ def generate_llm_values(profile: ProfileConfig) -> dict[str, Any]:
         "celeryWorker": {
             "enabled": True,
             "replicas": 1,
+            "image": {
+                "tag": get_service_tag(profile, "llm-gateway"),
+            },
         },
         "llmGatewayFrontend": {
             "enabled": True,
             "replicas": 1,
+            "image": {
+                "tag": get_service_tag(profile, "llm-gateway-frontend"),
+            },
             "basicAuth": {
                 "enabled": True,
                 "username": profile.llm_admin_username,
@@ -1076,6 +1199,9 @@ def generate_llm_values(profile: ProfileConfig) -> dict[str, Any]:
         },
         "postgres": {
             "enabled": True,
+            "image": {
+                "tag": get_database_tag(profile, "postgres"),
+            },
             "password": profile.llm_postgres_password or "",
             "persistence": {
                 "enabled": True,
@@ -1087,6 +1213,9 @@ def generate_llm_values(profile: ProfileConfig) -> dict[str, Any]:
         },
         "redis": {
             "enabled": True,
+            "image": {
+                "tag": get_database_tag(profile, "redis-stack-server"),
+            },
             "password": profile.llm_redis_password or "",
             "persistence": {
                 "enabled": True,
@@ -1099,6 +1228,9 @@ def generate_llm_values(profile: ProfileConfig) -> dict[str, Any]:
         "vllm": {
             "enabled": profile.vllm_enabled,
             "replicas": 1,
+            "image": {
+                "tag": get_llm_service_tag(profile, "vllm-openai"),
+            },
             "resources": {},
         },
     }
