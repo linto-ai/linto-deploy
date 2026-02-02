@@ -20,10 +20,10 @@ linto:
     commit: 9d27af7b1c9ac822ece505fa3f551e07a0950b12
   linto-api-gateway:
     image: lintoai/linto-api-gateway
-    tag: latest
+    tag: 0.1.0
     repo: https://github.com/linto-ai/linto-api-gateway
-    digest: sha256:50a900c3057f67d13b892c961eaf6202414b9a42fd871d33fc9d33a32749909c
-    commit: 9f05b593f2cb9107581cc4a6fc09581d662d2afc
+    digest: sha256:a0cbc476468e12691305fa3622b47359065429e6396f5db34344f5f3b14b8a60
+    commit: 9fd3184d8bbf99bc67cd3d8ac35b66ee890d895c
   linto-transcription-service:
     image: lintoai/linto-transcription-service
     tag: 1.3.1
