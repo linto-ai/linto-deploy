@@ -35,7 +35,7 @@ linto:
     tag: 1.0.7
     repo: https://github.com/linto-ai/linto-stt
     digest: sha256:0367ef3d8829cd6f4148f0c4d14b1ec00271e19fb99c63eb1a5f1f93fac5985e
-    commit: bf0aa2ecc3530df19d1d0dfdde6d2cd97b3f2368
+    commit: 76c1c32abb7edf9c33cdb46c106f58193045d660
   linto-diarization-pyannote:
     image: lintoai/linto-diarization-pyannote
     tag: 2.0.2
