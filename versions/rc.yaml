@@ -47,7 +47,7 @@ linto:
     tag: 1.1.0
     repo: https://github.com/linto-ai/linto-stt
     digest: sha256:fc23ba531d5b0f7b9012c9260892a6caff6dea15c4961a245fa0f196c2e48861
-    commit: 6f6b4d7895dc81ec57269d32af6eea5761425f09
+    commit: 76c1c32abb7edf9c33cdb46c106f58193045d660
   linto-stt-nemo:
     image: lintoai/linto-stt-nemo
     tag: 1.0.2
