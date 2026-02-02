@@ -56,8 +56,9 @@ linto:
     commit: bf0aa2ecc3530df19d1d0dfdde6d2cd97b3f2368
   kyutai-moshi-stt-server-cuda:
     image: lintoai/kyutai-moshi-stt-server-cuda
-    tag: latest
+    tag: 0.1.0
     repo: https://github.com/linto-ai/kyutai-moshi-stt-server
+    commit: 76c1c32abb7edf9c33cdb46c106f58193045d660
   llm-gateway:
     image: lintoai/llm-gateway
     tag: 1.1.0
