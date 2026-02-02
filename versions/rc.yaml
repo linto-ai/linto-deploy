@@ -41,7 +41,7 @@ linto:
     tag: 2.0.2
     repo: https://github.com/linto-ai/linto-diarization
     digest: sha256:bb34d7853233e27e2312678ab31bea0ef0c7ca7c1789adba1b7eaf0e19c9bc9e
-    commit: ab39797b5c106e8db6acefce4e2a4167e1043a24
+    commit: 360a0b0f9ae2facb7b81ba8b9f09fa1ef8a4ce3d
   linto-stt-kaldi:
     image: lintoai/linto-stt-kaldi
     tag: 1.1.0
