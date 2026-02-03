@@ -28,8 +28,8 @@ linto:
     image: lintoai/linto-transcription-service
     tag: 1.3.1
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:7827e7a0f6c3c200c93eaec75f7a6cb3fa390eef1e77db1ba08401d617a49fda
-    commit: 45873021c4694d82efb02929ce0310fe0400dc97
+    digest: sha256:305b9cc94d2a38f6a348a3266957aa428f8f4dd4e870b901e9b9390ade3b447f
+    commit: 0dd327fbef9139762284282cd1ffe85b6dac8895
   linto-stt-whisper:
     image: lintoai/linto-stt-whisper
     tag: 1.0.7
@@ -96,12 +96,10 @@ linto:
     digest: sha256:9f6343ada8cd2bad9386e3b8a80a9a848a25e1b77aa591f6f058c23121dfa0ba
     commit: 52b750fd0218d535c834b50fd0b52baf0f3bfe23
 databases:
-  # Studio
   studio-mongo:
     image: mongo
     tag: 6.0.2
     digest: sha256:53c4915c2c13524007a84b472f8c0b0a3c4f889afcb014306b628b2e82d0b658
-  # STT
   stt-mongo:
     image: mongo
     tag: 6.0.2
@@ -110,16 +108,14 @@ databases:
     image: redis/redis-stack-server
     tag: 7.4.0-v8
     digest: sha256:75cb09fe427163df4ba306b8d9668ac6af75555d88e3145171bb0324a57b00c1
-  # Live
   live-postgres:
     image: postgres
     tag: 15-alpine
     digest: sha256:f6498f214984ab10ad90d839204a19effa2ad3aff15fbacd12e43cd8b527c5e5
   live-mosquitto:
     image: eclipse-mosquitto
-    tag: "2"
+    tag: '2'
     digest: sha256:8fb8eacf4054ce5f8c0c38d52e480d34c47b73ce9b36267361e7e39aba7d599c
-  # LLM
   llm-postgres:
     image: postgres
     tag: 15-alpine
