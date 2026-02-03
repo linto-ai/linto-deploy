@@ -64,37 +64,15 @@ class LintoVersions(BaseModel):
 class DatabaseVersions(BaseModel):
     """Database versions."""
 
-    # Studio
-    studio_mongo: ServiceVersion = Field(
-        default_factory=lambda: ServiceVersion(image="mongo", tag="6.0.2"),
-        alias="studio-mongo",
+    mongo: ServiceVersion = Field(default_factory=lambda: ServiceVersion(image="mongo", tag="6.0.2"))
+    postgres: ServiceVersion = Field(default_factory=lambda: ServiceVersion(image="postgres", tag="15-alpine"))
+    redis_stack_server: ServiceVersion = Field(
+        default_factory=lambda: ServiceVersion(image="redis/redis-stack-server", tag="latest"),
+        alias="redis-stack-server",
     )
-    # STT
-    stt_mongo: ServiceVersion = Field(
-        default_factory=lambda: ServiceVersion(image="mongo", tag="6.0.2"),
-        alias="stt-mongo",
-    )
-    stt_redis: ServiceVersion = Field(
-        default_factory=lambda: ServiceVersion(image="redis/redis-stack-server", tag="7.4.0-v8"),
-        alias="stt-redis",
-    )
-    # Live
-    live_postgres: ServiceVersion = Field(
-        default_factory=lambda: ServiceVersion(image="postgres", tag="15-alpine"),
-        alias="live-postgres",
-    )
-    live_mosquitto: ServiceVersion = Field(
+    eclipse_mosquitto: ServiceVersion = Field(
         default_factory=lambda: ServiceVersion(image="eclipse-mosquitto", tag="2"),
-        alias="live-mosquitto",
-    )
-    # LLM
-    llm_postgres: ServiceVersion = Field(
-        default_factory=lambda: ServiceVersion(image="postgres", tag="15-alpine"),
-        alias="llm-postgres",
-    )
-    llm_redis: ServiceVersion = Field(
-        default_factory=lambda: ServiceVersion(image="redis/redis-stack-server", tag="7.4.0-v8"),
-        alias="llm-redis",
+        alias="eclipse-mosquitto",
     )
 
     class Config:
@@ -240,13 +218,10 @@ class VersionsConfig(BaseModel):
                 "studio-plugins-transcriber": self.get_linto_tag("studio-plugins-transcriber"),
             },
             "databases": {
-                "studio-mongo": self.databases.studio_mongo.tag,
-                "stt-mongo": self.databases.stt_mongo.tag,
-                "stt-redis": self.databases.stt_redis.tag,
-                "live-postgres": self.databases.live_postgres.tag,
-                "live-mosquitto": self.databases.live_mosquitto.tag,
-                "llm-postgres": self.databases.llm_postgres.tag,
-                "llm-redis": self.databases.llm_redis.tag,
+                "mongo": self.databases.mongo.tag,
+                "postgres": self.databases.postgres.tag,
+                "redis-stack-server": self.databases.redis_stack_server.tag,
+                "eclipse-mosquitto": self.databases.eclipse_mosquitto.tag,
             },
             "llm": {
                 "vllm-openai": self.llm.vllm_openai.tag,

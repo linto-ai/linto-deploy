@@ -59,6 +59,7 @@ whisper:
     LANGUAGE: "*"
     CONCURRENCY: "2"
     BROKER_PASS: ""
+    SECURITY_LEVEL: "0"
   service:
     port: 80
   ingress:
@@ -86,6 +87,7 @@ whisperWorkers:
     DEVICE: cuda
     CONCURRENCY: "1"
     BROKER_PASS: ""
+    SECURITY_LEVEL: "0"
 
 # Diarization service
 # replicasPerGpu: same pattern as whisperWorkers

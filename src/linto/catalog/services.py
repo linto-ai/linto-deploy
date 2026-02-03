@@ -413,6 +413,7 @@ def _stt_whisper_service(
             # Model settings
             "ACCOUSTIC": "1",
             "MODEL_QUALITY": "1",
+            "SECURITY_LEVEL": "0",
             "MODEL_TYPE": "whisper",
             "DIARIZATION_DEFAULT": "false",
             "WEBSERVER_HTTP_PORT": "80",
@@ -455,6 +456,7 @@ def _stt_whisper_workers_service(
             "LANGUAGE": "*",
             "DEVICE": "cpu",
             "CONCURRENCY": "1",
+            "SECURITY_LEVEL": "0",
         },
     )
 

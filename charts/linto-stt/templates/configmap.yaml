@@ -20,6 +20,7 @@ data:
   GATEWAY_SERVICE_BASE_URL: "http://{{ include "linto-stt.gatewayHost" . }}"
   GATEWAY_PROXY_PATH: "/{{ .Values.whisper.env.SERVICE_NAME }}"
   MODEL_TYPE: "whisper"
+  SECURITY_LEVEL: {{ .Values.whisper.env.SECURITY_LEVEL | quote }}
 {{- end }}
 ---
 {{- if .Values.whisperWorkers.enabled }}
@@ -38,6 +39,7 @@ data:
   LANGUAGE: {{ .Values.whisperWorkers.env.LANGUAGE | quote }}
   DEVICE: {{ .Values.whisperWorkers.env.DEVICE | quote }}
   CONCURRENCY: {{ .Values.whisperWorkers.env.CONCURRENCY | quote }}
+  SECURITY_LEVEL: {{ .Values.whisperWorkers.env.SECURITY_LEVEL | quote }}
 {{- end }}
 ---
 {{- if .Values.diarization.enabled }}
