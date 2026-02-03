@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-01-30T08:51:42.677002+00:00
+# Last updated: 2026-02-03T06:52:15.198168+00:00
 
 platform_version: latest
 linto:
@@ -41,7 +41,7 @@ linto:
     tag: latest
     repo: https://github.com/linto-ai/linto-stt
     digest: sha256:7827e7a0f6c3c200c93eaec75f7a6cb3fa390eef1e77db1ba08401d617a49fda
-    commit: bf0aa2ecc3530df19d1d0dfdde6d2cd97b3f2368
+    commit: 39300d3ffc89aedd9c577360ca1b15b610059714
   linto-stt-whisper:
     image: lintoai/linto-stt-whisper
     tag: latest
