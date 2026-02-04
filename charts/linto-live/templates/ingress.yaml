@@ -6,16 +6,16 @@ metadata:
   labels:
     {{- include "linto-live.labels" . | nindent 4 }}
   annotations:
-    {{- if .Values.global.tls.enabled }}
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    {{- end }}
+    kubernetes.io/ingress.class: nginx
     {{- if and .Values.global.tls.enabled (eq .Values.global.tls.mode "acme") .Values.global.tls.createCertificate }}
     cert-manager.io/cluster-issuer: letsencrypt-prod
     {{- end }}
     {{- if .Values.sessionApi.ingress.stripPrefix }}
-    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "linto-live.fullname" . }}-strip-session-api@kubernetescrd
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
     {{- end }}
 spec:
+  ingressClassName: nginx
   {{- if .Values.global.tls.enabled }}
   tls:
     - hosts:
@@ -26,26 +26,18 @@ spec:
     - host: {{ .Values.global.domain }}
       http:
         paths:
+          {{- if .Values.sessionApi.ingress.stripPrefix }}
+          - path: {{ .Values.sessionApi.ingress.path }}(/|$)(.*)
+            pathType: ImplementationSpecific
+          {{- else }}
           - path: {{ .Values.sessionApi.ingress.path }}
             pathType: Prefix
+          {{- end }}
             backend:
               service:
                 name: {{ include "linto-live.fullname" . }}-session-api
                 port:
                   number: {{ .Values.sessionApi.service.port }}
-{{- end }}
----
-{{- if and .Values.sessionApi.enabled .Values.sessionApi.ingress.stripPrefix }}
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: {{ include "linto-live.fullname" . }}-strip-session-api
-  labels:
-    {{- include "linto-live.labels" . | nindent 4 }}
-spec:
-  stripPrefix:
-    prefixes:
-      - {{ .Values.sessionApi.ingress.path }}
 {{- end }}
 ---
 {{- if .Values.sessionTranscriber.enabled }}
@@ -56,14 +48,17 @@ metadata:
   labels:
     {{- include "linto-live.labels" . | nindent 4 }}
   annotations:
-    {{- if .Values.global.tls.enabled }}
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    {{- end }}
+    kubernetes.io/ingress.class: nginx
     {{- if and .Values.global.tls.enabled (eq .Values.global.tls.mode "acme") .Values.global.tls.createCertificate }}
     cert-manager.io/cluster-issuer: letsencrypt-prod
     {{- end }}
-    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "linto-live.fullname" . }}-strip-transcriber-ws@kubernetescrd
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
 spec:
+  ingressClassName: nginx
   {{- if .Values.global.tls.enabled }}
   tls:
     - hosts:
@@ -74,8 +69,8 @@ spec:
     - host: {{ .Values.global.domain }}
       http:
         paths:
-          - path: /transcriber-ws
-            pathType: Prefix
+          - path: /transcriber-ws(/|$)(.*)
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: {{ include "linto-live.fullname" . }}-session-transcriber
@@ -83,50 +78,14 @@ spec:
                   number: {{ .Values.sessionTranscriber.service.httpPort }}
 {{- end }}
 ---
-{{- if .Values.sessionTranscriber.enabled }}
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: {{ include "linto-live.fullname" . }}-strip-transcriber-ws
-  labels:
-    {{- include "linto-live.labels" . | nindent 4 }}
-spec:
-  stripPrefix:
-    prefixes:
-      - /transcriber-ws
-{{- end }}
----
 {{- if and .Values.sessionTranscriber.enabled .Values.sessionTranscriber.streaming.srt.enabled }}
-# IngressRouteUDP for SRT streaming (requires Traefik with srt entrypoint on 8889/udp)
-apiVersion: traefik.io/v1alpha1
-kind: IngressRouteUDP
-metadata:
-  name: {{ include "linto-live.fullname" . }}-transcriber-srt
-  labels:
-    {{- include "linto-live.labels" . | nindent 4 }}
-spec:
-  entryPoints:
-    - srt
-  routes:
-    - services:
-        - name: {{ include "linto-live.fullname" . }}-session-transcriber
-          port: {{ .Values.sessionTranscriber.service.srtPort }}
+# NOTE: SRT (UDP) streaming requires a separate LoadBalancer or NodePort service
+# NGINX Ingress does not support UDP natively. Use the service directly.
+# Service is exposed at port {{ .Values.sessionTranscriber.service.srtPort }}
 {{- end }}
 ---
 {{- if and .Values.sessionTranscriber.enabled .Values.sessionTranscriber.streaming.rtmp.enabled }}
-# IngressRouteTCP for RTMP streaming (requires Traefik with rtmp entrypoint on 1935/tcp)
-apiVersion: traefik.io/v1alpha1
-kind: IngressRouteTCP
-metadata:
-  name: {{ include "linto-live.fullname" . }}-transcriber-rtmp
-  labels:
-    {{- include "linto-live.labels" . | nindent 4 }}
-spec:
-  entryPoints:
-    - rtmp
-  routes:
-    - match: HostSNI(`*`)
-      services:
-        - name: {{ include "linto-live.fullname" . }}-session-transcriber
-          port: {{ .Values.sessionTranscriber.service.rtmpPort }}
+# NOTE: RTMP (TCP) streaming requires a separate LoadBalancer or NodePort service
+# Or configure nginx-ingress TCP/UDP ConfigMaps. Use the service directly.
+# Service is exposed at port {{ .Values.sessionTranscriber.service.rtmpPort }}
 {{- end }}

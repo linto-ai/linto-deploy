@@ -92,7 +92,7 @@ sessionTranscriber:
     httpPort: 8080
     srtPort: 8889
     rtmpPort: 1935
-  # Streaming protocols routing (requires Traefik with srt/rtmp entrypoints)
+  # Streaming protocols routing (requires LoadBalancer/NodePort services for UDP/TCP)
   streaming:
     srt:
       enabled: true   # IngressRouteUDP on port 8889
