@@ -66,10 +66,13 @@ whisper:
     path: /stt-all-whisper-v3-turbo
     stripPrefix: true
 
-# Whisper workers
+# GPU Workers (whisper-worker + diarization in same pod)
+# When both whisperWorkers and diarization are enabled, they run in the same pod
+# sharing a single GPU. This avoids GPU allocation conflicts without time-slicing.
+#
 # replicasPerGpu: list where index = GPU index, value = replicas on that GPU
-# Example: [1, 1] = 1 worker on GPU 0, 1 worker on GPU 1
-# Example: [2, 2, 1, 1] = 2 workers on GPU 0 & 1, 1 worker on GPU 2 & 3
+# Example: [1, 1] = 1 gpu-worker pod on GPU 0, 1 on GPU 1
+# Example: [2, 2, 1, 1] = 2 pods on GPU 0 & 1, 1 pod on GPU 2 & 3
 whisperWorkers:
   enabled: true
   replicasPerGpu: [1]  # Default: 1 worker on GPU 0 (single GPU setup)
@@ -90,7 +93,8 @@ whisperWorkers:
     SECURITY_LEVEL: "0"
 
 # Diarization service
-# replicasPerGpu: same pattern as whisperWorkers
+# When enabled with whisperWorkers, runs in the same pod sharing the GPU.
+# replicasPerGpu is ignored when combined with whisperWorkers (uses whisperWorkers.replicasPerGpu)
 diarization:
   enabled: true
   replicasPerGpu: [1]  # Default: 1 diarization on GPU 0 (single GPU setup)

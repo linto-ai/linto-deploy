@@ -76,7 +76,141 @@ spec:
           {{- end }}
 {{- end }}
 ---
-{{- if .Values.whisperWorkers.enabled }}
+{{- if and .Values.whisperWorkers.enabled .Values.diarization.enabled }}
+{{- /*
+  GPU Workers Pod: combines whisper-workers and diarization in the same pod
+  to share the same GPU without requiring time-slicing configuration.
+  Both containers run side by side and share nvidia.com/gpu: 1
+*/ -}}
+{{- range $gpuIndex, $replicas := .Values.whisperWorkers.replicasPerGpu }}
+{{- if gt (int $replicas) 0 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-stt.fullname" $ }}-gpu-workers-{{ $gpuIndex }}
+  labels:
+    {{- include "linto-stt.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: gpu-workers
+    gpu-index: "{{ $gpuIndex }}"
+spec:
+  replicas: {{ $replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-stt.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: gpu-workers
+      gpu-index: "{{ $gpuIndex }}"
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum }}
+      labels:
+        {{- include "linto-stt.selectorLabels" $ | nindent 8 }}
+        app.kubernetes.io/component: gpu-workers
+        gpu-index: "{{ $gpuIndex }}"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/component: gpu-workers
+                    gpu-index: "{{ $gpuIndex }}"
+                topologyKey: kubernetes.io/hostname
+      initContainers:
+        - name: fix-permissions
+          image: busybox:latest
+          command: ["sh", "-c", "chown -R 33:33 /var/www/.cache && chmod -R 775 /var/www/.cache && chown -R 33:33 /opt/audio && chmod -R 775 /opt/audio"]
+          volumeMounts:
+            - name: models-cache
+              mountPath: /var/www/.cache
+            - name: audio-shared
+              mountPath: /opt/audio
+          securityContext:
+            runAsUser: 0
+      containers:
+        # Whisper Worker container (requests GPU for the entire pod)
+        - name: whisper-worker
+          image: "{{ $.Values.whisperWorkers.image.repository }}:{{ $.Values.whisperWorkers.image.tag | default (include "linto-stt.imageTag" $) }}"
+          imagePullPolicy: {{ include "linto-stt.imagePullPolicy" $ }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-stt.fullname" $ }}-whisper-workers-config
+          env:
+            - name: BROKER_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-stt.fullname" $ }}-secrets
+                  key: redis-password
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: "{{ $gpuIndex }}"
+          volumeMounts:
+            - name: audio-shared
+              mountPath: /opt/audio
+            - name: models-cache
+              mountPath: /var/www/.cache
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+            requests:
+              {{- if $.Values.whisperWorkers.resources }}
+              {{- if $.Values.whisperWorkers.resources.requests }}
+              {{- toYaml $.Values.whisperWorkers.resources.requests | nindent 14 }}
+              {{- end }}
+              {{- end }}
+        # Diarization container (shares GPU with whisper-worker)
+        - name: diarization
+          image: "{{ $.Values.diarization.image.repository }}:{{ $.Values.diarization.image.tag | default (include "linto-stt.imageTag" $) }}"
+          imagePullPolicy: {{ include "linto-stt.imagePullPolicy" $ }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-stt.fullname" $ }}-diarization-config
+          env:
+            - name: BROKER_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-stt.fullname" $ }}-secrets
+                  key: redis-password
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: "{{ $gpuIndex }}"
+          volumeMounts:
+            - name: audio-shared
+              mountPath: /opt/audio
+            - name: models-cache
+              mountPath: /var/www/.cache
+          resources:
+            requests:
+              {{- if $.Values.diarization.resources }}
+              {{- if $.Values.diarization.resources.requests }}
+              {{- toYaml $.Values.diarization.resources.requests | nindent 14 }}
+              {{- end }}
+              {{- end }}
+      # Single GPU allocation for the entire pod (shared by both containers)
+      # Note: GPU resources are defined at pod level via the first container that needs it
+      # Kubernetes will allocate 1 GPU to the pod, accessible by all containers
+      volumes:
+        - name: audio-shared
+          {{- if $.Values.global.storage.files.hostPath }}
+          hostPath:
+            path: {{ $.Values.global.storage.files.hostPath }}/stt-audio
+            type: DirectoryOrCreate
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: models-cache
+          {{- if $.Values.global.storage.files.hostPath }}
+          hostPath:
+            path: {{ $.Values.global.storage.files.hostPath }}/models-cache
+            type: DirectoryOrCreate
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}
+{{- end }}
+{{- else if .Values.whisperWorkers.enabled }}
+{{- /* Whisper workers only (no diarization) */ -}}
 {{- range $gpuIndex, $replicas := .Values.whisperWorkers.replicasPerGpu }}
 {{- if gt (int $replicas) 0 }}
 ---
@@ -171,9 +305,8 @@ spec:
           {{- end }}
 {{- end }}
 {{- end }}
-{{- end }}
----
-{{- if .Values.diarization.enabled }}
+{{- else if .Values.diarization.enabled }}
+{{- /* Diarization only (no whisper workers) */ -}}
 {{- range $gpuIndex, $replicas := .Values.diarization.replicasPerGpu }}
 {{- if gt (int $replicas) 0 }}
 ---
