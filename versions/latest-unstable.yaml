@@ -107,22 +107,34 @@ linto:
     digest: sha256:3b5176d393263f0b0c308c47d8f6383178365b729fbb6c3654ae1b17a1665be1
     commit: 6d72eaf3faa29cc10115ca0bab98a3d4025e2694
 databases:
-  mongo:
+  studio-mongo:
     image: mongo
     tag: 6.0.2
     digest: sha256:53c4915c2c13524007a84b472f8c0b0a3c4f889afcb014306b628b2e82d0b658
-  postgres:
-    image: postgres
-    tag: 15-alpine
-    digest: sha256:f6498f214984ab10ad90d839204a19effa2ad3aff15fbacd12e43cd8b527c5e5
-  redis-stack-server:
+  stt-mongo:
+    image: mongo
+    tag: 6.0.2
+    digest: sha256:53c4915c2c13524007a84b472f8c0b0a3c4f889afcb014306b628b2e82d0b658
+  stt-redis:
     image: redis/redis-stack-server
     tag: latest
     digest: sha256:75cb09fe427163df4ba306b8d9668ac6af75555d88e3145171bb0324a57b00c1
-  eclipse-mosquitto:
+  live-postgres:
+    image: postgres
+    tag: 15-alpine
+    digest: sha256:f6498f214984ab10ad90d839204a19effa2ad3aff15fbacd12e43cd8b527c5e5
+  live-mosquitto:
     image: eclipse-mosquitto
     tag: '2'
     digest: sha256:8fb8eacf4054ce5f8c0c38d52e480d34c47b73ce9b36267361e7e39aba7d599c
+  llm-postgres:
+    image: postgres
+    tag: 15-alpine
+    digest: sha256:f6498f214984ab10ad90d839204a19effa2ad3aff15fbacd12e43cd8b527c5e5
+  llm-redis:
+    image: redis/redis-stack-server
+    tag: latest
+    digest: sha256:75cb09fe427163df4ba306b8d9668ac6af75555d88e3145171bb0324a57b00c1
 llm:
   vllm-openai:
     image: vllm/vllm-openai
