@@ -81,6 +81,13 @@ class ProfileConfig(BaseModel):
     kyutai_gpu_architecture: GPUArchitecture | None = Field(default=None)
     session_transcriber_replicas: int = Field(default=2, ge=1)
 
+    # Translator (external translation service)
+    translator_enabled: bool = Field(default=False)
+    translator_name: str | None = Field(default="gemma")
+    translator_provider: str | None = Field(default="translategemma")
+    translator_endpoint: str | None = Field(default=None)
+    translator_model: str | None = Field(default="Infomaniak-AI/vllm-translategemma-4b-it")
+
     # LLM
     llm_enabled: bool = Field(default=False)
     openai_api_base: str | None = Field(default=None)
