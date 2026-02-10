@@ -205,8 +205,9 @@ spec:
             - name: http
               containerPort: 3000
               protocol: TCP
-          # No environment variables needed - basePath is baked into Docker image (/llm-admin)
-          # and API/WS URLs are auto-detected from window.location at runtime
+          env:
+            - name: BASE_PATH
+              value: "/llm-admin"
           resources:
             {{- toYaml .Values.llmGatewayFrontend.resources | nindent 12 }}
 {{- end }}
