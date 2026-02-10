@@ -91,10 +91,10 @@ linto:
     commit: 5848515241015acb0b594ce4e633341621581715
   studio-plugins-transcriber:
     image: lintoai/studio-plugins-transcriber
-    tag: wip-translation
+    tag: 1.0.0
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:beed5417a23c787e611162e3d426a0e285554e9dd8a52e10e2323b153c223a83
-    commit: 5848515241015acb0b594ce4e633341621581715
+    digest: sha256:9f6343ada8cd2bad9386e3b8a80a9a848a25e1b77aa591f6f058c23121dfa0ba
+    commit: 52b750fd0218d535c834b50fd0b52baf0f3bfe23
 databases:
   studio-mongo:
     image: mongo
