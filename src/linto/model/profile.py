@@ -72,6 +72,9 @@ class ProfileConfig(BaseModel):
     studio_enabled: bool = Field(default=True)
     stt_enabled: bool = Field(default=True)
 
+    # STT settings
+    security_level: str = Field(default="0")
+
     # Live Session
     live_session_enabled: bool = Field(default=False)
     streaming_stt_variants: list[StreamingSTTVariant] = Field(default_factory=list)
