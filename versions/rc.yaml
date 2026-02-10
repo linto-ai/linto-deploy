@@ -85,10 +85,10 @@ linto:
     commit: 5848515241015acb0b594ce4e633341621581715
   studio-plugins-scheduler:
     image: lintoai/studio-plugins-scheduler
-    tag: wip-translation
+    tag: 1.0.0
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:a1ad88634ad6e4fad2714f4dca347e77d0b114a3b2596077d2704bb72554501c
-    commit: 5848515241015acb0b594ce4e633341621581715
+    digest: sha256:f750e6501f7c77d1e6fcef8c5a6d3ffcbad3307c001f062689038326f28461f7
+    commit: 52b750fd0218d535c834b50fd0b52baf0f3bfe23
   studio-plugins-transcriber:
     image: lintoai/studio-plugins-transcriber
     tag: 1.0.0
