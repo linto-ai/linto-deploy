@@ -8,10 +8,10 @@ linto:
     commit: 781612a0a79d848b813a46325f5048cbc952ffdc
   studio-frontend:
     image: lintoai/studio-frontend
-    tag: 1.7.0
+    tag: wip-translation
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:8e201092357fdfe2b2ff52c9bfeda4a7915a5801558485565a4aca699b9773b8
-    commit: ea218201769ffb31dbcf9c17e6318c06c4499529
+    digest: sha256:0503669a3d4a74bda131b9b649b0f9a24309a443e6d749631d9fbb10cf6baa16
+    commit: 781612a0a79d848b813a46325f5048cbc952ffdc
   studio-websocket:
     image: lintoai/studio-websocket
     tag: 1.7.0
