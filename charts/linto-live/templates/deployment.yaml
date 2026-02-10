@@ -314,6 +314,39 @@ spec:
             {{- toYaml .Values.broker.resources | nindent 12 }}
 {{- end }}
 ---
+{{- if .Values.translator.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-live.fullname" . }}-translator
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: translator
+spec:
+  replicas: {{ .Values.translator.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-live.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: translator
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "linto-live.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: translator
+    spec:
+      containers:
+        - name: translator
+          image: "{{ .Values.translator.image.repository }}:{{ .Values.translator.image.tag | default (include "linto-live.imageTag" .) }}"
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-live.fullname" . }}-translator-config
+          resources:
+            {{- toYaml .Values.translator.resources | nindent 12 }}
+{{- end }}
+---
 {{/* Streaming STT services */}}
 {{- if .Values.streamingStt.whisper.enabled }}
 apiVersion: apps/v1

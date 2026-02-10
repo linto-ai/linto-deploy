@@ -1107,6 +1107,20 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
                 "limits": {},
             },
         },
+        "translator": {
+            "enabled": profile.translator_enabled,
+            "replicas": 1,
+            "image": {
+                "tag": get_service_tag(profile, "studio-plugins-translator"),
+            },
+            "env": {
+                "TRANSLATOR_NAME": profile.translator_name or "gemma",
+                "TRANSLATION_PROVIDER": profile.translator_provider or "translategemma",
+                "TRANSLATEGEMMA_ENDPOINT": profile.translator_endpoint or "",
+                "TRANSLATEGEMMA_MODEL": profile.translator_model or "Infomaniak-AI/vllm-translategemma-4b-it",
+                "PARTIAL_DEBOUNCE_MS": "300",
+            },
+        },
         "streamingStt": {},
     }
 
