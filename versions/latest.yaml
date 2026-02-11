@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-02-10T07:04:17.010252+00:00
+# Last updated: 2026-02-11T07:00:50.288757+00:00
 
 platform_version: latest
 linto:
@@ -22,7 +22,7 @@ linto:
     image: lintoai/studio-frontend
     tag: latest
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:8e201092357fdfe2b2ff52c9bfeda4a7915a5801558485565a4aca699b9773b8
+    digest: sha256:0e61707fa47c0ca1d661c6abafebc93dad7fd7972dfb476665f721321828f25e
     commit: ea218201769ffb31dbcf9c17e6318c06c4499529
   studio-websocket:
     image: lintoai/studio-websocket
@@ -34,8 +34,8 @@ linto:
     image: lintoai/linto-api-gateway
     tag: latest
     repo: https://github.com/linto-ai/linto-api-gateway
-    digest: sha256:50a900c3057f67d13b892c961eaf6202414b9a42fd871d33fc9d33a32749909c
-    commit: 9f05b593f2cb9107581cc4a6fc09581d662d2afc
+    digest: sha256:629b089d1f10e7852c8495e08f86da3cef65b3614777c33e7b7dfeffdac1c2eb
+    commit: 871221562d38a47291d263c0088a38448f64ccf9
   linto-transcription-service:
     image: lintoai/linto-transcription-service
     tag: latest
@@ -86,19 +86,19 @@ linto:
     image: lintoai/studio-plugins-migration
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:996456d31b17bb391f9702434c2a370d4204fc8fc097b1e8b7b47a43b965ba7f
+    digest: sha256:273349b3df02a9ef4ec87154a06357c4de8cf88934ef8a4086d22a29b2cf3f76
     commit: 52b750fd0218d535c834b50fd0b52baf0f3bfe23
   studio-plugins-sessionapi:
     image: lintoai/studio-plugins-sessionapi
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:b017f8e4d0d25635a59502d325027f5b72a2bad11f720b684434f7c60ce46dd6
+    digest: sha256:5f2137728274933fea7db1c66b729933721a542f87b25897cec8fc505be4dd15
     commit: 52b750fd0218d535c834b50fd0b52baf0f3bfe23
   studio-plugins-scheduler:
     image: lintoai/studio-plugins-scheduler
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:daaf7dadf427da5d3a0a3b9165b5a66d7ae4021bd56add4de12ba65f40376870
+    digest: sha256:f750e6501f7c77d1e6fcef8c5a6d3ffcbad3307c001f062689038326f28461f7
     commit: 52b750fd0218d535c834b50fd0b52baf0f3bfe23
   studio-plugins-transcriber:
     image: lintoai/studio-plugins-transcriber
