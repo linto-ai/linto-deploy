@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-02-18T07:01:39.631616+00:00
+# Last updated: 2026-02-19T07:00:20.420183+00:00
 
 platform_version: latest-unstable
 linto:
@@ -40,7 +40,7 @@ linto:
     image: lintoai/linto-transcription-service
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:3dc6995aa81bca58dcd8bb5a8e20461ad38b9833d6f675fa07ef1af490b69181
+    digest: sha256:30fb29b1d3d822fb1338f595b564c5750f4a8f9f5474c5e77728f1d523aac6a3
     commit: 76c1c32abb7edf9c33cdb46c106f58193045d660
   linto-stt-whisper:
     image: lintoai/linto-stt-whisper
@@ -52,8 +52,8 @@ linto:
     image: lintoai/linto-diarization-pyannote
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-diarization
-    digest: sha256:bb34d7853233e27e2312678ab31bea0ef0c7ca7c1789adba1b7eaf0e19c9bc9e
-    commit: ab39797b5c106e8db6acefce4e2a4167e1043a24
+    digest: sha256:c671a3292252d3960f97120c8422c5825ef4b2e7ef6a204ad5408d1359a80a90
+    commit: 360a0b0f9ae2facb7b81ba8b9f09fa1ef8a4ce3d
   linto-stt-kaldi:
     image: lintoai/linto-stt-kaldi
     tag: latest-unstable
