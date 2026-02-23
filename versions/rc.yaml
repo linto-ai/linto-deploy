@@ -53,7 +53,7 @@ linto:
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-stt
     digest: sha256:ec6debe093d01acc312bddb71b553b400b442127677c257ff6dce33876ba8be3
-    commit: 6a965674decb4a72b938c70df918c3d7e9af299c
+    commit: a3654077514c23d56c65d5324defe90092daa2ff
   kyutai-moshi-stt-server-cuda:
     image: lintoai/kyutai-moshi-stt-server-cuda
     tag: 0.1.0
