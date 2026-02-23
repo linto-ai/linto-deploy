@@ -44,10 +44,10 @@ linto:
     commit: 360a0b0f9ae2facb7b81ba8b9f09fa1ef8a4ce3d
   linto-stt-kaldi:
     image: lintoai/linto-stt-kaldi
-    tag: 1.1.0
+    tag: latest-unstable
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:fc23ba531d5b0f7b9012c9260892a6caff6dea15c4961a245fa0f196c2e48861
-    commit: 76c1c32abb7edf9c33cdb46c106f58193045d660
+    digest: sha256:9103127be4a5b825a3d3246d7b9617bc843e5e3a4acf87ab14d6710dbdecc94b
+    commit: 6a965674decb4a72b938c70df918c3d7e9af299c
   linto-stt-nemo:
     image: lintoai/linto-stt-nemo
     tag: latest-unstable
