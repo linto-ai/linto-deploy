@@ -26,10 +26,10 @@ linto:
     commit: 871221562d38a47291d263c0088a38448f64ccf9
   linto-transcription-service:
     image: lintoai/linto-transcription-service
-    tag: 1.3.1
+    tag: 1.4.0
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:305b9cc94d2a38f6a348a3266957aa428f8f4dd4e870b901e9b9390ade3b447f
-    commit: 0dd327fbef9139762284282cd1ffe85b6dac8895
+    digest: sha256:30fb29b1d3d822fb1338f595b564c5750f4a8f9f5474c5e77728f1d523aac6a3
+    commit: c067c956cf2041c7556bec8255d54fe3798cab75
   linto-stt-whisper:
     image: lintoai/linto-stt-whisper
     tag: 1.0.7
