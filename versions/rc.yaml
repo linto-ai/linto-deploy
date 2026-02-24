@@ -50,10 +50,10 @@ linto:
     commit: fccb44ee0b8f436f8d605b08ceb6c73f6c6d6055
   linto-stt-nemo:
     image: lintoai/linto-stt-nemo
-    tag: latest-unstable
+    tag: 2.0.0
     repo: https://github.com/linto-ai/linto-stt
     digest: sha256:341f0074318b8c96fe499a6f6842122018ae0d9f6c4c43feb11b8a4ecc53588d
-    commit: fccb44ee0b8f436f8d605b08ceb6c73f6c6d6055
+    commit: f4c60796506e2ac7e653f2109271c7cca82d6bd5
   kyutai-moshi-stt-server-cuda:
     image: lintoai/kyutai-moshi-stt-server-cuda
     tag: 0.1.0
