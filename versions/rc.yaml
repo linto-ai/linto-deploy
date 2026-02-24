@@ -32,10 +32,10 @@ linto:
     commit: c067c956cf2041c7556bec8255d54fe3798cab75
   linto-stt-whisper:
     image: lintoai/linto-stt-whisper
-    tag: latest-unstable
+    tag: 2.0.0
     repo: https://github.com/linto-ai/linto-stt
     digest: sha256:63d09c5ed01fc8cf00e448b4d06c7273773257a1ede60f1a49e423ef8df094c7
-    commit: 13667245792069c3f8e874e14c75ca906393fd89
+    commit: ada4b36ac4f87b8eaec6d3a0d6e821a29316c508
   linto-diarization-pyannote:
     image: lintoai/linto-diarization-pyannote
     tag: 2.1.0
