@@ -1,17 +1,17 @@
-platform_version: RC-2026.02.03-rc1
+platform_version: 180-260226-Accentor
 linto:
   studio-api:
     image: lintoai/studio-api
     tag: 1.8.0
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:a59dc8e58f11c6497fb77f06824f8cee85b2495bb6bd4825b08f04ee521812e0
-    commit: bf4f0d29528616c8128f75766296ac746e0ed192
+    digest: sha256:87e777cfb788eedefb2835e0ef62fad8f4cfa305ae73a334544a2f4f0a09bf2f
+    commit: ccd0ced43f5fcdc00da6d9c838e0a19f1700c63a
   studio-frontend:
     image: lintoai/studio-frontend
     tag: 1.8.0
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:05af5bd1927f860df6e101407bf8695ad21688cffbb03b288d0c615ec274b285
-    commit: bf4f0d29528616c8128f75766296ac746e0ed192
+    digest: sha256:9bb73055bc63ca63b6516f31303f4596d5c73503eb620b1a1ab7a33cf9db0893
+    commit: f870d9e886db74fabc4da411ac1a455510a92415
   studio-websocket:
     image: lintoai/studio-websocket
     tag: 1.8.0
@@ -81,20 +81,20 @@ linto:
     image: lintoai/studio-plugins-sessionapi
     tag: 1.1.0
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:78bea64bcbf397cac01fd1fd191cebeb2421813406490573516cf0fffef8ef56
-    commit: 3e1db955fe55b6c5ddca7e5f0a530139ceede689
+    digest: sha256:efd28e1ad8f6bde7e22b6aea077e8f46c9996b72d2a95be6757fc19cd84d89ed
+    commit: 70edc2a0b0343449e3bffe2892c2e0df81614186
   studio-plugins-scheduler:
     image: lintoai/studio-plugins-scheduler
     tag: 1.1.0
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:e4a0514e38b28df07f704250348fbcb543a1abec8c41961ccc7c502d94255d31
-    commit: 3e1db955fe55b6c5ddca7e5f0a530139ceede689
+    digest: sha256:3ae7bdbd9641edbc72443338f56ecb661cc5e814f185e7dd42caea25e6d404b1
+    commit: 70edc2a0b0343449e3bffe2892c2e0df81614186
   studio-plugins-transcriber:
     image: lintoai/studio-plugins-transcriber
     tag: 1.1.0
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:0278a0b05a5338cd3fd2d5c61109cd6393415b29766b88a51e59eb21a6cbfb20
-    commit: 3e1db955fe55b6c5ddca7e5f0a530139ceede689
+    digest: sha256:65c1c858f2e8b5782dc2e8ba53c9be5f6bd9e019d8d1c4b615c935e4a79c2124
+    commit: 70edc2a0b0343449e3bffe2892c2e0df81614186
 databases:
   studio-mongo:
     image: mongo
@@ -114,7 +114,7 @@ databases:
     digest: sha256:f6498f214984ab10ad90d839204a19effa2ad3aff15fbacd12e43cd8b527c5e5
   live-mosquitto:
     image: eclipse-mosquitto
-    tag: '2'
+    tag: "2"
     digest: sha256:8fb8eacf4054ce5f8c0c38d52e480d34c47b73ce9b36267361e7e39aba7d599c
   llm-postgres:
     image: postgres
