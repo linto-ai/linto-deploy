@@ -93,8 +93,8 @@ linto:
     image: lintoai/studio-plugins-transcriber
     tag: 1.1.0
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:0278a0b05a5338cd3fd2d5c61109cd6393415b29766b88a51e59eb21a6cbfb20
-    commit: 3e1db955fe55b6c5ddca7e5f0a530139ceede689
+    digest: sha256:65c1c858f2e8b5782dc2e8ba53c9be5f6bd9e019d8d1c4b615c935e4a79c2124
+    commit: 70edc2a0b0343449e3bffe2892c2e0df81614186
 databases:
   studio-mongo:
     image: mongo
