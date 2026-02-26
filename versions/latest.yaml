@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-02-25T07:02:11.133327+00:00
+# Last updated: 2026-02-26T07:00:13.525252+00:00
 
 platform_version: latest
 linto:
@@ -16,20 +16,20 @@ linto:
     image: lintoai/studio-api
     tag: latest
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:a59dc8e58f11c6497fb77f06824f8cee85b2495bb6bd4825b08f04ee521812e0
-    commit: bf4f0d29528616c8128f75766296ac746e0ed192
+    digest: sha256:87e777cfb788eedefb2835e0ef62fad8f4cfa305ae73a334544a2f4f0a09bf2f
+    commit: ccd0ced43f5fcdc00da6d9c838e0a19f1700c63a
   studio-frontend:
     image: lintoai/studio-frontend
     tag: latest
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:05af5bd1927f860df6e101407bf8695ad21688cffbb03b288d0c615ec274b285
-    commit: bf4f0d29528616c8128f75766296ac746e0ed192
+    digest: sha256:40c1df93198cc11b68a0f5a9c3241a47121cd249b0b33f655f05b9c75f0f2929
+    commit: ccd0ced43f5fcdc00da6d9c838e0a19f1700c63a
   studio-websocket:
     image: lintoai/studio-websocket
     tag: latest
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:b7682efc4740159d6cabaa7057becc11d32f3eebe3f03be87e2b6a9bd5a6c7b3
-    commit: bf4f0d29528616c8128f75766296ac746e0ed192
+    digest: sha256:4112fd2e4e6051f16120ea9939fab824eb8093ea8625916fefcc07df01ff82ac
+    commit: ccd0ced43f5fcdc00da6d9c838e0a19f1700c63a
   linto-api-gateway:
     image: lintoai/linto-api-gateway
     tag: latest
@@ -131,4 +131,4 @@ llm:
   vllm-openai:
     image: vllm/vllm-openai
     tag: latest
-    digest: sha256:259f51147fcc947d8469934546b8b83a6067e452ade534f77a8ac51463e3ce29
+    digest: sha256:72f4b38dbc30bdf4b7ad22811b14c2d05b3da0d0c8a6c0ca0cbac2ec859f945b
