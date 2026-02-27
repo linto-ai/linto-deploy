@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-02-26T07:00:13.525252+00:00
+# Last updated: 2026-02-27T06:54:22.994372+00:00
 
 platform_version: latest
 linto:
@@ -22,8 +22,8 @@ linto:
     image: lintoai/studio-frontend
     tag: latest
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:40c1df93198cc11b68a0f5a9c3241a47121cd249b0b33f655f05b9c75f0f2929
-    commit: ccd0ced43f5fcdc00da6d9c838e0a19f1700c63a
+    digest: sha256:9bb73055bc63ca63b6516f31303f4596d5c73503eb620b1a1ab7a33cf9db0893
+    commit: f870d9e886db74fabc4da411ac1a455510a92415
   studio-websocket:
     image: lintoai/studio-websocket
     tag: latest
@@ -87,25 +87,25 @@ linto:
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:98393c74bdbaec7faaee3f9709f1f7fbbf9535a24638484891495a307ca6bb0d
-    commit: 3e1db955fe55b6c5ddca7e5f0a530139ceede689
+    commit: 70edc2a0b0343449e3bffe2892c2e0df81614186
   studio-plugins-sessionapi:
     image: lintoai/studio-plugins-sessionapi
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:78bea64bcbf397cac01fd1fd191cebeb2421813406490573516cf0fffef8ef56
-    commit: 3e1db955fe55b6c5ddca7e5f0a530139ceede689
+    digest: sha256:efd28e1ad8f6bde7e22b6aea077e8f46c9996b72d2a95be6757fc19cd84d89ed
+    commit: 70edc2a0b0343449e3bffe2892c2e0df81614186
   studio-plugins-scheduler:
     image: lintoai/studio-plugins-scheduler
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:e4a0514e38b28df07f704250348fbcb543a1abec8c41961ccc7c502d94255d31
-    commit: 3e1db955fe55b6c5ddca7e5f0a530139ceede689
+    digest: sha256:3ae7bdbd9641edbc72443338f56ecb661cc5e814f185e7dd42caea25e6d404b1
+    commit: 70edc2a0b0343449e3bffe2892c2e0df81614186
   studio-plugins-transcriber:
     image: lintoai/studio-plugins-transcriber
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:0278a0b05a5338cd3fd2d5c61109cd6393415b29766b88a51e59eb21a6cbfb20
-    commit: 3e1db955fe55b6c5ddca7e5f0a530139ceede689
+    digest: sha256:65c1c858f2e8b5782dc2e8ba53c9be5f6bd9e019d8d1c4b615c935e4a79c2124
+    commit: 70edc2a0b0343449e3bffe2892c2e0df81614186
 databases:
   studio-mongo:
     image: mongo
@@ -122,7 +122,7 @@ databases:
   live-postgres:
     image: postgres
     tag: 15-alpine
-    digest: sha256:f93ddcbeeaf7cd05cc2d764f6d29a3501fe820c6abe1997e31ce967f277ed984
+    digest: sha256:79e73c0029e3a99b462253bba85352c6e748b93b9ffc5818ac0326cdbed62e76
   live-mosquitto:
     image: eclipse-mosquitto
     tag: '2'
