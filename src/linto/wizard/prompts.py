@@ -60,12 +60,12 @@ def prompt_k3s_host_paths() -> tuple[str | None, str | None]:
 
     db_path = Prompt.ask(
         "[cyan]Database path on host[/cyan]",
-        default="/home/ubuntu/linto/databases",
+        default="/home/ubuntu/databases",
     )
 
     files_path = Prompt.ask(
         "[cyan]Shared files path (NFS mount)[/cyan]",
-        default="/data/linto",
+        default="/home/ubuntu/data/linto",
     )
 
     return (
