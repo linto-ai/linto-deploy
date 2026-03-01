@@ -854,6 +854,8 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
         values["studioApi"]["env"]["GATEWAY_SERVICES"] = "http://linto-stt-api-gateway:80"
     if profile.llm_enabled:
         values["studioApi"]["env"]["LLM_GATEWAY_SERVICES"] = "http://linto-llm-llm-api:80"
+        if profile.llm_chat_service_id:
+            values["studioApi"]["env"]["LLM_CHAT_SERVICE_ID"] = profile.llm_chat_service_id
 
     if profile.k3s_storage_class:
         values["mongodb"]["persistence"]["storageClass"] = profile.k3s_storage_class

@@ -43,6 +43,7 @@ studioApi:
     DB_NAME: conversations
     WEBSERVER_HTTP_PORT: "80"
     NODE_ENV: production
+    EXPRESS_SIZE_FILE_MAX: "500mb"
     # Secrets - should be overridden
     CM_JWT_SECRET: ""
     CM_REFRESH_SECRET: ""
