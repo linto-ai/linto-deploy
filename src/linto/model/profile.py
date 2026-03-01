@@ -90,6 +90,7 @@ class ProfileConfig(BaseModel):
 
     # LLM
     llm_enabled: bool = Field(default=False)
+    llm_chat_service_id: str | None = Field(default=None)
     openai_api_base: str | None = Field(default=None)
     openai_api_token: str | None = Field(default=None)
     vllm_enabled: bool = Field(default=False)
