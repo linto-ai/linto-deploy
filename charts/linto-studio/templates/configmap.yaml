@@ -21,11 +21,15 @@ data:
   BROKER_PORT: "1883"
   BROKER_PROTOCOL: "mqtt"
   BROKER_KEEPALIVE: "60"
+  EXPRESS_SIZE_FILE_MAX: {{ .Values.studioApi.env.EXPRESS_SIZE_FILE_MAX | default "500mb" | quote }}
   {{- if .Values.studioApi.env.GATEWAY_SERVICES }}
   GATEWAY_SERVICES: {{ .Values.studioApi.env.GATEWAY_SERVICES | quote }}
   {{- end }}
   {{- if .Values.studioApi.env.LLM_GATEWAY_SERVICES }}
   LLM_GATEWAY_SERVICES: {{ .Values.studioApi.env.LLM_GATEWAY_SERVICES | quote }}
+  {{- end }}
+  {{- if .Values.studioApi.env.LLM_CHAT_SERVICE_ID }}
+  LLM_CHAT_SERVICE_ID: {{ .Values.studioApi.env.LLM_CHAT_SERVICE_ID | quote }}
   {{- end }}
   {{- /* SMTP Configuration - only if SMTP_HOST is set */ -}}
   {{- if .Values.studioApi.env.SMTP_HOST }}
