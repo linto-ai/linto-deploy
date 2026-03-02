@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-03-01T06:45:56.148756+00:00
+# Last updated: 2026-03-02T06:58:10.856590+00:00
 
 platform_version: latest-unstable
 linto:
@@ -16,14 +16,14 @@ linto:
     image: lintoai/studio-api
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:fc22330b6b350273c5158739cafce6ef330905f196fa4f80066b7e6e50ed60c5
+    digest: sha256:f8160b2a1070ef8b147f931429b0a91e01b7a79914b8f69c4283f52631033195
     commit: f870d9e886db74fabc4da411ac1a455510a92415
   studio-frontend:
     image: lintoai/studio-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:9bb73055bc63ca63b6516f31303f4596d5c73503eb620b1a1ab7a33cf9db0893
-    commit: 4fcb73e48302735598a7545769d87e42cdc7aaef
+    digest: sha256:3083150e766a19f8363d4e2c891c0147333231113c2de4fddbb05c6b83c381d3
+    commit: f870d9e886db74fabc4da411ac1a455510a92415
   studio-websocket:
     image: lintoai/studio-websocket
     tag: latest-unstable
@@ -74,13 +74,13 @@ linto:
     image: lintoai/llm-gateway
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:b2cb0563954f16e2424a5d6cfcf9aafaba50aec0f10b21a7744ea7462078b0fe
+    digest: sha256:c24a4e9e8a7b3174446f1f9ec5831667b588008b4ef4aa35f5e4f1798a60e4c0
     commit: 2e2c7a0dc8074c3f94d25744c8e29a0af53c00e4
   llm-gateway-frontend:
     image: lintoai/llm-gateway-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:ae0c18163d7c26350e6dfdb252ec912242890dfc4b743b510ff9b25ced93b790
+    digest: sha256:3f4057ccc5cd8f114ee5b0f9f8fb30df1cecb39b27302e6f0723d9feb4a2b38a
     commit: 2e2c7a0dc8074c3f94d25744c8e29a0af53c00e4
   studio-plugins-migration:
     image: lintoai/studio-plugins-migration
