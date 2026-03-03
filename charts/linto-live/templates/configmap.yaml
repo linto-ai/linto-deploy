@@ -85,3 +85,22 @@ data:
   LOG_FORMAT: text
   LOG_LEVEL: debug
 {{- end }}
+---
+{{- if .Values.translator.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "linto-live.fullname" . }}-translator-config
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: translator
+data:
+  BROKER_HOST: {{ include "linto-live.brokerHost" . | quote }}
+  BROKER_PORT: "1883"
+  TRANSLATOR_NAME: {{ .Values.translator.env.TRANSLATOR_NAME | quote }}
+  TRANSLATION_PROVIDER: {{ .Values.translator.env.TRANSLATION_PROVIDER | quote }}
+  TRANSLATEGEMMA_ENDPOINT: {{ .Values.translator.env.TRANSLATEGEMMA_ENDPOINT | quote }}
+  TRANSLATEGEMMA_MODEL: {{ .Values.translator.env.TRANSLATEGEMMA_MODEL | quote }}
+  PARTIAL_DEBOUNCE_MS: {{ .Values.translator.env.PARTIAL_DEBOUNCE_MS | quote }}
+  LOG_LEVEL: debug
+{{- end }}

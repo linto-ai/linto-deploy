@@ -1,4 +1,4 @@
-platform_version: RC-2026.02.03-rc1
+platform_version: 180-260226-Accentor
 linto:
   studio-api:
     image: lintoai/studio-api
@@ -114,7 +114,7 @@ databases:
     digest: sha256:f6498f214984ab10ad90d839204a19effa2ad3aff15fbacd12e43cd8b527c5e5
   live-mosquitto:
     image: eclipse-mosquitto
-    tag: '2'
+    tag: "2"
     digest: sha256:8fb8eacf4054ce5f8c0c38d52e480d34c47b73ce9b36267361e7e39aba7d599c
   llm-postgres:
     image: postgres

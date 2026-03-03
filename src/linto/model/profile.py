@@ -72,14 +72,25 @@ class ProfileConfig(BaseModel):
     studio_enabled: bool = Field(default=True)
     stt_enabled: bool = Field(default=True)
 
+    # STT settings
+    security_level: str = Field(default="0")
+
     # Live Session
     live_session_enabled: bool = Field(default=False)
     streaming_stt_variants: list[StreamingSTTVariant] = Field(default_factory=list)
     kyutai_gpu_architecture: GPUArchitecture | None = Field(default=None)
     session_transcriber_replicas: int = Field(default=2, ge=1)
 
+    # Translator (external translation service)
+    translator_enabled: bool = Field(default=False)
+    translator_name: str | None = Field(default="gemma")
+    translator_provider: str | None = Field(default="translategemma")
+    translator_endpoint: str | None = Field(default=None)
+    translator_model: str | None = Field(default="Infomaniak-AI/vllm-translategemma-4b-it")
+
     # LLM
     llm_enabled: bool = Field(default=False)
+    llm_chat_service_id: str | None = Field(default=None)
     openai_api_base: str | None = Field(default=None)
     openai_api_token: str | None = Field(default=None)
     vllm_enabled: bool = Field(default=False)

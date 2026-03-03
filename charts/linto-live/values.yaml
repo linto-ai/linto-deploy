@@ -134,6 +134,27 @@ broker:
   service:
     port: 1883
 
+# Translator (external translation via TranslateGemma)
+translator:
+  enabled: false
+  replicas: 1
+  image:
+    repository: lintoai/studio-plugins-translator
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: "2"
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  env:
+    TRANSLATOR_NAME: gemma
+    TRANSLATION_PROVIDER: translategemma
+    TRANSLATEGEMMA_ENDPOINT: ""
+    TRANSLATEGEMMA_MODEL: "Infomaniak-AI/vllm-translategemma-4b-it"
+    PARTIAL_DEBOUNCE_MS: "300"
+
 # Streaming STT variants
 streamingStt:
   whisper:

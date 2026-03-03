@@ -695,7 +695,7 @@ def get_database_tag(profile: ProfileConfig, db_name: str) -> str:
 
     Args:
         profile: Profile configuration
-        db_name: Database name (e.g., 'mongo', 'postgres')
+        db_name: Database name (e.g., 'studio-mongo', 'stt-redis', 'live-postgres')
 
     Returns:
         Version tag for the database
@@ -704,12 +704,19 @@ def get_database_tag(profile: ProfileConfig, db_name: str) -> str:
     tag = profile.service_tags.get(f"db-{db_name}")
     if tag:
         return tag
-    # Default database versions
+    # Default database versions (service-specific names)
     defaults = {
-        "mongo": "6.0.2",
-        "postgres": "15-alpine",
-        "redis-stack-server": "latest",
-        "eclipse-mosquitto": "2",
+        # Studio
+        "studio-mongo": "6.0.2",
+        # STT
+        "stt-mongo": "6.0.2",
+        "stt-redis": "latest",
+        # Live
+        "live-postgres": "15-alpine",
+        "live-mosquitto": "2",
+        # LLM
+        "llm-postgres": "15-alpine",
+        "llm-redis": "latest",
     }
     return defaults.get(db_name, "latest")
 
@@ -830,7 +837,7 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
         "mongodb": {
             "enabled": True,
             "image": {
-                "tag": get_database_tag(profile, "mongo"),
+                "tag": get_database_tag(profile, "studio-mongo"),
             },
             "persistence": {
                 "enabled": True,
@@ -847,6 +854,8 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
         values["studioApi"]["env"]["GATEWAY_SERVICES"] = "http://linto-stt-api-gateway:80"
     if profile.llm_enabled:
         values["studioApi"]["env"]["LLM_GATEWAY_SERVICES"] = "http://linto-llm-llm-api:80"
+        if profile.llm_chat_service_id:
+            values["studioApi"]["env"]["LLM_CHAT_SERVICE_ID"] = profile.llm_chat_service_id
 
     if profile.k3s_storage_class:
         values["mongodb"]["persistence"]["storageClass"] = profile.k3s_storage_class
@@ -937,7 +946,7 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
             },
             "env": {
                 "BROKER_PASS": profile.redis_password or "",
-                "SECURITY_LEVEL": "0",
+                "SECURITY_LEVEL": profile.security_level,
             },
             "ingress": {
                 "enabled": False,  # Internal only
@@ -951,7 +960,7 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
             "env": {
                 "BROKER_PASS": profile.redis_password or "",
                 "DEVICE": "cuda" if gpu_enabled else "cpu",
-                "SECURITY_LEVEL": "0",
+                "SECURITY_LEVEL": profile.security_level,
             },
         },
         "diarization": {
@@ -969,7 +978,7 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         "redis": {
             "enabled": True,
             "image": {
-                "tag": get_database_tag(profile, "redis-stack-server"),
+                "tag": get_database_tag(profile, "stt-redis"),
             },
             "password": profile.redis_password or "",
             "persistence": {
@@ -983,7 +992,7 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         "mongodb": {
             "enabled": True,
             "image": {
-                "tag": get_database_tag(profile, "mongo"),
+                "tag": get_database_tag(profile, "stt-mongo"),
             },
             "persistence": {
                 "enabled": True,
@@ -1080,7 +1089,7 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
         "postgres": {
             "enabled": True,
             "image": {
-                "tag": get_database_tag(profile, "postgres"),
+                "tag": get_database_tag(profile, "live-postgres"),
             },
             "password": profile.session_postgres_password or "",
             "persistence": {
@@ -1094,10 +1103,24 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
         "broker": {
             "enabled": True,
             "image": {
-                "tag": get_database_tag(profile, "eclipse-mosquitto"),
+                "tag": get_database_tag(profile, "live-mosquitto"),
             },
             "resources": {
                 "limits": {},
+            },
+        },
+        "translator": {
+            "enabled": profile.translator_enabled,
+            "replicas": 1,
+            "image": {
+                "tag": get_service_tag(profile, "studio-plugins-translator"),
+            },
+            "env": {
+                "TRANSLATOR_NAME": profile.translator_name or "gemma",
+                "TRANSLATION_PROVIDER": profile.translator_provider or "translategemma",
+                "TRANSLATEGEMMA_ENDPOINT": profile.translator_endpoint or "",
+                "TRANSLATEGEMMA_MODEL": profile.translator_model or "Infomaniak-AI/vllm-translategemma-4b-it",
+                "PARTIAL_DEBOUNCE_MS": "300",
             },
         },
         "streamingStt": {},
@@ -1202,7 +1225,7 @@ def generate_llm_values(profile: ProfileConfig) -> dict[str, Any]:
         "postgres": {
             "enabled": True,
             "image": {
-                "tag": get_database_tag(profile, "postgres"),
+                "tag": get_database_tag(profile, "llm-postgres"),
             },
             "password": profile.llm_postgres_password or "",
             "persistence": {
@@ -1216,7 +1239,7 @@ def generate_llm_values(profile: ProfileConfig) -> dict[str, Any]:
         "redis": {
             "enabled": True,
             "image": {
-                "tag": get_database_tag(profile, "redis-stack-server"),
+                "tag": get_database_tag(profile, "llm-redis"),
             },
             "password": profile.llm_redis_password or "",
             "persistence": {
