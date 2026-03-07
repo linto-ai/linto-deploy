@@ -55,15 +55,16 @@ whisper:
       cpu: 10m
       memory: 64Mi
   env:
-    SERVICE_NAME: stt-all-whisper-v3-turbo
-    LANGUAGE: "*"
+    SERVICE_NAME: whisper-large-v3-turbo
+    GATEWAY_DESCRIPTION: '{"en": "Recommended (Whisper Large V3)", "fr": "Recommandé (Whisper Large V3)"}'
+    LANGUAGE: "*,fr,en,de,es,it,pt,nl,ru,zh,ja,ko,ar"
     CONCURRENCY: "2"
     BROKER_PASS: ""
     SECURITY_LEVEL: "0"
   service:
     port: 80
   ingress:
-    path: /stt-all-whisper-v3-turbo
+    path: /whisper-large-v3-turbo
     stripPrefix: true
 
 # Whisper workers
@@ -81,8 +82,57 @@ whisperWorkers:
       cpu: 10m
       memory: 64Mi
   env:
-    SERVICE_NAME: stt-all-whisper-v3-turbo
+    SERVICE_NAME: whisper-large-v3-turbo
     MODEL: large-v3-turbo
+    LANGUAGE: "*"
+    DEVICE: cuda
+    CONCURRENCY: "1"
+    BROKER_PASS: ""
+    SECURITY_LEVEL: "0"
+
+# NeMo transcription service (HTTP API, like whisper but for NeMo workers)
+nemo:
+  enabled: false
+  replicas: 1
+  image:
+    repository: lintoai/linto-transcription-service
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: "2"
+      memory: 4Gi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  env:
+    SERVICE_NAME: nemo-parakeet-tdt-v3
+    GATEWAY_DESCRIPTION: '{"en": "Fast (Parakeet)", "fr": "Rapide (Parakeet)"}'
+    LANGUAGE: "*,fr,en,de,es,it,pt,nl,pl,ro,cs,hu,el,fi,sv,uk,da,bg,hr,sk,sl,lt,lv,et,hi"
+    CONCURRENCY: "2"
+    BROKER_PASS: ""
+    SECURITY_LEVEL: "0"
+  service:
+    port: 80
+  ingress:
+    path: /nemo-parakeet-tdt-v3
+    stripPrefix: true
+
+# NeMo workers (GPU task workers)
+# replicasPerGpu: same pattern as whisperWorkers
+nemoWorkers:
+  enabled: false
+  replicasPerGpu: [1]
+  image:
+    repository: lintoai/linto-stt-nemo
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  env:
+    SERVICE_NAME: nemo-parakeet-tdt-v3
+    MODEL: nvidia/parakeet-tdt-0.6b-v3
+    ARCHITECTURE: rnnt_bpe
     LANGUAGE: "*"
     DEVICE: cuda
     CONCURRENCY: "1"
