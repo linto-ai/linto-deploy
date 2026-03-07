@@ -1,0 +1,65 @@
+global:
+  imageTag: "nightly"
+  imagePullPolicy: ""
+  storage:
+    files:
+      hostPath: ""
+
+# Each key under 'instances' creates a separate Deployment + Service.
+# Add/remove instances as needed.
+instances:
+  voxtral:
+    enabled: false
+    image:
+      repository: vllm/vllm-openai
+      tag: ""  # defaults to global.imageTag
+    # Per-instance hostPath for model cache (overrides global.storage.files.hostPath)
+    # Must contain HuggingFace cache structure (hub/models--org--name/...)
+    modelCachePath: ""
+    # Extra pip packages installed at startup (Voxtral needs audio libs)
+    extraPipPackages: "soundfile soxr librosa"
+    model: "mistralai/Voxtral-Mini-4B-Realtime-2602"
+    extraArgs:
+      - "--max-model-len"
+      - "45000"
+      - "--compilation-config"
+      - '{"cudagraph_mode": "PIECEWISE"}'
+    gpuMemoryUtilization: "0.90"
+    replicas: 1
+    service:
+      port: 8000
+    resources:
+      limits:
+        nvidia.com/gpu: "1"
+        memory: 16Gi
+      requests:
+        nvidia.com/gpu: "1"
+        memory: 4Gi
+    nodeSelector: {}
+    tolerations: []
+    env: {}
+
+  translategemma:
+    enabled: false
+    image:
+      repository: vllm/vllm-openai
+      tag: ""
+    modelCachePath: ""
+    model: "Infomaniak-AI/vllm-translategemma-4b-it"
+    extraArgs:
+      - "--max-model-len"
+      - "2048"
+    gpuMemoryUtilization: "0.90"
+    replicas: 1
+    service:
+      port: 8000
+    resources:
+      limits:
+        nvidia.com/gpu: "1"
+        memory: 16Gi
+      requests:
+        nvidia.com/gpu: "1"
+        memory: 4Gi
+    nodeSelector: {}
+    tolerations: []
+    env: {}
