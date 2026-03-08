@@ -183,6 +183,20 @@ streamingStt:
       requests:
         cpu: 10m
         memory: 64Mi
+  nemo_tdt_v3:
+    enabled: false
+    replicas: 1
+    model: "nvidia/parakeet-tdt-0.6b-v3"  # Multilingual (25 EU languages)
+    image:
+      repository: lintoai/linto-stt-nemo
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: "8"
+        memory: 16Gi
+      requests:
+        cpu: 10m
+        memory: 64Mi
   nemo_french:
     enabled: false
     replicas: 1

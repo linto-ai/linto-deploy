@@ -1,0 +1,27 @@
+# WireGuard configuration for {{ inventory_hostname }}
+# Managed by Ansible - DO NOT EDIT MANUALLY
+
+[Interface]
+Address = {{ wireguard_address }}
+ListenPort = {{ wireguard_port }}
+PrivateKey = {{ wireguard_private_key }}
+
+{% for peer in groups['wireguard'] %}
+{% if peer != inventory_hostname %}
+{% set peer_ip = hostvars[peer].wireguard_address | regex_replace('/.*', '') %}
+{% set peer_endpoint_host = (wireguard_peer_endpoints | default({}))[peer] | default(hostvars[peer].wireguard_endpoint) %}
+{% set peer_port = hostvars[peer].wireguard_port | default(wireguard_port) %}
+[Peer]
+# {{ peer }}
+PublicKey = {{ hostvars[peer].wireguard_public_key }}
+Endpoint = {{ peer_endpoint_host }}:{{ peer_port }}
+{% if peer == wireguard_hub %}
+AllowedIPs = {{ peer_ip }}/32{% for route in wireguard_hub_routes | default([]) %}, {{ route }}{% endfor %}
+
+PersistentKeepalive = {{ wireguard_persistent_keepalive }}
+{% else %}
+AllowedIPs = {{ peer_ip }}/32
+{% endif %}
+
+{% endif %}
+{% endfor %}

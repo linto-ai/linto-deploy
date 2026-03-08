@@ -173,6 +173,181 @@ spec:
 {{- end }}
 {{- end }}
 ---
+{{- if .Values.nemo.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-stt.fullname" . }}-nemo
+  labels:
+    {{- include "linto-stt.labels" . | nindent 4 }}
+    app.kubernetes.io/component: nemo
+spec:
+  replicas: {{ .Values.nemo.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-stt.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: nemo
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "linto-stt.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: nemo
+    spec:
+      initContainers:
+        - name: fix-permissions
+          image: busybox:latest
+          command: ["sh", "-c", "chown -R 33:33 /opt/audio && chmod -R 775 /opt/audio"]
+          volumeMounts:
+            - name: audio-shared
+              mountPath: /opt/audio
+          securityContext:
+            runAsUser: 0
+      containers:
+        - name: nemo
+          image: "{{ .Values.nemo.image.repository }}:{{ .Values.nemo.image.tag | default (include "linto-stt.imageTag" .) }}"
+          imagePullPolicy: {{ include "linto-stt.imagePullPolicy" . }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-stt.fullname" . }}-nemo-config
+          env:
+            - name: BROKER_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-stt.fullname" . }}-secrets
+                  key: redis-password
+          volumeMounts:
+            - name: audio-shared
+              mountPath: /opt/audio
+          livenessProbe:
+            exec:
+              command:
+                - /usr/src/app/heartbeat.sh
+            initialDelaySeconds: 30
+            periodSeconds: 60
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.nemo.resources | nindent 12 }}
+      volumes:
+        - name: audio-shared
+          {{- if .Values.global.storage.files.hostPath }}
+          hostPath:
+            path: {{ .Values.global.storage.files.hostPath }}/stt-audio
+            type: DirectoryOrCreate
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}
+---
+{{- if .Values.nemoWorkers.enabled }}
+{{- range $gpuIndex, $replicas := .Values.nemoWorkers.replicasPerGpu }}
+{{- if gt (int $replicas) 0 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-stt.fullname" $ }}-nemo-workers-gpu-{{ $gpuIndex }}
+  labels:
+    {{- include "linto-stt.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: nemo-workers
+    gpu-index: "{{ $gpuIndex }}"
+spec:
+  replicas: {{ $replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-stt.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: nemo-workers
+      gpu-index: "{{ $gpuIndex }}"
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum }}
+      labels:
+        {{- include "linto-stt.selectorLabels" $ | nindent 8 }}
+        app.kubernetes.io/component: nemo-workers
+        gpu-index: "{{ $gpuIndex }}"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/component: nemo-workers
+                    gpu-index: "{{ $gpuIndex }}"
+                topologyKey: kubernetes.io/hostname
+      initContainers:
+        - name: fix-permissions
+          image: busybox:latest
+          command: ["sh", "-c", "chown -R 33:33 /home/appuser/.cache && chmod -R 775 /home/appuser/.cache"]
+          volumeMounts:
+            - name: models-cache
+              mountPath: /home/appuser/.cache
+          securityContext:
+            runAsUser: 0
+      containers:
+        - name: nemo-workers
+          image: "{{ $.Values.nemoWorkers.image.repository }}:{{ $.Values.nemoWorkers.image.tag | default (include "linto-stt.imageTag" $) }}"
+          imagePullPolicy: {{ include "linto-stt.imagePullPolicy" $ }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-stt.fullname" $ }}-nemo-workers-config
+          env:
+            - name: BROKER_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-stt.fullname" $ }}-secrets
+                  key: redis-password
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: "{{ $gpuIndex }}"
+          volumeMounts:
+            - name: audio-shared
+              mountPath: /opt/audio
+            - name: models-cache
+              mountPath: /home/appuser/.cache
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+            requests:
+              {{- if $.Values.nemoWorkers.resources }}
+              {{- if $.Values.nemoWorkers.resources.requests }}
+              {{- toYaml $.Values.nemoWorkers.resources.requests | nindent 14 }}
+              {{- end }}
+              {{- end }}
+      volumes:
+        - name: audio-shared
+          {{- if $.Values.global.storage.files.hostPath }}
+          hostPath:
+            path: {{ $.Values.global.storage.files.hostPath }}/stt-audio
+            type: DirectoryOrCreate
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: models-cache
+          {{- if $.Values.global.storage.files.hostPath }}
+          hostPath:
+            path: {{ $.Values.global.storage.files.hostPath }}/nemo-cache
+            type: DirectoryOrCreate
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+---
 {{- if .Values.diarization.enabled }}
 {{- range $gpuIndex, $replicas := .Values.diarization.replicasPerGpu }}
 {{- if gt (int $replicas) 0 }}

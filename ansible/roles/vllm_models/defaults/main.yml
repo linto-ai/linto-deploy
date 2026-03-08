@@ -1,0 +1,16 @@
+---
+# Models to pre-download on this host.
+# Each entry creates a HuggingFace cache directory at cache_path
+# and downloads the model using the vLLM Docker image.
+#
+# Example (set per-host in inventory):
+#   vllm_models:
+#     - name: voxtral
+#       model_id: mistralai/Voxtral-Mini-4B-Realtime-2602
+#       cache_path: /data/linto/models/voxtral
+#     - name: translategemma
+#       model_id: Infomaniak-AI/vllm-translategemma-4b-it
+#       cache_path: /data/linto/models/translategemma
+
+vllm_models: []
+vllm_docker_image: "vllm/vllm-openai:nightly"

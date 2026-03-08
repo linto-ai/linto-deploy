@@ -1,0 +1,8 @@
+---
+wireguard_port: 51820
+wireguard_interface: wg0
+wireguard_config_dir: /etc/wireguard
+wireguard_hub: ""
+wireguard_hub_routes: []
+wireguard_peer_endpoints: {}
+wireguard_persistent_keepalive: 25

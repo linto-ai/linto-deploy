@@ -85,3 +85,43 @@ spec:
     {{- include "linto-live.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: broker
 {{- end }}
+---
+{{- if .Values.streamingStt.whisper.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "linto-live.fullname" . }}-stt-whisper
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: stt-whisper
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: ws
+      protocol: TCP
+      name: ws
+  selector:
+    {{- include "linto-live.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: stt-whisper
+{{- end }}
+---
+{{- if .Values.streamingStt.nemo_tdt_v3.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "linto-live.fullname" . }}-stt-nemo
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: stt-nemo
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: ws
+      protocol: TCP
+      name: ws
+  selector:
+    {{- include "linto-live.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: stt-nemo
+{{- end }}
