@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-03-07T06:40:36.803810+00:00
+# Last updated: 2026-03-08T06:42:17.750893+00:00
 
 platform_version: latest
 linto:
@@ -64,8 +64,8 @@ linto:
     image: lintoai/linto-stt-nemo
     tag: latest
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:1a4a442673d840e3424164b16906afc6c4335ad6a193862e600792f32d9b3f0a
-    commit: ada4b36ac4f87b8eaec6d3a0d6e821a29316c508
+    digest: sha256:b2d7a25d664f0b58fec3c11da88e73ac8795f53e3da071e945bc83cbe73a10d0
+    commit: 574bcb56e8b27c5b408ef373a849d7b4c2222e9f
   kyutai-moshi-stt-server-cuda:
     image: lintoai/kyutai-moshi-stt-server-cuda
     tag: latest
