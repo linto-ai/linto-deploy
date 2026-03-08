@@ -434,8 +434,6 @@ spec:
               value: "true"
             - name: STREAMING_BUFFER_TRIMMING_SEC
               value: "10"
-            - name: ATT_CONTEXT_SIZE
-              value: "128"
           {{- if .Values.global.storage.files.hostPath }}
           volumeMounts:
             - name: model-cache
