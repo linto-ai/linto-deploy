@@ -273,6 +273,67 @@ def prompt_vllm() -> bool:
     )
 
 
+def prompt_vllm_instances() -> list:
+    """Prompt for vLLM inference server instances."""
+    instances = []
+    if not Confirm.ask("\n[bold]Enable vLLM GPU inference servers?[/bold]", default=False):
+        return instances
+
+    while True:
+        console.print("\n[bold cyan]Add a vLLM instance[/bold cyan]")
+
+        name = Prompt.ask("Instance name", default="voxtral" if not instances else "")
+        model = Prompt.ask(
+            "HuggingFace model ID",
+            default="mistralai/Voxtral-Mini-4B-Realtime-2602"
+            if name == "voxtral"
+            else "Infomaniak-AI/vllm-translategemma-4b-it"
+            if name == "translategemma"
+            else "",
+        )
+        image = Prompt.ask(
+            "Docker image",
+            default="vllm/vllm-openai:nightly",
+        )
+
+        extra_args_str = Prompt.ask(
+            "Extra vLLM args (comma-separated, e.g. --max-model-len,45000)",
+            default="--max-model-len,45000,--compilation-config,{\"cudagraph_mode\": \"PIECEWISE\"}"
+            if name == "voxtral"
+            else "--max-model-len,2048"
+            if name == "translategemma"
+            else "",
+        )
+        extra_args = [a.strip() for a in extra_args_str.split(",") if a.strip()] if extra_args_str else []
+
+        extra_pip = Prompt.ask(
+            "Extra pip packages (space-separated, empty for none)",
+            default="soundfile soxr librosa" if name == "voxtral" else "",
+        )
+
+        gpu_role = Prompt.ask("GPU node label (linto.ai/gpu-role=?)", default=name)
+
+        node_selector = {"linto.ai/gpu-role": gpu_role} if gpu_role else {}
+        tolerations = [{"key": "linto.ai/dedicated", "value": gpu_role, "effect": "NoSchedule"}] if gpu_role else []
+
+        instances.append({
+            "name": name,
+            "enabled": True,
+            "image": image,
+            "model": model,
+            "extra_args": extra_args,
+            "extra_pip_packages": extra_pip,
+            "gpu_memory_utilization": 0.90,
+            "node_selector": node_selector,
+            "tolerations": tolerations,
+        })
+
+        if not Confirm.ask("Add another vLLM instance?", default=False):
+            break
+
+    return instances
+
+
 def prompt_tls_mode() -> TLSMode:
     """Extended TLS mode selection."""
     console.print("\n[bold]TLS Mode:[/bold]")
