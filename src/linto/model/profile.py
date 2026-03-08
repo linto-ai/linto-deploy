@@ -29,7 +29,6 @@ class StreamingSTTVariant(str, Enum):
     KALDI_FRENCH = "kaldi-french"
     NEMO_FRENCH = "nemo-french"
     NEMO_ENGLISH = "nemo-english"
-    NEMO_TDT_V3 = "nemo-tdt-v3"
     KYUTAI = "kyutai"
 
 
@@ -48,21 +47,6 @@ class GPUMode(str, Enum):
     EXCLUSIVE = "exclusive"  # 1 GPU per pod
     TIME_SLICING = "time-slicing"  # Share GPU via time-slicing
     TIMESLICING = "timeslicing"  # Alias for time-slicing (backwards compat)
-
-
-class VllmInstance(BaseModel):
-    """A vLLM GPU inference server instance."""
-
-    name: str
-    enabled: bool = True
-    image: str = "vllm/vllm-openai:nightly"
-    model: str = ""
-    model_cache_path: str = ""  # Per-instance hostPath for HuggingFace cache
-    extra_args: list[str] = []
-    extra_pip_packages: str = ""  # e.g. "soundfile soxr librosa" for Voxtral
-    gpu_memory_utilization: float = 0.90
-    node_selector: dict[str, str] = {}
-    tolerations: list[dict] = []
 
 
 class ProfileConfig(BaseModel):
@@ -103,9 +87,6 @@ class ProfileConfig(BaseModel):
     translator_provider: str | None = Field(default="translategemma")
     translator_endpoint: str | None = Field(default=None)
     translator_model: str | None = Field(default="Infomaniak-AI/vllm-translategemma-4b-it")
-
-    # vLLM GPU inference servers
-    vllm_instances: list[VllmInstance] = Field(default_factory=list)
 
     # LLM
     llm_enabled: bool = Field(default=False)

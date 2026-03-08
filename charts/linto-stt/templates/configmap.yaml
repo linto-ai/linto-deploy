@@ -21,7 +21,6 @@ data:
   GATEWAY_PROXY_PATH: "/{{ .Values.whisper.env.SERVICE_NAME }}"
   MODEL_TYPE: "whisper"
   SECURITY_LEVEL: {{ .Values.whisper.env.SECURITY_LEVEL | quote }}
-  GATEWAY_DESCRIPTION: {{ .Values.whisper.env.GATEWAY_DESCRIPTION | default (printf "{\"en\": \"%s\", \"fr\": \"%s\"}" .Values.whisper.env.SERVICE_NAME .Values.whisper.env.SERVICE_NAME) | quote }}
 {{- end }}
 ---
 {{- if .Values.whisperWorkers.enabled }}
@@ -41,54 +40,6 @@ data:
   DEVICE: {{ .Values.whisperWorkers.env.DEVICE | quote }}
   CONCURRENCY: {{ .Values.whisperWorkers.env.CONCURRENCY | quote }}
   SECURITY_LEVEL: {{ .Values.whisperWorkers.env.SECURITY_LEVEL | quote }}
-{{- end }}
----
-{{- if .Values.nemo.enabled }}
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ include "linto-stt.fullname" . }}-nemo-config
-  labels:
-    {{- include "linto-stt.labels" . | nindent 4 }}
-    app.kubernetes.io/component: nemo
-data:
-  SERVICES_BROKER: {{ include "linto-stt.brokerUrl" . | quote }}
-  MONGO_HOST: {{ include "linto-stt.mongodbHost" . | quote }}
-  MONGO_PORT: "27017"
-  GATEWAY_HOST: {{ include "linto-stt.gatewayHost" . | quote }}
-  SERVICE_NAME: {{ .Values.nemo.env.SERVICE_NAME | quote }}
-  LANGUAGE: {{ .Values.nemo.env.LANGUAGE | quote }}
-  CONCURRENCY: {{ .Values.nemo.env.CONCURRENCY | quote }}
-  WEBSERVER_HTTP_PORT: "80"
-  PROXIED_SERVICE_BASE_URL: "http://{{ include "linto-stt.fullname" . }}-nemo"
-  GATEWAY_SERVICE_BASE_URL: "http://{{ include "linto-stt.gatewayHost" . }}"
-  GATEWAY_PROXY_PATH: "/{{ .Values.nemo.env.SERVICE_NAME }}"
-  MODEL_TYPE: "nemo"
-  SECURITY_LEVEL: {{ .Values.nemo.env.SECURITY_LEVEL | quote }}
-  GATEWAY_DESCRIPTION: {{ .Values.nemo.env.GATEWAY_DESCRIPTION | default (printf "{\"en\": \"%s\", \"fr\": \"%s\"}" .Values.nemo.env.SERVICE_NAME .Values.nemo.env.SERVICE_NAME) | quote }}
-{{- end }}
----
-{{- if .Values.nemoWorkers.enabled }}
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ include "linto-stt.fullname" . }}-nemo-workers-config
-  labels:
-    {{- include "linto-stt.labels" . | nindent 4 }}
-    app.kubernetes.io/component: nemo-workers
-data:
-  SERVICES_BROKER: {{ include "linto-stt.brokerUrl" . | quote }}
-  SERVICE_NAME: {{ .Values.nemoWorkers.env.SERVICE_NAME | quote }}
-  SERVICE_MODE: "task"
-  MODEL: {{ .Values.nemoWorkers.env.MODEL | quote }}
-  ARCHITECTURE: {{ .Values.nemoWorkers.env.ARCHITECTURE | quote }}
-  LANGUAGE: {{ .Values.nemoWorkers.env.LANGUAGE | quote }}
-  DEVICE: {{ .Values.nemoWorkers.env.DEVICE | quote }}
-  CONCURRENCY: {{ .Values.nemoWorkers.env.CONCURRENCY | quote }}
-  SECURITY_LEVEL: {{ .Values.nemoWorkers.env.SECURITY_LEVEL | quote }}
-  LONG_FILE_THRESHOLD: "0"
-  LONG_FILE_CHUNK_LEN: "10"
-  LONG_FILE_CHUNK_CONTEXT_LEN: "5"
 {{- end }}
 ---
 {{- if .Values.diarization.enabled }}
