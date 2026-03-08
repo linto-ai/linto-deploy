@@ -945,8 +945,6 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
                 "tag": get_service_tag(profile, "linto-transcription-service"),
             },
             "env": {
-                "SERVICE_NAME": "whisper-large-v3-turbo",
-                "GATEWAY_DESCRIPTION": '{"en": "Recommended (Whisper Large V3)", "fr": "Recommandé (Whisper Large V3)"}',
                 "BROKER_PASS": profile.redis_password or "",
                 "SECURITY_LEVEL": profile.security_level,
             },
@@ -960,35 +958,6 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
                 "tag": get_service_tag(profile, "linto-stt-whisper"),
             },
             "env": {
-                "SERVICE_NAME": "whisper-large-v3-turbo",
-                "BROKER_PASS": profile.redis_password or "",
-                "DEVICE": "cuda" if gpu_enabled else "cpu",
-                "SECURITY_LEVEL": profile.security_level,
-            },
-        },
-        "nemo": {
-            "enabled": profile.stt_enabled,
-            "replicas": 1,
-            "image": {
-                "tag": get_service_tag(profile, "linto-transcription-service"),
-            },
-            "env": {
-                "SERVICE_NAME": "nemo-parakeet-tdt-v3",
-                "GATEWAY_DESCRIPTION": '{"en": "Fast (Parakeet)", "fr": "Rapide (Parakeet)"}',
-                "BROKER_PASS": profile.redis_password or "",
-                "SECURITY_LEVEL": profile.security_level,
-            },
-            "ingress": {
-                "enabled": False,
-            },
-        },
-        "nemoWorkers": {
-            "enabled": profile.stt_enabled,
-            "image": {
-                "tag": get_service_tag(profile, "linto-stt-nemo"),
-            },
-            "env": {
-                "SERVICE_NAME": "nemo-parakeet-tdt-v3",
                 "BROKER_PASS": profile.redis_password or "",
                 "DEVICE": "cuda" if gpu_enabled else "cpu",
                 "SECURITY_LEVEL": profile.security_level,
@@ -1040,14 +1009,11 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         # Create array [1, 1, ...] with one replica per GPU
         replicas_per_gpu = [1] * gpu_count
         values["whisperWorkers"]["replicasPerGpu"] = replicas_per_gpu
-        values["nemoWorkers"]["replicasPerGpu"] = replicas_per_gpu
         values["diarization"]["replicasPerGpu"] = replicas_per_gpu
     else:
         # Single GPU or CPU: use simple replicas
         values["whisperWorkers"]["replicas"] = 1
         values["whisperWorkers"]["resources"] = {}
-        values["nemoWorkers"]["replicas"] = 1
-        values["nemoWorkers"]["resources"] = {}
         values["diarization"]["replicas"] = 1
         values["diarization"]["resources"] = {}
 
@@ -1166,7 +1132,6 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
         StreamingSTTVariant.KALDI_FRENCH: "linto-stt-kaldi",
         StreamingSTTVariant.NEMO_FRENCH: "linto-stt-nemo",
         StreamingSTTVariant.NEMO_ENGLISH: "linto-stt-nemo",
-        StreamingSTTVariant.NEMO_TDT_V3: "linto-stt-nemo",
         StreamingSTTVariant.KYUTAI: "kyutai-moshi-stt-server-cuda",
     }
 
@@ -1185,7 +1150,6 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
             StreamingSTTVariant.WHISPER,
             StreamingSTTVariant.NEMO_FRENCH,
             StreamingSTTVariant.NEMO_ENGLISH,
-            StreamingSTTVariant.NEMO_TDT_V3,
             StreamingSTTVariant.KYUTAI,
         ]
         if variant in gpu_services and gpu_enabled:
@@ -1310,46 +1274,6 @@ def generate_llm_values(profile: ProfileConfig) -> dict[str, Any]:
     return values
 
 
-def generate_vllm_values(profile: ProfileConfig) -> dict:
-    """Generate Helm values for the linto-vllm chart."""
-    global_values = generate_global_values(profile, create_certificate=False)
-
-    instances = {}
-    for inst in profile.vllm_instances:
-        instance_values = {
-            "enabled": inst.enabled,
-            "image": {
-                "repository": inst.image.rsplit(":", 1)[0] if ":" in inst.image else inst.image,
-                "tag": inst.image.rsplit(":", 1)[1] if ":" in inst.image else "",
-            },
-            "model": inst.model,
-            "gpuMemoryUtilization": str(inst.gpu_memory_utilization),
-            "replicas": 1,
-            "service": {"port": 8000},
-            "resources": {
-                "limits": {"nvidia.com/gpu": "1", "memory": "16Gi"},
-                "requests": {"nvidia.com/gpu": "1", "memory": "4Gi"},
-            },
-        }
-        if inst.model_cache_path:
-            instance_values["modelCachePath"] = inst.model_cache_path
-        if inst.extra_args:
-            instance_values["extraArgs"] = inst.extra_args
-        if inst.extra_pip_packages:
-            instance_values["extraPipPackages"] = inst.extra_pip_packages
-        if inst.node_selector:
-            instance_values["nodeSelector"] = inst.node_selector
-        if inst.tolerations:
-            instance_values["tolerations"] = inst.tolerations
-
-        instances[inst.name] = instance_values
-
-    return {
-        "global": global_values,
-        "instances": instances,
-    }
-
-
 def generate_values(profile: ProfileConfig, chart: str) -> dict[str, Any]:
     """Generate values.yaml content for a specific chart.
 
@@ -1368,8 +1292,6 @@ def generate_values(profile: ProfileConfig, chart: str) -> dict[str, Any]:
         return generate_live_values(profile)
     elif chart == "llm":
         return generate_llm_values(profile)
-    elif chart == "linto-vllm":
-        return generate_vllm_values(profile)
     else:
         raise ValueError(f"Unknown chart: {chart}")
 
@@ -1420,14 +1342,6 @@ def render_k3s(profile: ProfileConfig, output_dir: Path) -> dict[str, Path]:
         with values_path.open("w") as f:
             yaml.dump(values, f, default_flow_style=False, sort_keys=False)
         generated_files["llm"] = values_path
-
-    # Generate vLLM values
-    if profile.vllm_instances:
-        values = generate_vllm_values(profile)
-        values_path = values_dir / "vllm-values.yaml"
-        with values_path.open("w") as f:
-            yaml.dump(values, f, default_flow_style=False, sort_keys=False)
-        generated_files["vllm"] = values_path
 
     return generated_files
 
@@ -1570,8 +1484,6 @@ def apply_k3s(profile_name: str, base_dir: Path | None = None) -> None:
             charts_to_deploy.append(("linto-live", "live-values.yaml"))
         if profile.llm_enabled:
             charts_to_deploy.append(("linto-llm", "llm-values.yaml"))
-        if profile.vllm_instances:
-            charts_to_deploy.append(("linto-vllm", "vllm-values.yaml"))
 
         for chart_name, values_file in charts_to_deploy:
             chart_path = get_charts_dir() / chart_name

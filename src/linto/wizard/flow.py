@@ -9,7 +9,6 @@ from linto.model.profile import (
     ProfileConfig,
     StreamingSTTVariant,
     TLSMode,
-    VllmInstance,
 )
 from linto.model.validation import save_profile
 from linto.utils.secrets import generate_secrets
@@ -41,7 +40,6 @@ from linto.wizard.prompts import (
     prompt_tls_mode,
     prompt_versions_file,
     prompt_vllm,
-    prompt_vllm_instances,
     show_summary,
 )
 
@@ -111,9 +109,6 @@ def run_wizard() -> None:
         if gpu_mode != GPUMode.NONE:
             gpu_count = prompt_gpu_count()
 
-    # Step 9b: vLLM GPU inference servers
-    vllm_instances = prompt_vllm_instances() if gpu_mode != GPUMode.NONE else []
-
     # Step 10: TLS mode
     tls_mode = prompt_tls_mode()
 
@@ -175,7 +170,6 @@ def run_wizard() -> None:
         session_transcriber_replicas=session_transcriber_replicas,
         llm_enabled=llm_enabled,
         vllm_enabled=vllm_enabled,
-        vllm_instances=[VllmInstance(**inst) for inst in vllm_instances],
         acme_email=acme_email,
         custom_cert_path=custom_cert_path,
         custom_key_path=custom_key_path,

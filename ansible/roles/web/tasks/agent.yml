@@ -72,7 +72,7 @@
     - agent
 
 - name: Wait for node to join cluster
-  ansible.builtin.command: kubectl get nodes {{ k3s_node_name | default(inventory_hostname) }} -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+  ansible.builtin.command: kubectl get nodes {{ inventory_hostname }} -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   delegate_to: "{{ groups['masters'][0] }}"
@@ -86,7 +86,7 @@
     - agent
 
 - name: Apply node labels (GPU nodes)
-  ansible.builtin.command: kubectl label node {{ k3s_node_name | default(inventory_hostname) }} {{ web_node_label }} --overwrite
+  ansible.builtin.command: kubectl label node {{ inventory_hostname }} {{ web_node_label }} --overwrite
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   delegate_to: "{{ groups['masters'][0] }}"
@@ -99,18 +99,3 @@
     - k3s
     - agent
     - labels
-
-- name: Apply node taints
-  ansible.builtin.command: kubectl taint node {{ k3s_node_name | default(inventory_hostname) }} {{ web_node_taint }} --overwrite
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-  delegate_to: "{{ groups['masters'][0] }}"
-  loop: "{{ k3s_node_taints | default([]) }}"
-  loop_control:
-    loop_var: web_node_taint
-  when: k3s_node_taints is defined and k3s_node_taints | length > 0
-  changed_when: false
-  tags:
-    - k3s
-    - agent
-    - taints
