@@ -86,6 +86,7 @@ data:
   DEVICE: {{ .Values.nemoWorkers.env.DEVICE | quote }}
   CONCURRENCY: {{ .Values.nemoWorkers.env.CONCURRENCY | quote }}
   SECURITY_LEVEL: {{ .Values.nemoWorkers.env.SECURITY_LEVEL | quote }}
+  ATT_CONTEXT_SIZE: "128"
   LONG_FILE_THRESHOLD: "0"
   LONG_FILE_CHUNK_LEN: "10"
   LONG_FILE_CHUNK_CONTEXT_LEN: "5"
