@@ -432,8 +432,6 @@ spec:
               value: cuda
             - name: VAD
               value: "true"
-            - name: STREAMING_BUFFER_TRIMMING_SEC
-              value: "10"
           {{- if .Values.global.storage.files.hostPath }}
           volumeMounts:
             - name: model-cache

@@ -86,9 +86,6 @@ data:
   DEVICE: {{ .Values.nemoWorkers.env.DEVICE | quote }}
   CONCURRENCY: {{ .Values.nemoWorkers.env.CONCURRENCY | quote }}
   SECURITY_LEVEL: {{ .Values.nemoWorkers.env.SECURITY_LEVEL | quote }}
-  LONG_FILE_THRESHOLD: "0"
-  LONG_FILE_CHUNK_LEN: "10"
-  LONG_FILE_CHUNK_CONTEXT_LEN: "5"
 {{- end }}
 ---
 {{- if .Values.diarization.enabled }}
