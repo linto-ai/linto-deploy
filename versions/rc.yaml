@@ -73,10 +73,10 @@ linto:
     commit: 2e2c7a0dc8074c3f94d25744c8e29a0af53c00e4
   studio-plugins-migration:
     image: lintoai/studio-plugins-migration
-    tag: 1.1.0
+    tag: 1.2.0
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:98393c74bdbaec7faaee3f9709f1f7fbbf9535a24638484891495a307ca6bb0d
-    commit: 3e1db955fe55b6c5ddca7e5f0a530139ceede689
+    digest: sha256:fa1ae4ddf711d2d28bdc60ebe39caa080c39fd79b34b70d4ca484b60b25756e7
+    commit: 9a6b28177756be4f7f1c018e914afcd810a75b92
   studio-plugins-sessionapi:
     image: lintoai/studio-plugins-sessionapi
     tag: 1.1.0
