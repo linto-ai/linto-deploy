@@ -37,14 +37,30 @@ jobs:
         run: |
           python scripts/update-rc-service.py
 
-      - name: Commit changes
+      - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add versions/rc.yaml
           if git diff --staged --quiet; then
             echo "No changes to commit"
-          else
-            git commit -m "chore(rc): update ${{ github.event.client_payload.service }} to ${{ github.event.client_payload.commit_sha }}"
-            git push
+            exit 0
           fi
+          git commit -m "chore(rc): update ${{ github.event.client_payload.service }} to ${{ github.event.client_payload.commit_sha }}"
+          # Retry push with rebase to handle concurrent workflow runs
+          max_attempts=5
+          for i in $(seq 1 $max_attempts); do
+            if git push; then
+              echo "Push successful"
+              exit 0
+            fi
+            echo "Push failed (attempt $i/$max_attempts), rebasing and retrying..."
+            sleep $(( (RANDOM % 3) + i ))
+            if ! git pull --rebase; then
+              echo "Rebase failed (merge conflict), aborting"
+              git rebase --abort
+              exit 1
+            fi
+          done
+          echo "Push failed after $max_attempts attempts"
+          exit 1
