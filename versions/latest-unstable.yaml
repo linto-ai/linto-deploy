@@ -106,6 +106,12 @@ linto:
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:c81036f9111ab3c9bc869c4ffe0242c30423bfefed8bd23298859a12728f1a55
     commit: 70edc2a0b0343449e3bffe2892c2e0df81614186
+  studio-plugins-translator:
+    image: lintoai/studio-plugins-translator
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-studio-plugins
+    digest: sha256:41ddd473d1e09562400e015686d4ce7d5af1f496f7e46287382f23825e75a804
+    commit: 9a6b28177756be4f7f1c018e914afcd810a75b92
 databases:
   studio-mongo:
     image: mongo
