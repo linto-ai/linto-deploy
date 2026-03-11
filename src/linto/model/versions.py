@@ -53,6 +53,9 @@ class LintoVersions(BaseModel):
     studio_plugins_transcriber: ServiceVersion = Field(
         default_factory=ServiceVersion, alias="studio-plugins-transcriber"
     )
+    studio_plugins_translator: ServiceVersion = Field(
+        default_factory=ServiceVersion, alias="studio-plugins-translator"
+    )
 
     class Config:
         """Pydantic config."""
@@ -241,6 +244,7 @@ class VersionsConfig(BaseModel):
                 "studio-plugins-sessionapi": self.get_linto_tag("studio-plugins-sessionapi"),
                 "studio-plugins-scheduler": self.get_linto_tag("studio-plugins-scheduler"),
                 "studio-plugins-transcriber": self.get_linto_tag("studio-plugins-transcriber"),
+                "studio-plugins-translator": self.get_linto_tag("studio-plugins-translator"),
             },
             "databases": {
                 "studio-mongo": self.databases.studio_mongo.tag,
