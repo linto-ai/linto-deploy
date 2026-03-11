@@ -79,10 +79,10 @@ linto:
     commit: 9a6b28177756be4f7f1c018e914afcd810a75b92
   studio-plugins-sessionapi:
     image: lintoai/studio-plugins-sessionapi
-    tag: 1.1.0
+    tag: 1.2.0
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:efd28e1ad8f6bde7e22b6aea077e8f46c9996b72d2a95be6757fc19cd84d89ed
-    commit: 70edc2a0b0343449e3bffe2892c2e0df81614186
+    digest: sha256:6b20e554120f5e98d52ecd6ea20a1dc538354678bb3ce0360466fab50025a835
+    commit: 6661b248ac4099b859c823e069dc48f7088a1d7f
   studio-plugins-scheduler:
     image: lintoai/studio-plugins-scheduler
     tag: 1.2.0
