@@ -143,6 +143,14 @@ spec:
               mountPath: /opt/audio
             - name: models-cache
               mountPath: /var/www/.cache
+          livenessProbe:
+            exec:
+              command:
+                - /usr/src/app/healthcheck.sh
+            initialDelaySeconds: 120
+            periodSeconds: 60
+            timeoutSeconds: 30
+            failureThreshold: 3
           resources:
             limits:
               nvidia.com/gpu: 1
@@ -318,6 +326,14 @@ spec:
               mountPath: /opt/audio
             - name: models-cache
               mountPath: /home/appuser/.cache
+          livenessProbe:
+            exec:
+              command:
+                - /usr/src/app/healthcheck.sh
+            initialDelaySeconds: 120
+            periodSeconds: 60
+            timeoutSeconds: 30
+            failureThreshold: 3
           resources:
             limits:
               nvidia.com/gpu: 1
@@ -415,6 +431,14 @@ spec:
               mountPath: /opt/audio
             - name: models-cache
               mountPath: /var/www/.cache
+          livenessProbe:
+            exec:
+              command:
+                - /usr/src/app/healthcheck.sh
+            initialDelaySeconds: 120
+            periodSeconds: 60
+            timeoutSeconds: 30
+            failureThreshold: 3
           resources:
             limits:
               nvidia.com/gpu: 1

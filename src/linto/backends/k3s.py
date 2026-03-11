@@ -967,7 +967,7 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
             },
         },
         "nemo": {
-            "enabled": profile.stt_enabled,
+            "enabled": profile.stt_enabled and any(v.value.startswith("nemo") for v in profile.streaming_stt_variants),
             "replicas": 1,
             "image": {
                 "tag": get_service_tag(profile, "linto-transcription-service"),
@@ -983,7 +983,7 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
             },
         },
         "nemoWorkers": {
-            "enabled": profile.stt_enabled,
+            "enabled": profile.stt_enabled and any(v.value.startswith("nemo") for v in profile.streaming_stt_variants),
             "image": {
                 "tag": get_service_tag(profile, "linto-stt-nemo"),
             },
