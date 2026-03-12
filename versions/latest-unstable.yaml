@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-03-11T06:54:04.161384+00:00
+# Last updated: 2026-03-12T06:55:50.266468+00:00
 
 platform_version: latest-unstable
 linto:
@@ -16,20 +16,20 @@ linto:
     image: lintoai/studio-api
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:2a2cd59ed0287e4ad802b883ff643e473ee138c8679074d4e9b28e4e1761d318
-    commit: f870d9e886db74fabc4da411ac1a455510a92415
+    digest: sha256:d1dc371bd079f675e015b45b89106f33a89266a7b63e1707c168cd362ad8302d
+    commit: b469319274d4c67c90885e7979b3c3e1d83b3f03
   studio-frontend:
     image: lintoai/studio-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:3a9dbeced6cdf7273c5d8e034603e6f17279d2f636b5961a8d0b892c67355e0c
-    commit: f870d9e886db74fabc4da411ac1a455510a92415
+    digest: sha256:d557698a13b2553572bf8a29fefaf391c268f58a812dbf0bf1b658ce6f30b0bb
+    commit: b469319274d4c67c90885e7979b3c3e1d83b3f03
   studio-websocket:
     image: lintoai/studio-websocket
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:4112fd2e4e6051f16120ea9939fab824eb8093ea8625916fefcc07df01ff82ac
-    commit: d1adf14169532a450f7f160c2e44c7a7c90259b9
+    digest: sha256:34e8826dbdf1541b1490da4cda37c1851ff9a568374f3ffe938c50a91a92f7e6
+    commit: b469319274d4c67c90885e7979b3c3e1d83b3f03
   linto-api-gateway:
     image: lintoai/linto-api-gateway
     tag: latest-unstable
@@ -74,44 +74,44 @@ linto:
     image: lintoai/llm-gateway
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:4c9cc2b2c5a84d333fb11c1218b9007294a0fec0a23b88640ef23269203de3d3
+    digest: sha256:503f38c19ede4fd87d687bcf176e8b24958cffde0349a9bb5724a9e66a4af267
     commit: 2e2c7a0dc8074c3f94d25744c8e29a0af53c00e4
   llm-gateway-frontend:
     image: lintoai/llm-gateway-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:4662abbc47e1fc8c7cb89a5ad19a5a57f7e12c093bffc1bd1624bdf9051e2317
+    digest: sha256:eeb03d2e94de1c38a1f54af691702e162080aed34c2870024a1b5fdfdab5c7b3
     commit: 2e2c7a0dc8074c3f94d25744c8e29a0af53c00e4
   studio-plugins-migration:
     image: lintoai/studio-plugins-migration
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:fa1ae4ddf711d2d28bdc60ebe39caa080c39fd79b34b70d4ca484b60b25756e7
-    commit: 70edc2a0b0343449e3bffe2892c2e0df81614186
+    commit: 6661b248ac4099b859c823e069dc48f7088a1d7f
   studio-plugins-sessionapi:
     image: lintoai/studio-plugins-sessionapi
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:6b20e554120f5e98d52ecd6ea20a1dc538354678bb3ce0360466fab50025a835
-    commit: 70edc2a0b0343449e3bffe2892c2e0df81614186
+    commit: 6661b248ac4099b859c823e069dc48f7088a1d7f
   studio-plugins-scheduler:
     image: lintoai/studio-plugins-scheduler
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:4456ab345ca909a82feae76a71bcee74588932d7ec164077321ae83b5ab49b4f
-    commit: 70edc2a0b0343449e3bffe2892c2e0df81614186
+    commit: 6661b248ac4099b859c823e069dc48f7088a1d7f
   studio-plugins-transcriber:
     image: lintoai/studio-plugins-transcriber
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:c81036f9111ab3c9bc869c4ffe0242c30423bfefed8bd23298859a12728f1a55
-    commit: 70edc2a0b0343449e3bffe2892c2e0df81614186
+    commit: 6661b248ac4099b859c823e069dc48f7088a1d7f
   studio-plugins-translator:
     image: lintoai/studio-plugins-translator
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:41ddd473d1e09562400e015686d4ce7d5af1f496f7e46287382f23825e75a804
-    commit: 9a6b28177756be4f7f1c018e914afcd810a75b92
+    commit: 6661b248ac4099b859c823e069dc48f7088a1d7f
 databases:
   studio-mongo:
     image: mongo
@@ -137,4 +137,4 @@ llm:
   vllm-openai:
     image: vllm/vllm-openai
     tag: latest
-    digest: sha256:29f77807c8784517f370f4fae5964a90fb2bf2473acb7608a8634fe50ab6f507
+    digest: sha256:b45456be6e6b769623ed0cb7e7e7ec7e175317feb6ad31a68fcdbda0b22daa3a
