@@ -216,10 +216,10 @@ Prepares Ubuntu servers for K3S:
 Secures publicly exposed machines (DNS A entry point):
 - **fail2ban**: SSH brute force protection (ban after 5 failures, 1h)
 - **rkhunter**: Rootkit detection (daily scan with email alerts)
-- **Strict UFW**: Only ports 22, 80, 443 open publicly, rest from private network
+- **Strict UFW**: Only ports 22, 80, 443, 1935, 8889 open publicly, rest from private network
 - **unattended-upgrades**: Automatic security updates
 - **logwatch**: Daily security reports via email
-- **Traefik hostPort**: K3S configuration for ports 80/443 on this node
+- **Traefik hostPort**: K3S configuration for ports 80/443/1935/8889 on this node
 
 ### web Role (K3S)
 

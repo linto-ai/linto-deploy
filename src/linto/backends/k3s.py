@@ -800,7 +800,7 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
         "global": generate_global_values(profile, create_certificate=True),
         "studioApi": {
             "enabled": True,
-            "replicas": 1,
+            "replicas": profile.studio_api_replicas,
             "image": {
                 "tag": get_service_tag(profile, "studio-api"),
             },
@@ -823,6 +823,7 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
             "image": {
                 "tag": get_service_tag(profile, "studio-frontend"),
             },
+            **({"env": profile.studio_frontend_env} if profile.studio_frontend_env else {}),
         },
         "studioWebsocket": {
             "enabled": True,

@@ -69,12 +69,30 @@
           service:
             type: ClusterIP
 
-          # Bind to host ports 80 and 443
+          # Bind to host ports
           ports:
             web:
               hostPort: 80
             websecure:
               hostPort: 443
+            # SRT streaming (UDP) - used by LinTO Live session transcriber
+            srt:
+              port: 8889
+              hostPort: 8889
+              protocol: UDP
+              expose:
+                default: true
+            # RTMP streaming (TCP) - used by LinTO Live session transcriber
+            rtmp:
+              port: 1935
+              hostPort: 1935
+              protocol: TCP
+              expose:
+                default: true
+
+          # UDP timeout for SRT streams
+          additionalArguments:
+            - "--entryPoints.srt.udp.timeout=60s"
 
           # Run as DaemonSet on ingress nodes only
           deployment:
@@ -153,7 +171,7 @@
           Namespace: {{ traefik_namespace }}
           Chart Version: {{ traefik_chart_version }}
 
-          Traefik is now installed and listening on ports 80/443
+          Traefik is now installed and listening on ports 80/443/1935/8889
           on nodes with the label node-role.kubernetes.io/ingress
 
           To verify:
