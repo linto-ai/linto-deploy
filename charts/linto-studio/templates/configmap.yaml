@@ -83,6 +83,11 @@ data:
   VUE_APP_ENABLE_SESSION: "true"
   VUE_APP_MAX_CARACTERS_PER_PAGE: "20000"
   VUE_APP_TURN_SIZE: "2000"
+  {{- with .Values.studioFrontend.env }}
+  {{- range $key, $value := . }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  {{- end }}
 {{- end }}
 ---
 {{- if .Values.studioWebsocket.enabled }}

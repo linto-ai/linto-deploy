@@ -86,6 +86,8 @@ class ProfileConfig(BaseModel):
 
     # Service toggles
     studio_enabled: bool = Field(default=True)
+    studio_api_replicas: int = Field(default=4, ge=1)
+    studio_frontend_env: dict[str, str] = Field(default_factory=dict)
     stt_enabled: bool = Field(default=True)
 
     # STT settings
@@ -95,7 +97,7 @@ class ProfileConfig(BaseModel):
     live_session_enabled: bool = Field(default=False)
     streaming_stt_variants: list[StreamingSTTVariant] = Field(default_factory=list)
     kyutai_gpu_architecture: GPUArchitecture | None = Field(default=None)
-    session_transcriber_replicas: int = Field(default=2, ge=1)
+    session_transcriber_replicas: int = Field(default=4, ge=1)
 
     # Translator (external translation service)
     translator_enabled: bool = Field(default=False)
