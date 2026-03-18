@@ -22,8 +22,7 @@ instances:
     extraArgs:
       - "--max-model-len"
       - "45000"
-      - "--compilation-config"
-      - '{"cudagraph_mode": "PIECEWISE"}'
+      - "--enforce-eager"
     gpuMemoryUtilization: "0.90"
     replicas: 1
     service:
