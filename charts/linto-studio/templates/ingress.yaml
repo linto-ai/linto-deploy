@@ -41,9 +41,6 @@ metadata:
     {{- if .Values.studioApi.ingress.stripPrefix }}
     traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "linto-studio.fullname" . }}-strip-api@kubernetescrd
     {{- end }}
-    traefik.ingress.kubernetes.io/service.sticky.cookie: "true"
-    traefik.ingress.kubernetes.io/service.sticky.cookie.name: "studio-api-affinity"
-    traefik.ingress.kubernetes.io/service.sticky.cookie.httponly: "true"
 spec:
   {{- if .Values.global.tls.enabled }}
   tls:
