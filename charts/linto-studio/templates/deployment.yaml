@@ -117,13 +117,17 @@ spec:
               path: /healthcheck
               port: http
             initialDelaySeconds: 60
-            periodSeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 10
           readinessProbe:
             httpGet:
               path: /healthcheck
               port: http
             initialDelaySeconds: 30
             periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 10
           resources:
             {{- toYaml .Values.studioApi.resources | nindent 12 }}
       {{- if .Values.global.storage.files.hostPath }}

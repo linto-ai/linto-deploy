@@ -31,9 +31,7 @@ studioApi:
     repository: lintoai/studio-api
     pullPolicy: IfNotPresent
   resources:
-    limits:
-      cpu: "2"
-      memory: 2Gi
+    limits: {}  # No limits - allows scaling under heavy load (live sessions)
     requests:
       cpu: 10m
       memory: 64Mi
@@ -108,9 +106,7 @@ studioWebsocket:
     repository: lintoai/studio-websocket
     pullPolicy: IfNotPresent
   resources:
-    limits:
-      cpu: "1"
-      memory: 1Gi
+    limits: {}  # No limits - WebSocket can spike under many concurrent connections
     requests:
       cpu: 10m
       memory: 64Mi

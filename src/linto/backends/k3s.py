@@ -810,12 +810,7 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
                 "CM_JWT_SECRET": profile.jwt_secret or "",
                 "CM_REFRESH_SECRET": profile.jwt_refresh_secret or "",
             },
-            "resources": {
-                "limits": {
-                    "cpu": "2",
-                    "memory": "8Gi",
-                },
-            },
+            "resources": {"limits": {}},
         },
         "studioFrontend": {
             "enabled": True,
@@ -1088,12 +1083,7 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
                 "DB_PASSWORD": profile.session_postgres_password or "",
                 "SECURITY_CRYPT_KEY": profile.session_crypt_key or "",
             },
-            "resources": {
-                "limits": {
-                    "cpu": "2",
-                    "memory": "8Gi",
-                },
-            },
+            "resources": {"limits": {}},
         },
         "sessionScheduler": {
             "enabled": True,
@@ -1114,12 +1104,7 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
             "env": {
                 "SECURITY_CRYPT_KEY": profile.session_crypt_key or "",
             },
-            "resources": {
-                "limits": {
-                    "cpu": "8",
-                    "memory": "8Gi",
-                },
-            },
+            "resources": {"limits": {}},
         },
         "postgres": {
             "enabled": True,

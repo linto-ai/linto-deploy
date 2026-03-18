@@ -40,9 +40,7 @@ sessionApi:
     repository: lintoai/studio-plugins-sessionapi
     pullPolicy: IfNotPresent
   resources:
-    limits:
-      cpu: "2"
-      memory: 2Gi
+    limits: {}  # No limits - session API can spike during live sessions
     requests:
       cpu: 10m
       memory: 64Mi
@@ -63,9 +61,7 @@ sessionScheduler:
     repository: lintoai/studio-plugins-scheduler
     pullPolicy: IfNotPresent
   resources:
-    limits:
-      cpu: "1"
-      memory: 1Gi
+    limits: {}  # No limits
     requests:
       cpu: 10m
       memory: 64Mi
@@ -80,9 +76,7 @@ sessionTranscriber:
     repository: lintoai/studio-plugins-transcriber
     pullPolicy: IfNotPresent
   resources:
-    limits:
-      cpu: "16"
-      memory: 24Gi
+    limits: {}  # No limits - transcriber uses GStreamer workers + ASR, memory varies with session load
     requests:
       cpu: 10m
       memory: 64Mi
