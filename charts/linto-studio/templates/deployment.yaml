@@ -29,7 +29,7 @@ spec:
             - -c
             - |
               # Create required directories
-              mkdir -p /storages/audios /storages/pictures /storages/exports /storages/subtitles /storages/audiowaveform
+              mkdir -p /storages/audios /storages/pictures /storages/exports /storages/subtitles /storages/audiowaveform /storages/documents
               # Copy default.jpg if not exists
               if [ ! -f /storages/pictures/default.jpg ]; then
                 cp /usr/src/app/conversation-manager/config/pictures/default.jpg /storages/pictures/
@@ -104,6 +104,13 @@ spec:
                 secretKeyRef:
                   name: {{ include "linto-studio.fullname" . }}-secrets
                   key: oidc-client-secret
+            {{- end }}
+            {{- if .Values.studioApi.secrets.SOCKETIO_REDIS_PASSWORD }}
+            - name: SOCKETIO_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-studio.fullname" . }}-secrets
+                  key: socketio-redis-password
             {{- end }}
           {{- if .Values.global.storage.files.hostPath }}
           volumeMounts:

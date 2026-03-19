@@ -93,6 +93,7 @@ def render_stack(profile: ProfileConfig) -> dict[str, Any]:
             live_session_enabled=profile.live_session_enabled,
             llm_enabled=profile.llm_enabled,
             stt_enabled=profile.stt_enabled,
+            llm_redis_password=profile.llm_redis_password or "",
         )
         services[api.name] = service_to_swarm_dict(api, profile.domain, tls_mode)
 

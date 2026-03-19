@@ -31,6 +31,10 @@ data:
   {{- if .Values.studioApi.env.LLM_CHAT_SERVICE_ID }}
   LLM_CHAT_SERVICE_ID: {{ .Values.studioApi.env.LLM_CHAT_SERVICE_ID | quote }}
   {{- end }}
+  {{- if .Values.studioApi.env.SOCKETIO_REDIS_HOST }}
+  SOCKETIO_REDIS_HOST: {{ .Values.studioApi.env.SOCKETIO_REDIS_HOST | quote }}
+  SOCKETIO_REDIS_PORT: {{ .Values.studioApi.env.SOCKETIO_REDIS_PORT | default "6379" | quote }}
+  {{- end }}
   {{- /* SMTP Configuration - only if SMTP_HOST is set */ -}}
   {{- if .Values.studioApi.env.SMTP_HOST }}
   SMTP_HOST: {{ .Values.studioApi.env.SMTP_HOST | quote }}

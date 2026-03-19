@@ -75,10 +75,11 @@
       - linto/live-audio
       - linto/studio-storages
       - linto/studio-storages/audios
-      - linto/studio-storages/exports
       - linto/studio-storages/pictures
+      - linto/studio-storages/exports
       - linto/studio-storages/subtitles
       - linto/studio-storages/audiowaveform
+      - linto/studio-storages/documents
   tasks:
     - name: Ensure www-data group exists
       ansible.builtin.group:
