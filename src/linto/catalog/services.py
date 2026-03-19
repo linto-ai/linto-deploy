@@ -212,6 +212,7 @@ def _studio_api_service(
     live_session_enabled: bool = False,
     llm_enabled: bool = False,
     stt_enabled: bool = False,
+    llm_redis_password: str = "",
 ) -> ServiceDefinition:
     """Create Studio API service definition."""
     # Build COMPONENTS based on enabled features
@@ -254,6 +255,12 @@ def _studio_api_service(
     if llm_enabled:
         environment["LLM_GATEWAY_SERVICES"] = "http://llm-gateway-api"
         environment["LLM_GATEWAY_SERVICES_WS"] = "ws://llm-gateway-api/ws/results"
+        # Socket.IO Redis adapter (reuse LLM Redis for multi-instance scaling)
+        environment["SOCKETIO_REDIS_HOST"] = "llm-redis"
+        environment["SOCKETIO_REDIS_PORT"] = "6379"
+        if llm_redis_password:
+            environment["SOCKETIO_REDIS_PASSWORD"] = llm_redis_password
+        networks.append("net_llm_services")
 
     # Add live session connection
     if live_session_enabled:

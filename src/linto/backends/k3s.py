@@ -845,6 +845,10 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
         },
     }
 
+    # Initialize secrets dict before conditional blocks that may add secrets
+    if "secrets" not in values["studioApi"]:
+        values["studioApi"]["secrets"] = {}
+
     # Add service gateway URLs if STT/LLM enabled
     if profile.stt_enabled:
         values["studioApi"]["env"]["GATEWAY_SERVICES"] = "http://linto-stt-api-gateway:80"
@@ -852,6 +856,11 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
         values["studioApi"]["env"]["LLM_GATEWAY_SERVICES"] = "http://linto-llm-llm-api:80"
         if profile.llm_chat_service_id:
             values["studioApi"]["env"]["LLM_CHAT_SERVICE_ID"] = profile.llm_chat_service_id
+        # Socket.IO Redis adapter (reuse LLM Redis for multi-instance scaling)
+        values["studioApi"]["env"]["SOCKETIO_REDIS_HOST"] = "linto-llm-redis"
+        values["studioApi"]["env"]["SOCKETIO_REDIS_PORT"] = "6379"
+        if profile.llm_redis_password:
+            values["studioApi"]["secrets"]["SOCKETIO_REDIS_PASSWORD"] = profile.llm_redis_password
 
     if profile.k3s_storage_class:
         values["mongodb"]["persistence"]["storageClass"] = profile.k3s_storage_class
@@ -859,10 +868,6 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
     # Determine URL scheme based on TLS mode
     tls_mode = profile.tls_mode.value if isinstance(profile.tls_mode, TLSMode) else profile.tls_mode
     scheme = "https" if tls_mode != "off" else "http"
-
-    # Initialize secrets dict
-    if "secrets" not in values["studioApi"]:
-        values["studioApi"]["secrets"] = {}
 
     # SMTP configuration
     if profile.smtp_enabled:

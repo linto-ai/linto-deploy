@@ -71,6 +71,7 @@ studioApi:
     GOOGLE_CLIENT_SECRET: ""
     GITHUB_CLIENT_SECRET: ""
     OIDC_CLIENT_SECRET: ""
+    SOCKETIO_REDIS_PASSWORD: ""
   service:
     port: 80
   ingress:
