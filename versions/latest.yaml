@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-03-20T06:55:27.520479+00:00
+# Last updated: 2026-03-21T06:42:44.275183+00:00
 
 platform_version: latest
 linto:
@@ -137,4 +137,4 @@ llm:
   vllm-openai:
     image: vllm/vllm-openai
     tag: latest
-    digest: sha256:b45456be6e6b769623ed0cb7e7e7ec7e175317feb6ad31a68fcdbda0b22daa3a
+    digest: sha256:be723f3fa62508d6be28295d86de4aec9791e275474b82ed4697479242948e4d
