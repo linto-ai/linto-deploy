@@ -2,10 +2,10 @@ platform_version: RC-2026.02.03-rc1
 linto:
   studio-api:
     image: lintoai/studio-api
-    tag: 1.8.2
+    tag: 1.8.3
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:e5ecf937178083de44f06506b8678a8222f5ac35f4eb613520cbaed6ce9fbf65
-    commit: b21435d3344c78ad5ca282f821801efc4b5a545d
+    digest: sha256:f301ca2f0d58cb2ebd2bef8ad20552ec245d6006dcacdbbf29afa5b99c2657f6
+    commit: ae9e6db551e2becbd29e19c01143aa68d66f0022
   studio-frontend:
     image: lintoai/studio-frontend
     tag: 1.8.2
