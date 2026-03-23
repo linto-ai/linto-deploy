@@ -8,10 +8,10 @@ linto:
     commit: ae9e6db551e2becbd29e19c01143aa68d66f0022
   studio-frontend:
     image: lintoai/studio-frontend
-    tag: 1.8.2
+    tag: 1.8.3
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:54a3147fe71402829c8e6806127891885bbaec99313472ddc167b06f803e14f1
-    commit: 36ff6f8671ea0c0d67516e07e731e90ae1f46de5
+    digest: sha256:38756f9c7ca23d362b26b2c9e2a74cbbb772d2726d3eb290c2916e6af2042127
+    commit: ae9e6db551e2becbd29e19c01143aa68d66f0022
   studio-websocket:
     image: lintoai/studio-websocket
     tag: 1.8.2
