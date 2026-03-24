@@ -76,7 +76,7 @@ linto:
     tag: 1.3.1
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:e1745c075bea5e4c782dcbfdeed54dffa00a95fd524d0a9ff9f70e6c30ef83a6
-    commit: 9fd41fefac27f031e210c9ffb0543cfbe2a31a43
+    commit: a5d26329db6d1394b03eee92f460872912385c92
   studio-plugins-sessionapi:
     image: lintoai/studio-plugins-sessionapi
     tag: 1.3.1
