@@ -97,10 +97,10 @@ linto:
     commit: 12cdec476c056f7658ec3d6661ff9571d637babe
   studio-plugins-translator:
     image: lintoai/studio-plugins-translator
-    tag: 1.3.0
+    tag: 1.3.1
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:8c4c84e51beda0d9ad7588840db0d84dfffa0e8f3c47fb7f85cc5c8068ca5417
-    commit: 0a560394bc4760b4c176699fde7b91189ab8ef6e
+    digest: sha256:b4378c0a1e0d44a1eb4b5c811c0115e32de41e9d406cd39a6fd6792317d29a7b
+    commit: 12cdec476c056f7658ec3d6661ff9571d637babe
 databases:
   studio-mongo:
     image: mongo
