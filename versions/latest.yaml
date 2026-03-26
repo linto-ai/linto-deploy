@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-03-25T07:02:17.082468+00:00
+# Last updated: 2026-03-26T07:08:36.878583+00:00
 
 platform_version: latest
 linto:
@@ -86,32 +86,32 @@ linto:
     image: lintoai/studio-plugins-migration
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:e1745c075bea5e4c782dcbfdeed54dffa00a95fd524d0a9ff9f70e6c30ef83a6
-    commit: 0a560394bc4760b4c176699fde7b91189ab8ef6e
+    digest: sha256:5bbc1cc5cf6f1a4eed358c5e75df038982267ee0ab7ac2091703badf27c19335
+    commit: a1834ad13f28dfc571a0c2a70fb3fa1d1c6d4d40
   studio-plugins-sessionapi:
     image: lintoai/studio-plugins-sessionapi
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:bc588d4abc4e38a2b9418ada338fd58ebf7a5afb0b94c972c118fa1d990b49d7
-    commit: 0a560394bc4760b4c176699fde7b91189ab8ef6e
+    digest: sha256:382b5aa91264bcd45216201518ac5576a2538753b3b7d9b7d25a50e93188c6a8
+    commit: a1834ad13f28dfc571a0c2a70fb3fa1d1c6d4d40
   studio-plugins-scheduler:
     image: lintoai/studio-plugins-scheduler
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:c55a4c0f1c75940307b7bc4c45b4d66fe490cb9698e60977242b264c5e42de69
-    commit: 0a560394bc4760b4c176699fde7b91189ab8ef6e
+    digest: sha256:3510de4b4c6d016a9eeb29bc6aaf2971f2271e5c64df00f1327fa68e43d8a53b
+    commit: a1834ad13f28dfc571a0c2a70fb3fa1d1c6d4d40
   studio-plugins-transcriber:
     image: lintoai/studio-plugins-transcriber
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:eb843bf191792e8fcc81a04dba27c19fa8fe81cdf3e6f68953d11d991d807e79
-    commit: 0a560394bc4760b4c176699fde7b91189ab8ef6e
+    digest: sha256:884197c0023073c3a2369c57407f122773089921a01ed4c5a6b66d003b6e01c7
+    commit: a1834ad13f28dfc571a0c2a70fb3fa1d1c6d4d40
   studio-plugins-translator:
     image: lintoai/studio-plugins-translator
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:b4378c0a1e0d44a1eb4b5c811c0115e32de41e9d406cd39a6fd6792317d29a7b
-    commit: 0a560394bc4760b4c176699fde7b91189ab8ef6e
+    commit: a1834ad13f28dfc571a0c2a70fb3fa1d1c6d4d40
 databases:
   studio-mongo:
     image: mongo
