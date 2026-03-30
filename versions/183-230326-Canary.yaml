@@ -73,34 +73,34 @@ linto:
     commit: 9c10c28d249c2d2335544064b15f445dcdc364fd
   studio-plugins-migration:
     image: lintoai/studio-plugins-migration
-    tag: 1.3.1
+    tag: 1.3.2
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:e1745c075bea5e4c782dcbfdeed54dffa00a95fd524d0a9ff9f70e6c30ef83a6
-    commit: a1834ad13f28dfc571a0c2a70fb3fa1d1c6d4d40
+    digest: sha256:8e68fd1df78e5a8a283d35de784212ceab91f761c29fb334b31fdf01c848d67e
+    commit: f0494368a06d2215fdcd42a706983508881ee7ce
   studio-plugins-sessionapi:
     image: lintoai/studio-plugins-sessionapi
-    tag: 1.3.1
+    tag: 1.3.2
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:fc78a74a243f3a4d80d61a3531fc293e6f2f76699b5002d2982d8d69e645b3df
-    commit: a1834ad13f28dfc571a0c2a70fb3fa1d1c6d4d40
+    digest: sha256:c1db9574821365609d03f6855e84e5bb9d60cd2db3f7d88d483179a2be3ca238
+    commit: f0494368a06d2215fdcd42a706983508881ee7ce
   studio-plugins-scheduler:
     image: lintoai/studio-plugins-scheduler
-    tag: 1.3.1
+    tag: 1.3.2
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:22127928c79620100c928b811d4e539baa9c19e2284e6bd409a6718389bc7a56
-    commit: a1834ad13f28dfc571a0c2a70fb3fa1d1c6d4d40
+    digest: sha256:8d3fde3fbecf3a46b5d6c5b7b9019e6c183542286a5e57b7a222a6b31cd8b640
+    commit: f0494368a06d2215fdcd42a706983508881ee7ce
   studio-plugins-transcriber:
     image: lintoai/studio-plugins-transcriber
-    tag: 1.3.1
+    tag: 1.3.2
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:b6739733bda4729e9c8f616f77510fc0e0973a5454baaa929c26185900700ad5
-    commit: a1834ad13f28dfc571a0c2a70fb3fa1d1c6d4d40
+    digest: sha256:81511d20ff2b910fc21c0dbf4bca1210f9cd229c1c55bf7b7a92cec253ff2ac8
+    commit: f0494368a06d2215fdcd42a706983508881ee7ce
   studio-plugins-translator:
     image: lintoai/studio-plugins-translator
-    tag: 1.3.1
+    tag: 1.3.2
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:b4378c0a1e0d44a1eb4b5c811c0115e32de41e9d406cd39a6fd6792317d29a7b
-    commit: a1834ad13f28dfc571a0c2a70fb3fa1d1c6d4d40
+    commit: f0494368a06d2215fdcd42a706983508881ee7ce
 databases:
   studio-mongo:
     image: mongo
