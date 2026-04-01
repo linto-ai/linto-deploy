@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-03-31T07:14:03.637609+00:00
+# Last updated: 2026-04-01T07:20:48.783973+00:00
 
 platform_version: latest-unstable
 linto:
@@ -104,13 +104,13 @@ linto:
     image: lintoai/studio-plugins-transcriber
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:81511d20ff2b910fc21c0dbf4bca1210f9cd229c1c55bf7b7a92cec253ff2ac8
+    digest: sha256:46e60656e2e92cdc03f6160c7ca4562e6be77c33c2111d443da172a88cf80035
     commit: f0494368a06d2215fdcd42a706983508881ee7ce
   studio-plugins-translator:
     image: lintoai/studio-plugins-translator
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:b4378c0a1e0d44a1eb4b5c811c0115e32de41e9d406cd39a6fd6792317d29a7b
+    digest: sha256:837b1e59038a36433a6b7c8a2eadc1bba39597c06f8cb575f188ac2b9ccc3b95
     commit: f0494368a06d2215fdcd42a706983508881ee7ce
 databases:
   studio-mongo:
