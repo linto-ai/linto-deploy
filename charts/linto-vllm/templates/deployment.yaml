@@ -10,6 +10,7 @@ metadata:
     app.kubernetes.io/component: {{ $name }}
 spec:
   replicas: {{ $instance.replicas | default 1 }}
+  progressDeadlineSeconds: 1200
   strategy:
     type: Recreate
   selector:
