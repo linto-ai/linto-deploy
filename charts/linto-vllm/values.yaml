@@ -19,9 +19,15 @@ instances:
     # Extra pip packages installed at startup (Voxtral needs audio libs)
     extraPipPackages: "soundfile soxr librosa"
     model: "mistralai/Voxtral-Mini-4B-Realtime-2602"
+    # Voxtral audio encoder uses ~1.5MB/token KV cache (vs 96KB theoretical)
+    # RTX A4000 16GB: ~2592 tokens KV capacity → max-model-len ≤ 2500
+    # RTX A4500 20GB: ~4000 tokens → max-model-len ≤ 3500
+    # A100 40GB+: can go higher, adjust per GPU
     extraArgs:
       - "--max-model-len"
-      - "45000"
+      - "2500"
+      - "--max-num-seqs"
+      - "2"
       - "--enforce-eager"
     gpuMemoryUtilization: "0.90"
     replicas: 1
