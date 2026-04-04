@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-04-03T07:08:18.651753+00:00
+# Last updated: 2026-04-04T07:00:58.194849+00:00
 
 platform_version: latest-unstable
 linto:
@@ -16,20 +16,20 @@ linto:
     image: lintoai/studio-api
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:1f102654a180a801ed05cb229bf587c202b9558f3c0c0cf31617717b885f7071
-    commit: f61d6c8dd3c0fd0c6d71ab4340d645b513ff86b4
+    digest: sha256:1a79b804444f2ca70bc1b4703c04d81c59f73ad8c979fdfcd646721554483bd9
+    commit: e303578a5612fd28b1a12373e8a8e4126dca89ac
   studio-frontend:
     image: lintoai/studio-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:466f2a4c2dbfb4e709f12a549645481cd5ec2a6cc9f3936cf13fb1142bf5f673
-    commit: f61d6c8dd3c0fd0c6d71ab4340d645b513ff86b4
+    digest: sha256:86e96c858fd64114157e03073294b0ef5219f0f29e8b7728b880444f93108ee2
+    commit: e303578a5612fd28b1a12373e8a8e4126dca89ac
   studio-websocket:
     image: lintoai/studio-websocket
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:694d75009bd41559d02b789d8779454da203298c602839c181bf8f6a5fd586cd
-    commit: e0e860bac24e25110240860b15f6bd557606443e
+    digest: sha256:2b7cfb8b6911abb09cec45de863462b2b8006cb387c5f0abe5fedb3517a04b6b
+    commit: e303578a5612fd28b1a12373e8a8e4126dca89ac
   linto-api-gateway:
     image: lintoai/linto-api-gateway
     tag: latest-unstable
@@ -104,7 +104,7 @@ linto:
     image: lintoai/studio-plugins-transcriber
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:f283e1226ff59b604b38791b97259d495f5a3a8685ca81be58791bbc3855d099
+    digest: sha256:a06f9254f1795921db5f3d18ba6fc42b97b1d311b655a23f7cce4254f1507910
     commit: f0494368a06d2215fdcd42a706983508881ee7ce
   studio-plugins-translator:
     image: lintoai/studio-plugins-translator
