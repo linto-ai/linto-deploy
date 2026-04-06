@@ -80,6 +80,8 @@ metadata:
     app.kubernetes.io/component: session-scheduler
 spec:
   replicas: {{ .Values.sessionScheduler.replicas }}
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "linto-live.selectorLabels" . | nindent 6 }}
