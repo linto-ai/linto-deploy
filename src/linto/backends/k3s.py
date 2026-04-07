@@ -60,6 +60,17 @@ def get_charts_dir() -> Path:
     return _charts_dir
 
 
+def _kubeconfig_requires_tunnel(kubeconfig: dict | None) -> bool:
+    """Check if kubeconfig points to localhost (requires SSH tunnel)."""
+    if not kubeconfig:
+        return False
+    try:
+        server = kubeconfig["clusters"][0]["cluster"]["server"]
+        return "127.0.0.1" in server or "localhost" in server
+    except (KeyError, IndexError):
+        return False
+
+
 def check_k3s_prerequisites(profile: ProfileConfig | None = None) -> list[str]:
     """Check for required tools and return list of missing prerequisites.
 
@@ -100,6 +111,7 @@ def check_k3s_prerequisites(profile: ProfileConfig | None = None) -> list[str]:
         missing.append("helm not found")
 
     # Check cluster access (using profile's kubeconfig if available)
+    requires_tunnel = _kubeconfig_requires_tunnel(kubeconfig)
     with KubeconfigContext(kubeconfig):
         try:
             result = subprocess.run(
@@ -109,9 +121,15 @@ def check_k3s_prerequisites(profile: ProfileConfig | None = None) -> list[str]:
                 timeout=15,
             )
             if result.returncode != 0:
-                missing.append("Kubernetes cluster not accessible")
+                msg = "Kubernetes cluster not accessible"
+                if requires_tunnel:
+                    msg += " (SSH tunnel required: ssh -L 6443:127.0.0.1:6443 <host> -N -f)"
+                missing.append(msg)
         except (subprocess.TimeoutExpired, FileNotFoundError):
-            missing.append("Cannot connect to Kubernetes cluster")
+            msg = "Cannot connect to Kubernetes cluster"
+            if requires_tunnel:
+                msg += " (SSH tunnel required: ssh -L 6443:127.0.0.1:6443 <host> -N -f)"
+            missing.append(msg)
 
     return missing
 
