@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-04-08T07:19:39.855486+00:00
+# Last updated: 2026-04-09T07:22:10.826393+00:00
 
 platform_version: latest
 linto:
@@ -16,8 +16,8 @@ linto:
     image: lintoai/studio-api
     tag: latest
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:ede95a116088b35763af04027cde1cc13715281d45be8b3730764a855214e81c
-    commit: f61d6c8dd3c0fd0c6d71ab4340d645b513ff86b4
+    digest: sha256:168210a8f71b12e0aaaf7f27df3d2334ce9a40617ae8f058508c84404dfaf983
+    commit: 08181be51ea592127e88cfff8c7bec597256d6f6
   studio-frontend:
     image: lintoai/studio-frontend
     tag: latest
