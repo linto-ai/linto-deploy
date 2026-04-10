@@ -32,11 +32,7 @@ metadata:
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     {{- if and (eq .Values.global.tls.mode "acme") .Values.global.tls.createCertificate }}
-    {{- /* Only request certificate if secret doesn't exist - use lookup function */}}
-    {{- $tlsSecret := lookup "v1" "Secret" .Release.Namespace (include "linto-studio.tlsSecretName" .) }}
-    {{- if not $tlsSecret }}
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    {{- end }}
     {{- end }}
     {{- if .Values.studioApi.ingress.stripPrefix }}
     traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "linto-studio.fullname" . }}-strip-api@kubernetescrd
