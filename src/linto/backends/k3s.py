@@ -1,6 +1,7 @@
 """Kubernetes (k3s) backend using Helm charts."""
 
 import importlib.resources
+import json
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -236,6 +237,63 @@ def install_cert_manager(kubeconfig: dict | None = None) -> bool:
                 return False
         except (subprocess.TimeoutExpired, FileNotFoundError) as e:
             console.print(f"[red]Error installing cert-manager: {e}[/red]")
+            return False
+
+
+def ensure_cluster_issuer(acme_email: str, kubeconfig: dict | None = None) -> bool:
+    """Ensure the letsencrypt-prod ClusterIssuer exists for ACME TLS.
+
+    Args:
+        acme_email: Email for Let's Encrypt registration
+        kubeconfig: Optional kubeconfig dict to use
+
+    Returns:
+        True if the ClusterIssuer is ready
+    """
+    with KubeconfigContext(kubeconfig):
+        try:
+            # Check if ClusterIssuer already exists
+            result = subprocess.run(
+                ["kubectl", "get", "clusterissuer", "letsencrypt-prod"],
+                capture_output=True,
+                check=False,
+                timeout=10,
+            )
+            if result.returncode == 0:
+                return True
+
+            console.print("[cyan]Creating letsencrypt-prod ClusterIssuer...[/cyan]")
+
+            issuer_manifest = json.dumps({
+                "apiVersion": "cert-manager.io/v1",
+                "kind": "ClusterIssuer",
+                "metadata": {"name": "letsencrypt-prod"},
+                "spec": {
+                    "acme": {
+                        "email": acme_email,
+                        "server": "https://acme-v02.api.letsencrypt.org/directory",
+                        "privateKeySecretRef": {"name": "letsencrypt-prod-account-key"},
+                        "solvers": [{"http01": {"ingress": {"ingressClassName": "traefik"}}}],
+                    }
+                },
+            })
+
+            result = subprocess.run(
+                ["kubectl", "apply", "-f", "-"],
+                input=issuer_manifest,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=30,
+            )
+            if result.returncode == 0:
+                console.print("[green]ClusterIssuer created successfully[/green]")
+                return True
+            else:
+                console.print(f"[red]Failed to create ClusterIssuer: {result.stderr}[/red]")
+                return False
+        except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+            console.print(f"[red]Error creating ClusterIssuer: {e}[/red]")
             return False
 
 
@@ -1552,11 +1610,13 @@ def apply_k3s(profile_name: str, base_dir: Path | None = None) -> None:
                 f"Failed to create namespace '{namespace}'",
             )
 
-        # Install cert-manager if requested and using ACME
+        # Install cert-manager and ClusterIssuer if using ACME
         tls_mode = profile.tls_mode.value if isinstance(profile.tls_mode, TLSMode) else profile.tls_mode
         if tls_mode == "acme" and profile.k3s_install_cert_manager:
             if not install_cert_manager(kubeconfig):
                 console.print("[yellow]Warning: cert-manager installation failed[/yellow]")
+            else:
+                ensure_cluster_issuer(profile.acme_email, kubeconfig)
 
         # Restore TLS certificates from backup (if available)
         if tls_mode == "acme":
