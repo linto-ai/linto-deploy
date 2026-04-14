@@ -88,11 +88,16 @@ TLS secret name - uses shared secret if configured
 {{- end }}
 
 {{/*
-Image pull policy - Always for latest-* tags, otherwise use configured value
+Image pull policy - Always for floating tags (latest*, unstable, dev),
+IfNotPresent otherwise. Decides from the effective per-service tag, not
+the global default, so `service_tags` overrides in linto-deploy profiles
+are honoured.
+
+Usage: {{ include "linto-live.imagePullPolicy" (dict "tag" .Values.xxx.image.tag "ctx" .) }}
 */}}
 {{- define "linto-live.imagePullPolicy" -}}
-{{- $tag := include "linto-live.imageTag" . -}}
-{{- if hasPrefix "latest" $tag -}}
+{{- $tag := .tag | default (include "linto-live.imageTag" .ctx) -}}
+{{- if or (hasPrefix "latest" $tag) (eq $tag "unstable") (eq $tag "dev") -}}
 Always
 {{- else -}}
 IfNotPresent

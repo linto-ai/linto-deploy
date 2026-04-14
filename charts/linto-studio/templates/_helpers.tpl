@@ -101,13 +101,18 @@ URL scheme based on TLS
 {{- end }}
 
 {{/*
-Image pull policy - Always for latest-* tags, otherwise use configured value
+Image pull policy - Always for floating tags (latest*, unstable, dev),
+IfNotPresent otherwise. Decides from the effective per-service tag, not
+the global default, so `service_tags` overrides in linto-deploy profiles
+are honoured.
+
+Usage: {{ include "linto-studio.imagePullPolicy" (dict "tag" .Values.xxx.image.tag "ctx" .) }}
 */}}
 {{- define "linto-studio.imagePullPolicy" -}}
-{{- $tag := include "linto-studio.imageTag" . -}}
-{{- if hasPrefix "latest" $tag -}}
+{{- $tag := .tag | default (include "linto-studio.imageTag" .ctx) -}}
+{{- if or (hasPrefix "latest" $tag) (eq $tag "unstable") (eq $tag "dev") -}}
 Always
 {{- else -}}
-{{ .pullPolicy | default "IfNotPresent" }}
+IfNotPresent
 {{- end -}}
 {{- end }}

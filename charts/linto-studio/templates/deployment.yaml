@@ -46,7 +46,7 @@ spec:
       containers:
         - name: api
           image: "{{ .Values.studioApi.image.repository }}:{{ .Values.studioApi.image.tag | default (include "linto-studio.imageTag" .) }}"
-          imagePullPolicy: {{ include "linto-studio.imagePullPolicy" . }}
+          imagePullPolicy: {{ include "linto-studio.imagePullPolicy" (dict "tag" .Values.studioApi.image.tag "ctx" .) }}
           # Use Dockerfile ENTRYPOINT (handles gosu for non-root execution)
           args: ["--run-cmd=npm start"]
           ports:
@@ -175,7 +175,7 @@ spec:
       containers:
         - name: frontend
           image: "{{ .Values.studioFrontend.image.repository }}:{{ .Values.studioFrontend.image.tag | default (include "linto-studio.imageTag" .) }}"
-          imagePullPolicy: {{ include "linto-studio.imagePullPolicy" . }}
+          imagePullPolicy: {{ include "linto-studio.imagePullPolicy" (dict "tag" .Values.studioFrontend.image.tag "ctx" .) }}
           ports:
             - name: http
               containerPort: 8080
@@ -224,7 +224,7 @@ spec:
       containers:
         - name: websocket
           image: "{{ .Values.studioWebsocket.image.repository }}:{{ .Values.studioWebsocket.image.tag | default (include "linto-studio.imageTag" .) }}"
-          imagePullPolicy: {{ include "linto-studio.imagePullPolicy" . }}
+          imagePullPolicy: {{ include "linto-studio.imagePullPolicy" (dict "tag" .Values.studioWebsocket.image.tag "ctx" .) }}
           ports:
             - name: http
               containerPort: 80
