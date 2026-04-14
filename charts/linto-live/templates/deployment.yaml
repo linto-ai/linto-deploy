@@ -24,7 +24,7 @@ spec:
       initContainers:
         - name: run-migrations
           image: "{{ .Values.migration.image.repository }}:{{ .Values.migration.image.tag | default (include "linto-live.imageTag" .) }}"
-          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" (dict "tag" .Values.migration.image.tag "ctx" .) }}
           env:
             - name: DB_HOST
               value: {{ include "linto-live.postgresHost" . | quote }}
@@ -47,7 +47,7 @@ spec:
       containers:
         - name: session-api
           image: "{{ .Values.sessionApi.image.repository }}:{{ .Values.sessionApi.image.tag | default (include "linto-live.imageTag" .) }}"
-          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" (dict "tag" .Values.sessionApi.image.tag "ctx" .) }}
           ports:
             - name: http
               containerPort: 80
@@ -98,7 +98,7 @@ spec:
       initContainers:
         - name: run-migrations
           image: "{{ .Values.migration.image.repository }}:{{ .Values.migration.image.tag | default (include "linto-live.imageTag" .) }}"
-          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" (dict "tag" .Values.migration.image.tag "ctx" .) }}
           env:
             - name: DB_HOST
               value: {{ include "linto-live.postgresHost" . | quote }}
@@ -121,7 +121,7 @@ spec:
       containers:
         - name: session-scheduler
           image: "{{ .Values.sessionScheduler.image.repository }}:{{ .Values.sessionScheduler.image.tag | default (include "linto-live.imageTag" .) }}"
-          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" (dict "tag" .Values.sessionScheduler.image.tag "ctx" .) }}
           envFrom:
             - configMapRef:
                 name: {{ include "linto-live.fullname" . }}-session-scheduler-config
@@ -171,7 +171,7 @@ spec:
       containers:
         - name: session-transcriber
           image: "{{ .Values.sessionTranscriber.image.repository }}:{{ .Values.sessionTranscriber.image.tag | default (include "linto-live.imageTag" .) }}"
-          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" (dict "tag" .Values.sessionTranscriber.image.tag "ctx" .) }}
           ports:
             - name: http
               containerPort: 8080
@@ -341,7 +341,7 @@ spec:
       containers:
         - name: translator
           image: "{{ .Values.translator.image.repository }}:{{ .Values.translator.image.tag | default (include "linto-live.imageTag" .) }}"
-          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" (dict "tag" .Values.translator.image.tag "ctx" .) }}
           envFrom:
             - configMapRef:
                 name: {{ include "linto-live.fullname" . }}-translator-config
@@ -373,7 +373,7 @@ spec:
       containers:
         - name: stt-whisper
           image: "{{ .Values.streamingStt.whisper.image.repository }}:{{ .Values.streamingStt.whisper.image.tag | default (include "linto-live.imageTag" .) }}"
-          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" (dict "tag" .Values.streamingStt.whisper.image.tag "ctx" .) }}
           ports:
             - name: ws
               containerPort: 80
@@ -416,7 +416,7 @@ spec:
       containers:
         - name: stt-nemo
           image: "{{ .Values.streamingStt.nemo_tdt_v3.image.repository }}:{{ .Values.streamingStt.nemo_tdt_v3.image.tag | default (include "linto-live.imageTag" .) }}"
-          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" (dict "tag" .Values.streamingStt.nemo_tdt_v3.image.tag "ctx" .) }}
           ports:
             - name: ws
               containerPort: 80
@@ -473,7 +473,7 @@ spec:
       containers:
         - name: stt-kyutai
           image: "{{ .Values.streamingStt.kyutai.image.repository }}:{{ .Values.streamingStt.kyutai.image.tag | default (include "linto-live.imageTag" .) }}-{{ .Values.streamingStt.kyutai.gpuArchitecture }}"
-          imagePullPolicy: {{ include "linto-live.imagePullPolicy" . }}
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" (dict "tag" .Values.streamingStt.kyutai.image.tag "ctx" .) }}
           env:
             - name: DEVICE
               value: cuda
