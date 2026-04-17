@@ -3,6 +3,9 @@
 import importlib.resources
 import json
 import subprocess
+from collections import defaultdict
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -1876,6 +1879,9 @@ def status_k3s(
                 import json
 
                 pods_data = json.loads(result.stdout)
+                # NOTE: do not seed the log-targets cache here — status only
+                # fetches the linto namespace, which would shrink a richer
+                # multi-namespace cache populated by `linto logs <profile>`.
                 for pod in pods_data.get("items", []):
                     pod_name = pod.get("metadata", {}).get("name", "unknown")
                     creation_timestamp = pod.get("metadata", {}).get("creationTimestamp")
@@ -1925,6 +1931,391 @@ def status_k3s(
     return services
 
 
+@dataclass
+class LogTarget:
+    """A logical log target across any namespace, with its kubectl selector pre-built."""
+
+    namespace: str
+    instance: str
+    instance_short: str
+    component: str
+    label_selector: str
+    pod_count: int
+    pods: list[str] = field(default_factory=list)
+
+
+def _targets_cache_path(profile_name: str, base_dir: Path) -> Path:
+    return base_dir / ".linto" / "cache" / f"{profile_name}-k8s.json"
+
+
+def _resolve_pod_identity(
+    labels: dict[str, str],
+) -> tuple[str | None, str, str] | None:
+    """Pull a (instance, component, label_selector) out of a pod's labels.
+
+    Tries Helm-style conventions first, then falls back to `app`/`k8s-app`/
+    `name` for system pods (coredns, nvidia-device-plugin, …).
+    Returns None when no usable identity exists.
+    """
+    inst = labels.get("app.kubernetes.io/instance")
+
+    comp = labels.get("app.kubernetes.io/component")
+    if comp:
+        sel = f"app.kubernetes.io/component={comp}"
+        if inst:
+            sel += f",app.kubernetes.io/instance={inst}"
+        return inst, comp, sel
+
+    name = labels.get("app.kubernetes.io/name")
+    if name:
+        sel = f"app.kubernetes.io/name={name}"
+        if inst:
+            sel += f",app.kubernetes.io/instance={inst}"
+        return inst, name, sel
+
+    # Non-Helm fallbacks
+    for key in ("k8s-app", "app", "name"):
+        val = labels.get(key)
+        if val:
+            return inst, val, f"{key}={val}"
+
+    return None
+
+
+def _build_log_targets(pods_data: dict) -> list[LogTarget]:
+    """Group pods across all namespaces into LogTarget records.
+
+    Pods with Helm-style labels are keyed by `(namespace, instance, component)`.
+    Pods without an `instance` label use the namespace as the pseudo-instance.
+    """
+    grouped: dict[tuple[str, str, str], LogTarget] = {}
+    for pod in pods_data.get("items", []):
+        md = pod.get("metadata", {})
+        namespace = md.get("namespace", "")
+        labels = md.get("labels") or {}
+        identity = _resolve_pod_identity(labels)
+        if not identity:
+            continue
+        inst, comp, selector = identity
+        effective_instance = inst or namespace
+        key = (namespace, effective_instance, comp)
+        if key not in grouped:
+            grouped[key] = LogTarget(
+                namespace=namespace,
+                instance=effective_instance,
+                instance_short=effective_instance.removeprefix("linto-"),
+                component=comp,
+                label_selector=selector,
+                pod_count=0,
+                pods=[],
+            )
+        grouped[key].pod_count += 1
+        pod_name = md.get("name")
+        if pod_name:
+            grouped[key].pods.append(pod_name)
+    return sorted(
+        grouped.values(), key=lambda t: (t.namespace, t.instance, t.component)
+    )
+
+
+def write_targets_cache(
+    profile_name: str, targets: list[LogTarget], base_dir: Path
+) -> None:
+    """Persist log targets for fast completion lookups. Best-effort."""
+    try:
+        path = _targets_cache_path(profile_name, base_dir)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(
+                {
+                    "refreshed_at": datetime.utcnow().isoformat() + "Z",
+                    "targets": [asdict(t) for t in targets],
+                },
+                indent=2,
+            )
+        )
+    except OSError:
+        pass
+
+
+def read_targets_cache(
+    profile_name: str, base_dir: Path | None = None
+) -> list[LogTarget] | None:
+    """Load cached log targets. Returns None if missing or unreadable."""
+    if base_dir is None:
+        base_dir = Path.cwd()
+    path = _targets_cache_path(profile_name, base_dir)
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text())
+        return [LogTarget(**t) for t in data.get("targets", [])]
+    except (OSError, json.JSONDecodeError, TypeError):
+        return None
+
+
+def fetch_log_targets(
+    profile: ProfileConfig,
+    profile_name: str,
+    base_dir: Path | None = None,
+    timeout: int = 10,
+) -> list[LogTarget]:
+    """Live-fetch log targets across every namespace and update the cache."""
+    if base_dir is None:
+        base_dir = Path.cwd()
+    with KubeconfigContext(profile.kubeconfig):
+        try:
+            result = subprocess.run(
+                ["kubectl", "get", "pods", "--all-namespaces", "-o", "json"],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=timeout,
+            )
+        except subprocess.TimeoutExpired:
+            return []
+    if result.returncode != 0 or not result.stdout.strip():
+        return []
+    try:
+        pods_data = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return []
+    targets = _build_log_targets(pods_data)
+    write_targets_cache(profile_name, targets, base_dir)
+    return targets
+
+
+def _print_log_targets(targets: list[LogTarget], profile_name: str) -> None:
+    """Render the list of targets grouped by namespace."""
+    if not targets:
+        console.print(
+            "[yellow]No pods found. Is the SSH tunnel up and the cluster reachable?[/yellow]"
+        )
+        return
+
+    # Component → set of (namespace, instance) to detect ambiguity
+    locations_of_component: dict[str, set[tuple[str, str]]] = defaultdict(set)
+    for t in targets:
+        locations_of_component[t.component].add((t.namespace, t.instance))
+
+    table = Table(title=f"Log targets — {profile_name}")
+    table.add_column("Namespace", style="magenta")
+    table.add_column("Chart / release", style="cyan")
+    table.add_column("Component", style="green")
+    table.add_column("Pods", style="dim", justify="right")
+    table.add_column("Invocation", style="white")
+
+    current_namespace = None
+    current_instance = None
+    for t in targets:
+        locations = locations_of_component[t.component]
+        namespaces = {ns for ns, _ in locations}
+        instances = {inst for _, inst in locations}
+        if len(namespaces) > 1:
+            invocation = f"{t.namespace}/{t.component}"
+        elif len(instances) > 1:
+            invocation = f"{t.instance_short}/{t.component}"
+        else:
+            invocation = t.component
+
+        ns_display = t.namespace if t.namespace != current_namespace else ""
+        inst_display = (
+            t.instance
+            if (t.namespace, t.instance) != (current_namespace, current_instance)
+            else ""
+        )
+        current_namespace = t.namespace
+        current_instance = t.instance
+        table.add_row(
+            ns_display, inst_display, t.component, str(t.pod_count), invocation
+        )
+
+    console.print(table)
+    console.print(
+        f"[dim]Usage: linto logs {profile_name} <invocation>"
+        f"   |   <ns>/<component>   |   <chart>/<component>"
+        f"   |   pod/<full-pod-name>[/dim]"
+    )
+
+
+def _resolve_log_target(
+    service: str,
+    targets: list[LogTarget],
+    default_namespace: str,
+) -> tuple[str, list[str], str | None]:
+    """Translate a user token into a (namespace, kubectl_args, warning) tuple."""
+    # Explicit pod/ or deployment/ — look up namespace from cache, else default
+    if service.startswith("pod/"):
+        pod_name = service[4:]
+        for t in targets:
+            if pod_name in t.pods:
+                return t.namespace, [service], None
+        return default_namespace, [service], None
+
+    if service.startswith("deployment/"):
+        dep_name = service[len("deployment/") :]
+        for t in targets:
+            if any(p.startswith(dep_name + "-") for p in t.pods):
+                return t.namespace, [service], None
+        return default_namespace, [service], None
+
+    # X/Y form — X can be namespace, instance (full or short)
+    if "/" in service:
+        left, right = service.split("/", 1)
+        matches = [
+            t
+            for t in targets
+            if t.component == right
+            and (
+                t.namespace == left
+                or t.instance == left
+                or t.instance_short == left
+                or t.instance == f"linto-{left}"
+            )
+        ]
+        if matches:
+            t = matches[0]
+            return t.namespace, ["-l", t.label_selector], None
+        # Unknown left side — best-effort guess
+        return (
+            default_namespace,
+            [
+                "-l",
+                f"app.kubernetes.io/instance=linto-{left},app.kubernetes.io/component={right}",
+            ],
+            f"No target matched '{service}'. Guessing namespace={default_namespace}.",
+        )
+
+    # Bare token: try component first, then instance-level shortcut
+    comp_matches = [t for t in targets if t.component == service]
+    if comp_matches:
+        namespaces = {t.namespace for t in comp_matches}
+        instances = {t.instance for t in comp_matches}
+        if len(namespaces) == 1 and len(instances) == 1:
+            t = comp_matches[0]
+            return t.namespace, ["-l", t.label_selector], None
+        if len(namespaces) == 1:
+            # Same namespace, multiple instances → stream all via bare component label
+            warning = (
+                f"'{service}' matches {len(comp_matches)} releases in "
+                f"{namespaces.pop()}; streaming all. Disambiguate with "
+                f"<chart>/{service}."
+            )
+            return (
+                comp_matches[0].namespace,
+                ["-l", f"app.kubernetes.io/component={service}"],
+                warning,
+            )
+        # Across namespaces — must pick one
+        t = comp_matches[0]
+        warning = (
+            f"'{service}' exists in namespaces {sorted(namespaces)}; "
+            f"streaming {t.namespace}. Use <ns>/{service} to pick another."
+        )
+        return t.namespace, ["-l", t.label_selector], warning
+
+    # Instance-level shortcut (chart-level within linto, namespace-level elsewhere)
+    inst_matches = [
+        t
+        for t in targets
+        if t.instance == service
+        or t.instance_short == service
+        or t.instance == f"linto-{service}"
+    ]
+    if inst_matches:
+        namespaces = {t.namespace for t in inst_matches}
+        t = inst_matches[0]
+        if len(namespaces) > 1:
+            warning = (
+                f"Chart '{service}' spans {sorted(namespaces)}; streaming "
+                f"{t.namespace}."
+            )
+        else:
+            warning = None
+        return (
+            t.namespace,
+            ["-l", f"app.kubernetes.io/instance={t.instance}"],
+            warning,
+        )
+
+    # Namespace-level "shortcut" isn't meaningful for `kubectl logs` (no selector
+    # ⇒ error), so nudge the user toward a specific component instead.
+    ns_matches = [t for t in targets if t.namespace == service]
+    if ns_matches:
+        options = sorted({t.component for t in ns_matches})
+        raise ValidationError(
+            "SERVICE_NAMESPACE_ONLY",
+            f"'{service}' is a namespace. Pick a component: {', '.join(options)}",
+        )
+
+
+def resolve_pod_for_service(
+    service: str,
+    targets: list[LogTarget],
+    default_namespace: str,
+) -> tuple[str, str] | None:
+    """Resolve a service token into the (namespace, pod_name) of a single pod.
+
+    Used by `port-forward`, `exec`, etc. where we need exactly one pod rather
+    than a label stream. Accepts the same forms as `_resolve_log_target`:
+    pod/X, deployment/X, <ns>/<component>, <instance>/<component>, bare name.
+    """
+    if service.startswith("pod/"):
+        pod_name = service[4:]
+        for t in targets:
+            if pod_name in t.pods:
+                return t.namespace, pod_name
+        return default_namespace, pod_name
+
+    if service.startswith("deployment/"):
+        dep_name = service[len("deployment/") :]
+        for t in targets:
+            for p in t.pods:
+                if p.startswith(dep_name + "-"):
+                    return t.namespace, p
+        return None
+
+    if "/" in service:
+        left, right = service.split("/", 1)
+        matches = [
+            t
+            for t in targets
+            if t.component == right
+            and (
+                t.namespace == left
+                or t.instance == left
+                or t.instance_short == left
+                or t.instance == f"linto-{left}"
+            )
+        ]
+        if matches and matches[0].pods:
+            return matches[0].namespace, matches[0].pods[0]
+        return None
+
+    comp_matches = [t for t in targets if t.component == service]
+    if comp_matches and comp_matches[0].pods:
+        return comp_matches[0].namespace, comp_matches[0].pods[0]
+
+    inst_matches = [
+        t
+        for t in targets
+        if t.instance == service
+        or t.instance_short == service
+        or t.instance == f"linto-{service}"
+    ]
+    if inst_matches and inst_matches[0].pods:
+        return inst_matches[0].namespace, inst_matches[0].pods[0]
+
+    return None
+
+    # Unknown — try the label anyway in the default namespace
+    return (
+        default_namespace,
+        ["-l", f"app.kubernetes.io/component={service}"],
+        f"'{service}' not found in cache. Run 'linto logs <profile>' to refresh.",
+    )
+
+
 def logs_k3s(
     profile_name: str,
     service: str | None = None,
@@ -1936,7 +2327,7 @@ def logs_k3s(
 
     Args:
         profile_name: Name of the profile
-        service: Pod or deployment name
+        service: Component name, instance/component, pod/<name>, or deployment/<name>
         follow: Whether to follow log output
         tail: Number of lines to show
         base_dir: Base directory for .linto folder
@@ -1957,38 +2348,40 @@ def logs_k3s(
             f"Missing prerequisites: {', '.join(missing)}",
         )
 
+    # No service: list the available targets (also refreshes the cache)
     if not service:
-        console.print("[red]Error: Service/pod name is required for k3s logs[/red]")
-        console.print("[dim]Use 'linto status --profile {profile}' to see available pods[/dim]")
-        raise ValidationError(
-            "SERVICE_REQUIRED",
-            "Service/pod name is required for k3s logs",
-        )
+        targets = fetch_log_targets(profile, profile_name, base_dir=base_dir)
+        _print_log_targets(targets, profile_name)
+        return
+
+    # Resolve the service token — cache-first, fall back to live fetch.
+    # We always need the cache so we can map components / pods to namespaces.
+    targets = read_targets_cache(profile_name, base_dir) or fetch_log_targets(
+        profile, profile_name, base_dir=base_dir
+    )
+
+    resolved_namespace, resolved_args, warning = _resolve_log_target(
+        service, targets, default_namespace=namespace
+    )
+    if warning:
+        console.print(f"[yellow]⚠ {warning}[/yellow]")
 
     cmd = [
         "kubectl",
         "logs",
         "--namespace",
-        namespace,
+        resolved_namespace,
         "--tail",
         str(tail),
     ]
-
     if follow:
         cmd.append("-f")
-
-    # Determine if it's a pod or deployment
-    if "/" in service:
-        cmd.append(service)
-    else:
-        # Try to find matching pod
-        cmd.extend(["-l", f"app.kubernetes.io/name={service}"])
+    cmd.extend(resolved_args)
 
     # All kubectl operations use the profile's kubeconfig
     with KubeconfigContext(kubeconfig):
         try:
             if follow:
-                # For follow mode, print command then use Popen
                 from linto.utils.cmd import get_show_commands, quote_arg
 
                 if get_show_commands():
