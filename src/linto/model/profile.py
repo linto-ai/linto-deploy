@@ -189,6 +189,10 @@ class ProfileConfig(BaseModel):
     oidc_native_url: str | None = Field(default=None)
     oidc_native_scope: str = Field(default="openid,email,profile")
 
+    # Studio organization defaults — comma-separated subset of upload/summary/session.
+    # None = let the image .envdefault apply (currently "upload,summary,session").
+    organization_default_permissions: str | None = Field(default=None)
+
     @field_validator("name")
     @classmethod
     def validate_name(cls, v: str) -> str:
