@@ -948,6 +948,12 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
     tls_mode = profile.tls_mode.value if isinstance(profile.tls_mode, TLSMode) else profile.tls_mode
     scheme = "https" if tls_mode != "off" else "http"
 
+    # Default organization permissions override (image defaults to upload,summary,session)
+    if profile.organization_default_permissions is not None:
+        values["studioApi"]["env"]["ORGANIZATION_DEFAULT_PERMISSIONS"] = (
+            profile.organization_default_permissions
+        )
+
     # SMTP configuration
     if profile.smtp_enabled:
         values["studioApi"]["env"]["SMTP_HOST"] = profile.smtp_host or ""

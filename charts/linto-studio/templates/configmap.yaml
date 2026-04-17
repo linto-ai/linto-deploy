@@ -22,6 +22,10 @@ data:
   BROKER_PROTOCOL: "mqtt"
   BROKER_KEEPALIVE: "60"
   EXPRESS_SIZE_FILE_MAX: {{ .Values.studioApi.env.EXPRESS_SIZE_FILE_MAX | default "500mb" | quote }}
+  {{- /* Default org permissions — override the image's .envdefault (upload,summary,session) */ -}}
+  {{- if .Values.studioApi.env.ORGANIZATION_DEFAULT_PERMISSIONS }}
+  ORGANIZATION_DEFAULT_PERMISSIONS: {{ .Values.studioApi.env.ORGANIZATION_DEFAULT_PERMISSIONS | quote }}
+  {{- end }}
   {{- if .Values.studioApi.env.GATEWAY_SERVICES }}
   GATEWAY_SERVICES: {{ .Values.studioApi.env.GATEWAY_SERVICES | quote }}
   {{- end }}
