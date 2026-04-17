@@ -80,63 +80,52 @@ def _complete_profile(incomplete: str) -> list[str]:
 
 
 def _get_k3s_services(profile_name: str) -> list[str]:
-    """Get list of available services/pods for a k3s profile."""
+    """Build completion candidates for `linto logs <profile> <TAB>`.
+
+    Uses the on-disk cache populated by `linto status`/`linto logs <profile>`
+    to keep completion instant. Falls back to a short live fetch if no cache
+    exists yet (silent on failure so the shell stays responsive).
+    """
     try:
+        from linto.backends.k3s import (
+            fetch_log_targets,
+            read_targets_cache,
+        )
         from linto.model.validation import load_profile
-        from linto.utils.kubeconfig import KubeconfigContext
 
-        profile = load_profile(profile_name)
-        namespace = profile.k3s_namespace
+        base_dir = Path.cwd()
+        targets = read_targets_cache(profile_name, base_dir)
+        if not targets:
+            try:
+                profile = load_profile(profile_name, base_dir)
+                targets = fetch_log_targets(
+                    profile, profile_name, base_dir=base_dir, timeout=3
+                )
+            except Exception:
+                return []
 
-        with KubeconfigContext(profile.kubeconfig):
-            chart_names = set()
-            deployments = []
-            pods = []
+        if not targets:
+            return []
 
-            # Get deployments
-            result = subprocess.run(
-                ["kubectl", "get", "deployments", "-n", namespace, "-o", "json"],
-                capture_output=True,
-                text=True,
-                check=False,
-                timeout=10,
-            )
-            if result.returncode == 0:
-                data = json.loads(result.stdout)
-                for item in data.get("items", []):
-                    name = item["metadata"]["name"]
-                    deployments.append(f"deployment/{name}")
-                    labels = item.get("metadata", {}).get("labels", {})
-                    chart_name = labels.get("app.kubernetes.io/name")
-                    if chart_name:
-                        chart_names.add(chart_name)
+        candidates: set[str] = set()
+        for t in targets:
+            candidates.add(t.component)
+            candidates.add(f"{t.instance_short}/{t.component}")
+            if t.instance != t.instance_short:
+                candidates.add(f"{t.instance}/{t.component}")
+            candidates.add(f"{t.namespace}/{t.component}")
+            candidates.add(t.instance)
+            candidates.add(t.instance_short)
+            candidates.add(t.namespace)
+            for pod in t.pods:
+                candidates.add(f"pod/{pod}")
 
-            # Get pods
-            result = subprocess.run(
-                ["kubectl", "get", "pods", "-n", namespace, "-o", "json"],
-                capture_output=True,
-                text=True,
-                check=False,
-                timeout=10,
-            )
-            if result.returncode == 0:
-                data = json.loads(result.stdout)
-                for item in data.get("items", []):
-                    name = item["metadata"]["name"]
-                    pods.append(f"pod/{name}")
-
-            # Order: chart names, deployments, pods
-            return sorted(chart_names) + sorted(deployments) + sorted(pods)
+        return sorted(candidates)
     except FileNotFoundError:
-        # kubectl not installed - silent fail for completion
-        pass
-    except subprocess.TimeoutExpired:
-        # Cluster not responding - silent fail for completion
-        pass
+        return []
     except Exception as e:
-        # Log other errors for debugging
         print(f"Service completion error: {e}", file=sys.stderr)
-    return []
+        return []
 
 
 def _complete_service(ctx: typer.Context, incomplete: str) -> list[str]:
@@ -1075,50 +1064,53 @@ def kubeconfig_export(
 
 
 def _resolve_pod_name(
+    profile_name: str,
     service: str,
-    namespace: str,
+    default_namespace: str,
     kubeconfig: dict | None = None,
-) -> str | None:
-    """Resolve a service/label to a pod name.
+) -> tuple[str, str] | None:
+    """Resolve a service/label to a (namespace, pod_name).
 
-    Args:
-        service: Service identifier (pod/name, deployment/name, or label value)
-        namespace: Kubernetes namespace
-        kubeconfig: Optional kubeconfig dict
+    Uses the multi-namespace cache populated by `linto logs <profile>` so that
+    component names, chart shortcuts, and cross-namespace pods all work. Falls
+    back to a direct kubectl pod lookup in the default namespace.
 
     Returns:
-        Pod name or None if not found
+        (namespace, pod_name) or None if no match.
     """
+    from linto.backends.k3s import (
+        fetch_log_targets,
+        read_targets_cache,
+        resolve_pod_for_service,
+    )
+    from linto.model.validation import load_profile
     from linto.utils.kubeconfig import KubeconfigContext
 
+    base_dir = Path.cwd()
+    targets = read_targets_cache(profile_name, base_dir)
+    if not targets:
+        try:
+            profile = load_profile(profile_name, base_dir)
+            targets = fetch_log_targets(profile, profile_name, base_dir=base_dir)
+        except Exception:
+            targets = []
+
+    resolved = resolve_pod_for_service(service, targets, default_namespace)
+    if resolved:
+        return resolved
+
+    # Last-resort: treat `service` as a literal pod name in the default namespace
     with KubeconfigContext(kubeconfig):
-        # If already a pod reference, extract the name
-        if service.startswith("pod/"):
-            return service[4:]
-
-        # If deployment reference, get pods for the deployment
-        if service.startswith("deployment/"):
-            deployment_name = service[11:]
-            result = subprocess.run(
-                [
-                    "kubectl", "get", "pods", "-n", namespace,
-                    "-l", f"app.kubernetes.io/name={deployment_name}",
-                    "-o", "jsonpath={.items[0].metadata.name}",
-                ],
-                capture_output=True,
-                text=True,
-                check=False,
-                timeout=15,
-            )
-            if result.returncode == 0 and result.stdout.strip():
-                return result.stdout.strip()
-
-        # Try as a label selector (app.kubernetes.io/name=<service>)
         result = subprocess.run(
             [
-                "kubectl", "get", "pods", "-n", namespace,
-                "-l", f"app.kubernetes.io/name={service}",
-                "-o", "jsonpath={.items[0].metadata.name}",
+                "kubectl",
+                "get",
+                "pod",
+                service,
+                "-n",
+                default_namespace,
+                "-o",
+                "jsonpath={.metadata.name}",
             ],
             capture_output=True,
             text=True,
@@ -1126,23 +1118,9 @@ def _resolve_pod_name(
             timeout=15,
         )
         if result.returncode == 0 and result.stdout.strip():
-            return result.stdout.strip()
+            return default_namespace, result.stdout.strip()
 
-        # Try as direct pod name
-        result = subprocess.run(
-            [
-                "kubectl", "get", "pod", service, "-n", namespace,
-                "-o", "jsonpath={.metadata.name}",
-            ],
-            capture_output=True,
-            text=True,
-            check=False,
-            timeout=15,
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            return result.stdout.strip()
-
-        return None
+    return None
 
 
 # Note: 'exec' is a Python reserved word, so we use exec_ as the function name
@@ -1185,13 +1163,16 @@ def exec_(
         profile_data = load_profile(profile)
         _check_backend_supported(profile_data)
 
-        namespace = profile_data.k3s_namespace
+        default_namespace = profile_data.k3s_namespace
 
-        # Resolve service to pod name
-        pod_name = _resolve_pod_name(service, namespace, profile_data.kubeconfig)
-        if not pod_name:
+        # Resolve service to (namespace, pod_name) — works cross-namespace
+        resolved = _resolve_pod_name(
+            profile, service, default_namespace, profile_data.kubeconfig
+        )
+        if not resolved:
             console.print(f"[red]Error:[/red] No running pod found for '{service}'")
             raise typer.Exit(1)
+        namespace, pod_name = resolved
 
         # Build kubectl exec command
         kubectl_cmd = ["kubectl", "exec"]
@@ -1268,13 +1249,16 @@ def port_forward(
         profile_data = load_profile(profile)
         _check_backend_supported(profile_data)
 
-        namespace = profile_data.k3s_namespace
+        default_namespace = profile_data.k3s_namespace
 
-        # Resolve service to pod name
-        pod_name = _resolve_pod_name(service, namespace, profile_data.kubeconfig)
-        if not pod_name:
+        # Resolve service to (namespace, pod_name) — works cross-namespace
+        resolved = _resolve_pod_name(
+            profile, service, default_namespace, profile_data.kubeconfig
+        )
+        if not resolved:
             console.print(f"[red]Error:[/red] No running pod found for '{service}'")
             raise typer.Exit(1)
+        namespace, pod_name = resolved
 
         # Parse port specification
         local_port: str
