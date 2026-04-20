@@ -7,6 +7,7 @@ metadata:
     {{- include "linto-stt.labels" . | nindent 4 }}
     app.kubernetes.io/component: whisper
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ .Values.whisper.replicas }}
   selector:
     matchLabels:
@@ -89,6 +90,7 @@ metadata:
     app.kubernetes.io/component: whisper-workers
     gpu-index: "{{ $gpuIndex }}"
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ $replicas }}
   selector:
     matchLabels:
@@ -190,6 +192,7 @@ metadata:
     {{- include "linto-stt.labels" . | nindent 4 }}
     app.kubernetes.io/component: nemo
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ .Values.nemo.replicas }}
   selector:
     matchLabels:
@@ -272,6 +275,7 @@ metadata:
     app.kubernetes.io/component: nemo-workers
     gpu-index: "{{ $gpuIndex }}"
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ $replicas }}
   selector:
     matchLabels:
@@ -377,6 +381,7 @@ metadata:
     app.kubernetes.io/component: diarization
     gpu-index: "{{ $gpuIndex }}"
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ $replicas }}
   selector:
     matchLabels:
@@ -478,6 +483,7 @@ metadata:
     {{- include "linto-stt.labels" . | nindent 4 }}
     app.kubernetes.io/component: redis
 spec:
+  revisionHistoryLimit: 5
   replicas: 1
   strategy:
     type: Recreate
@@ -561,6 +567,7 @@ metadata:
     {{- include "linto-stt.labels" . | nindent 4 }}
     app.kubernetes.io/component: mongodb
 spec:
+  revisionHistoryLimit: 5
   replicas: 1
   strategy:
     type: Recreate
@@ -626,6 +633,7 @@ metadata:
     {{- include "linto-stt.labels" . | nindent 4 }}
     app.kubernetes.io/component: api-gateway
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ .Values.apiGateway.replicas }}
   selector:
     matchLabels:

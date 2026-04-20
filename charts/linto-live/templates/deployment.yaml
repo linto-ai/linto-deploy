@@ -7,6 +7,7 @@ metadata:
     {{- include "linto-live.labels" . | nindent 4 }}
     app.kubernetes.io/component: session-api
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ .Values.sessionApi.replicas }}
   selector:
     matchLabels:
@@ -79,6 +80,7 @@ metadata:
     {{- include "linto-live.labels" . | nindent 4 }}
     app.kubernetes.io/component: session-scheduler
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ .Values.sessionScheduler.replicas }}
   strategy:
     type: Recreate
@@ -144,6 +146,7 @@ metadata:
     {{- include "linto-live.labels" . | nindent 4 }}
     app.kubernetes.io/component: session-transcriber
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ .Values.sessionTranscriber.replicas }}
   selector:
     matchLabels:
@@ -216,6 +219,7 @@ metadata:
     {{- include "linto-live.labels" . | nindent 4 }}
     app.kubernetes.io/component: postgres
 spec:
+  revisionHistoryLimit: 5
   replicas: 1
   strategy:
     type: Recreate
@@ -289,6 +293,7 @@ metadata:
     {{- include "linto-live.labels" . | nindent 4 }}
     app.kubernetes.io/component: broker
 spec:
+  revisionHistoryLimit: 5
   replicas: 1
   selector:
     matchLabels:
@@ -325,6 +330,7 @@ metadata:
     {{- include "linto-live.labels" . | nindent 4 }}
     app.kubernetes.io/component: translator
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ .Values.translator.replicas }}
   selector:
     matchLabels:
@@ -359,6 +365,7 @@ metadata:
     {{- include "linto-live.labels" . | nindent 4 }}
     app.kubernetes.io/component: stt-whisper
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ .Values.streamingStt.whisper.replicas }}
   selector:
     matchLabels:
@@ -402,6 +409,7 @@ metadata:
     {{- include "linto-live.labels" . | nindent 4 }}
     app.kubernetes.io/component: stt-nemo
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ .Values.streamingStt.nemo_tdt_v3.replicas }}
   selector:
     matchLabels:
@@ -459,6 +467,7 @@ metadata:
     {{- include "linto-live.labels" . | nindent 4 }}
     app.kubernetes.io/component: stt-kyutai
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ .Values.streamingStt.kyutai.replicas }}
   selector:
     matchLabels:

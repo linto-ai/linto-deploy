@@ -7,6 +7,7 @@ metadata:
     {{- include "linto-llm.labels" . | nindent 4 }}
     app.kubernetes.io/component: llm-api
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ .Values.llmGatewayApi.replicas }}
   selector:
     matchLabels:
@@ -106,6 +107,7 @@ metadata:
     {{- include "linto-llm.labels" . | nindent 4 }}
     app.kubernetes.io/component: celery-worker
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ .Values.celeryWorker.replicas }}
   selector:
     matchLabels:
@@ -186,6 +188,7 @@ metadata:
     {{- include "linto-llm.labels" . | nindent 4 }}
     app.kubernetes.io/component: llm-frontend
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ .Values.llmGatewayFrontend.replicas }}
   selector:
     matchLabels:
@@ -221,6 +224,7 @@ metadata:
     {{- include "linto-llm.labels" . | nindent 4 }}
     app.kubernetes.io/component: postgres
 spec:
+  revisionHistoryLimit: 5
   replicas: 1
   strategy:
     type: Recreate
@@ -294,6 +298,7 @@ metadata:
     {{- include "linto-llm.labels" . | nindent 4 }}
     app.kubernetes.io/component: redis
 spec:
+  revisionHistoryLimit: 5
   replicas: 1
   strategy:
     type: Recreate
@@ -377,6 +382,7 @@ metadata:
     {{- include "linto-llm.labels" . | nindent 4 }}
     app.kubernetes.io/component: vllm
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ .Values.vllm.replicas }}
   selector:
     matchLabels:
