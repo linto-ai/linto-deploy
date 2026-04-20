@@ -9,6 +9,7 @@ metadata:
     {{- include "linto-vllm.labels" $ | nindent 4 }}
     app.kubernetes.io/component: {{ $name }}
 spec:
+  revisionHistoryLimit: 5
   replicas: {{ $instance.replicas | default 1 }}
   progressDeadlineSeconds: 1200
   strategy:
