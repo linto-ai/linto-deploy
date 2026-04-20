@@ -41,9 +41,19 @@ def main_callback(
 # Subcommand groups
 kubeconfig_app = typer.Typer(name="kubeconfig", help="Manage kubeconfig")
 profile_app = typer.Typer(name="profile", help="Manage profiles")
+headlamp_app = typer.Typer(
+    name="headlamp",
+    help=(
+        "Manage Headlamp (Kubernetes UI) on a LinTO cluster. "
+        "Run `linto headlamp <profile>` (no subcommand) as a shortcut to open."
+    ),
+    invoke_without_command=True,
+    no_args_is_help=False,
+)
 
 app.add_typer(kubeconfig_app)
 app.add_typer(profile_app)
+app.add_typer(headlamp_app)
 
 console = Console()
 
@@ -1441,6 +1451,295 @@ def profile_set_kubeconfig(
 
     except ValidationError as e:
         _handle_error(e)
+
+
+# ============================================================================
+# Headlamp subcommands
+# ============================================================================
+
+
+def _headlamp_open_flow(
+    profile: str,
+    *,
+    port: int,
+    no_browser: bool,
+) -> None:
+    """Shared implementation for ``linto headlamp <profile>`` and ``... open``."""
+    from linto import headlamp as hl
+    from linto.model.validation import load_profile
+
+    try:
+        profile_data = load_profile(profile)
+        _check_backend_supported(profile_data)
+    except ValidationError as e:
+        _handle_error(e)
+        return
+
+    kargs, tmp = hl._kubectl_args(profile_data)
+    pf_process: subprocess.Popen | None = None
+    browser_process: subprocess.Popen | None = None
+    try:
+        try:
+            token = hl.create_token(profile_data)
+        except subprocess.CalledProcessError as exc:
+            stderr = getattr(exc, "stderr", "") or ""
+            console.print(
+                f"[red]Failed to mint a login token:[/red] {stderr.strip() or exc}",
+            )
+            console.print(
+                "[dim]Is Headlamp installed? Try "
+                f"`linto headlamp install {profile}` first.[/dim]",
+            )
+            raise typer.Exit(1) from exc
+
+        tool = hl.copy_to_clipboard(token)
+        if tool:
+            console.print(
+                f"[green]✓ Token copied to clipboard[/green] "
+                f"[dim](via {tool}, valid 24h — paste with Ctrl+V on the login page)[/dim]",
+            )
+        else:
+            console.print(
+                "\n[bold yellow]Bearer token (no clipboard tool found — "
+                "install wl-copy/xclip/xsel to auto-copy):[/bold yellow]",
+            )
+            console.print(f"[dim]{token}[/dim]\n")
+
+        console.print(
+            f"[cyan]Port-forwarding svc/{hl.RELEASE_NAME} on port {port}...[/cyan]",
+        )
+        pf_process = subprocess.Popen(
+            [
+                "kubectl",
+                *kargs,
+                "port-forward",
+                f"svc/{hl.RELEASE_NAME}",
+                f"{port}:{hl.SERVICE_PORT}",
+                "-n",
+                hl.NAMESPACE,
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        time.sleep(1.5)
+        if pf_process.poll() is not None:
+            err_bytes = pf_process.stderr.read() if pf_process.stderr else b""
+            console.print(
+                f"[red]Port-forward failed:[/red] {err_bytes.decode().strip()}",
+            )
+            raise typer.Exit(1)
+
+        url = f"http://localhost:{port}"
+        console.print(f"[green]Headlamp at:[/green] {url}")
+
+        if not no_browser:
+            console.print("[dim]Opening browser...[/dim]")
+            browser_process = _open_browser_process(url)
+
+        console.print("[dim]Press Ctrl+C to stop[/dim]")
+        try:
+            pf_process.wait()
+        except KeyboardInterrupt:
+            pf_process.terminate()
+            if browser_process:
+                browser_process.terminate()
+            console.print("\n[yellow]Port-forward stopped.[/yellow]")
+    finally:
+        if pf_process and pf_process.poll() is None:
+            pf_process.terminate()
+        if tmp:
+            tmp.unlink(missing_ok=True)
+
+
+@headlamp_app.callback(invoke_without_command=True)
+def headlamp_default(
+    ctx: typer.Context,
+    profile: Annotated[
+        Optional[str],
+        typer.Argument(
+            help="Profile name (shortcut: same as `linto headlamp open <profile>`)",
+            metavar="PROFILE_NAME",
+            autocompletion=_complete_profile,
+        ),
+    ] = None,
+    port: Annotated[
+        int,
+        typer.Option("--port", "-p", help="Local port"),
+    ] = 4466,
+    no_browser: Annotated[
+        bool,
+        typer.Option("--no-browser", help="Don't open browser automatically"),
+    ] = False,
+) -> None:
+    """Shortcut: ``linto headlamp <profile>`` → open the UI in one command."""
+    if ctx.invoked_subcommand is not None:
+        return
+    if not profile:
+        console.print(ctx.get_help())
+        raise typer.Exit(0)
+    _headlamp_open_flow(profile, port=port, no_browser=no_browser)
+
+
+@headlamp_app.command("install")
+def headlamp_install(
+    profile: Annotated[
+        str,
+        typer.Argument(
+            help="Profile name",
+            metavar="PROFILE_NAME",
+            autocompletion=_complete_profile,
+        ),
+    ],
+) -> None:
+    """Install or upgrade Headlamp on the cluster.
+
+    Creates the 'headlamp' namespace, installs the Helm chart from
+    https://kubernetes-sigs.github.io/headlamp/, binds the service account
+    to cluster-admin so the UI can browse every resource.
+
+    [bold]Example:[/bold]
+        linto headlamp install preprod
+    """
+    from linto import headlamp as hl
+    from linto.model.validation import load_profile
+
+    try:
+        profile_data = load_profile(profile)
+        _check_backend_supported(profile_data)
+        console.print(
+            f"[cyan]Installing Headlamp on cluster '{profile}' "
+            f"(namespace: {hl.NAMESPACE})...[/cyan]",
+        )
+        hl.install(profile_data)
+        console.print(
+            f"[green]✓ Headlamp installed.[/green]\n"
+            f"Open the UI with:\n  [cyan]linto headlamp {profile}[/cyan]",
+        )
+    except subprocess.CalledProcessError as exc:
+        console.print(f"[red]helm/kubectl failed:[/red] {exc}")
+        raise typer.Exit(1) from exc
+    except ValidationError as e:
+        _handle_error(e)
+
+
+@headlamp_app.command("uninstall")
+def headlamp_uninstall(
+    profile: Annotated[
+        str,
+        typer.Argument(
+            help="Profile name",
+            metavar="PROFILE_NAME",
+            autocompletion=_complete_profile,
+        ),
+    ],
+    purge: Annotated[
+        bool,
+        typer.Option("--purge", help="Also delete the 'headlamp' namespace"),
+    ] = False,
+    yes: Annotated[
+        bool,
+        typer.Option("--yes", "-y", help="Skip confirmation"),
+    ] = False,
+) -> None:
+    """Uninstall Headlamp from the cluster.
+
+    [bold]Example:[/bold]
+        linto headlamp uninstall preprod
+        linto headlamp uninstall preprod --purge
+    """
+    from linto import headlamp as hl
+    from linto.model.validation import load_profile
+
+    try:
+        profile_data = load_profile(profile)
+        _check_backend_supported(profile_data)
+        if not yes and not Confirm.ask(
+            f"Uninstall Headlamp from cluster '{profile}'?",
+            default=False,
+        ):
+            raise typer.Exit(0)
+        hl.uninstall(profile_data, purge_namespace=purge)
+        console.print("[yellow]Headlamp removed.[/yellow]")
+    except ValidationError as e:
+        _handle_error(e)
+
+
+@headlamp_app.command("open")
+def headlamp_open(
+    profile: Annotated[
+        str,
+        typer.Argument(
+            help="Profile name",
+            metavar="PROFILE_NAME",
+            autocompletion=_complete_profile,
+        ),
+    ],
+    port: Annotated[
+        int,
+        typer.Option("--port", "-p", help="Local port"),
+    ] = 4466,
+    no_browser: Annotated[
+        bool,
+        typer.Option("--no-browser", help="Don't open browser automatically"),
+    ] = False,
+) -> None:
+    """Port-forward Headlamp and open the UI. Copies a fresh login token to clipboard.
+
+    Same effect as the bare shortcut ``linto headlamp <profile>``. The token is
+    valid 24h and gives Headlamp cluster-admin privileges.
+
+    [bold]Example:[/bold]
+        linto headlamp open preprod
+        linto headlamp open preprod --port 8080 --no-browser
+    """
+    _headlamp_open_flow(profile, port=port, no_browser=no_browser)
+
+
+@headlamp_app.command("status")
+def headlamp_status(
+    profile: Annotated[
+        str,
+        typer.Argument(
+            help="Profile name",
+            metavar="PROFILE_NAME",
+            autocompletion=_complete_profile,
+        ),
+    ],
+) -> None:
+    """Show Headlamp pod + service status.
+
+    [bold]Example:[/bold]
+        linto headlamp status preprod
+    """
+    from linto import headlamp as hl
+    from linto.model.validation import load_profile
+
+    try:
+        profile_data = load_profile(profile)
+        _check_backend_supported(profile_data)
+    except ValidationError as e:
+        _handle_error(e)
+        return
+
+    kargs, tmp = hl._kubectl_args(profile_data)
+    try:
+        subprocess.run(
+            [
+                "kubectl",
+                *kargs,
+                "get",
+                "pods,svc,ingress",
+                "-n",
+                hl.NAMESPACE,
+                "-o",
+                "wide",
+            ],
+            check=False,
+            timeout=30,
+        )
+    finally:
+        if tmp:
+            tmp.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
