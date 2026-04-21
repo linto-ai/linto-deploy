@@ -22,8 +22,8 @@ linto:
     image: lintoai/studio-frontend
     tag: latest
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:38a1bbbdd8319760e78942768fa4628f460174eb47a1434a626d343d777de452
-    commit: e17d6b33c55b9f9ed95e8064e8421cf9c169d4e8
+    digest: sha256:f4d85786a4af3c4dc4489bc9439dffddf8d4237e65f304a7481e444c728bc035
+    commit: 92b455e41378ce2fe99e0460575008036b06ceea
   studio-websocket:
     image: lintoai/studio-websocket
     tag: latest
@@ -131,7 +131,7 @@ databases:
     digest: sha256:895f54361a7eada8e612efef7a8c5e80ba657c013cc9b4146b513c43ab901902
   live-mosquitto:
     image: eclipse-mosquitto
-    tag: '2'
+    tag: "2"
     digest: sha256:5bfaa4de338df2ee62871846e458d79adb765f539eeb58e68369faef029f3e0c
 llm:
   vllm-openai:
