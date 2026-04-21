@@ -133,5 +133,5 @@ databases:
 llm:
   vllm-openai:
     image: vllm/vllm-openai
-    tag: v0.15.0
-    digest: sha256:a440fad4f27802e8b506d7053202661ce29df84167188078e0fe86c8245f9679
+    tag: v0.19.0
+    digest: sha256:b9340b9d8650e8181585ca70590dfb589f1f959bbfd50a46cefc92ff81e663ca
