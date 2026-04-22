@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-04-21T07:50:09.196441+00:00
+# Last updated: 2026-04-22T07:46:51.635766+00:00
 
 platform_version: latest-unstable
 linto:
@@ -22,8 +22,8 @@ linto:
     image: lintoai/studio-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:38a1bbbdd8319760e78942768fa4628f460174eb47a1434a626d343d777de452
-    commit: 085285768f902c04208aaa02d75ca78d93bb43b5
+    digest: sha256:f4d85786a4af3c4dc4489bc9439dffddf8d4237e65f304a7481e444c728bc035
+    commit: ce0816af07c3df6289f5353a4d82aa9fbbc22a01
   studio-websocket:
     image: lintoai/studio-websocket
     tag: latest-unstable
@@ -74,14 +74,14 @@ linto:
     image: lintoai/llm-gateway
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:e692a114e470dc54a7157bdc0fed8c7f98e11e37c6848c848a1d5aba27ddd105
-    commit: ee242201a719660ad8cf2a0f6905a9e9c0b0a2da
+    digest: sha256:09bce6908dda5289b15ddc3b5e14c94e66a713b69d9e7c5b088053b6282c3349
+    commit: b96433b885874d59cd9be7b544883299a22db59a
   llm-gateway-frontend:
     image: lintoai/llm-gateway-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:c3668fb03c1552a33413cc984c9ba38bc3343970efe2f5368ef5b8c1c9cc45ba
-    commit: ee242201a719660ad8cf2a0f6905a9e9c0b0a2da
+    digest: sha256:001dd5502871265decfc8cf1031681f0df6234f738f28c50cd03f0f1fb4bfb25
+    commit: b96433b885874d59cd9be7b544883299a22db59a
   studio-plugins-migration:
     image: lintoai/studio-plugins-migration
     tag: latest-unstable
@@ -128,7 +128,7 @@ databases:
   live-postgres:
     image: postgres
     tag: 15-alpine
-    digest: sha256:895f54361a7eada8e612efef7a8c5e80ba657c013cc9b4146b513c43ab901902
+    digest: sha256:b4a5f2de972016bd62ded6206c10face6ed16a469ef276c569dd130cb2f07f92
   live-mosquitto:
     image: eclipse-mosquitto
     tag: '2'
