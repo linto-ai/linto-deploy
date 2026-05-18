@@ -23,7 +23,7 @@
     - kubernetes
   vars:
     traefik_namespace: traefik
-    traefik_chart_version: "34.0.0"
+    traefik_chart_version: "38.0.2"
     traefik_enable_certmanager: true
   tasks:
     - name: Check if K3S is running
@@ -90,9 +90,14 @@
               expose:
                 default: true
 
-          # UDP timeout for SRT streams
+          # UDP timeout for SRT streams + extended read timeout for large media uploads
+          # (3h MP3 @128kbps ~= 180MB ; default Traefik readTimeout of 60s is too short)
+          # Only readTimeout is extended: writeTimeout/idleTimeout left at defaults so
+          # long-lived WebSocket connections (cm-api/socket.io, llm-ws, transcriber-ws) are unaffected.
           additionalArguments:
             - "--entryPoints.srt.udp.timeout=60s"
+            - "--entryPoints.web.transport.respondingTimeouts.readTimeout=1800s"
+            - "--entryPoints.websecure.transport.respondingTimeouts.readTimeout=1800s"
 
           # Run as DaemonSet on ingress nodes only
           deployment:
