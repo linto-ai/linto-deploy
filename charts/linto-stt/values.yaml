@@ -89,6 +89,11 @@ whisperWorkers:
     CONCURRENCY: "1"
     BROKER_PASS: ""
     SECURITY_LEVEL: "0"
+    # Disable the per-chunk VAD inside the worker. The audio is already chunked
+    # upstream by the transcription-service VAD; this second VAD (auditok by
+    # default) was stripping low-energy speech, causing 15-25% missing words
+    # on multi-speaker meetings. Letting Whisper see the full chunk avoids it.
+    VAD: "false"
 
 # NeMo transcription service (HTTP API, like whisper but for NeMo workers)
 nemo:
