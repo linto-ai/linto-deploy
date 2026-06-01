@@ -42,6 +42,7 @@ data:
   CONCURRENCY: {{ .Values.whisperWorkers.env.CONCURRENCY | quote }}
   SECURITY_LEVEL: {{ .Values.whisperWorkers.env.SECURITY_LEVEL | quote }}
   VAD: {{ .Values.whisperWorkers.env.VAD | quote }}
+  PROMPT: {{ .Values.whisperWorkers.env.PROMPT | quote }}
 {{- end }}
 ---
 {{- if .Values.nemo.enabled }}
