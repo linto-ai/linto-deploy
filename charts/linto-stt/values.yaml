@@ -94,6 +94,12 @@ whisperWorkers:
     # default) was stripping low-energy speech, causing 15-25% missing words
     # on multi-speaker meetings. Letting Whisper see the full chunk avoids it.
     VAD: "false"
+    # Override the empty PROMPT default in linto-stt-whisper's .envdefault.
+    # When PROMPT="" is loaded, decoding.py passes initial_prompt="" to
+    # faster-whisper which collapses all word timestamps to the end of the
+    # chunk, dropping ~30s of speech per affected chunk. Setting any short
+    # non-trivial prompt avoids the bug.
+    PROMPT: "Conversation."
 
 # NeMo transcription service (HTTP API, like whisper but for NeMo workers)
 nemo:
