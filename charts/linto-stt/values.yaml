@@ -98,8 +98,9 @@ whisperWorkers:
     # When PROMPT="" is loaded, decoding.py passes initial_prompt="" to
     # faster-whisper which collapses all word timestamps to the end of the
     # chunk, dropping ~30s of speech per affected chunk. Setting any short
-    # non-trivial prompt avoids the bug.
-    PROMPT: "Conversation."
+    # non-trivial prompt avoids the bug. We additionally seed it with the
+    # brand vocabulary we want Whisper to recognize (LINAGORA, LinTO, …).
+    PROMPT: "Réunion chez LINAGORA. Produits : LinTO, OpenRag, Twake."
 
 # NeMo transcription service (HTTP API, like whisper but for NeMo workers)
 nemo:
