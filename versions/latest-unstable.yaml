@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-06-06T08:32:28.060627+00:00
+# Last updated: 2026-06-07T08:54:55.707413+00:00
 
 platform_version: latest-unstable
 linto:
