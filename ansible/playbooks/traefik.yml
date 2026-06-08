@@ -23,7 +23,12 @@
     - kubernetes
   vars:
     traefik_namespace: traefik
-    traefik_chart_version: "38.0.2"
+    # Pinned to chart 34.0.0 (Traefik v3.3.1). DO NOT bump to v3.6.x (chart 38.x):
+    # Traefik v3.6 has a UDP regression (GitHub #12251/#12252, area/udp) that corrupts
+    # UDP packets ("message too long") and breaks SRT streaming on the srt entrypoint.
+    # Confirmed 2026-06-08: v3.6.6 scattered/dropped SRT ~every 10 min; v3.3.1 = 0 errors.
+    # Before any future bump, test sustained SRT (LinTO Live) on the new version first.
+    traefik_chart_version: "34.0.0"
     traefik_enable_certmanager: true
   tasks:
     - name: Check if K3S is running
