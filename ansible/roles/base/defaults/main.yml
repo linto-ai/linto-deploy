@@ -26,6 +26,15 @@ base_packages:
 # Longhorn support (iSCSI) - disabled by default when using NFS
 base_longhorn_support: false
 
+# Automatic apt upgrades (unattended-upgrades).
+# Disabled cluster-wide: on 2026-06-10, an auto-upgrade of openssl/libssl3t64
+# triggered a systemd-networkd restart (via needrestart) on a GPU node, which
+# dropped its DHCP route to the master and isolated the node from the cluster
+# for ~9h (all STT GPU workers down). Cluster nodes are patched in controlled
+# windows, not automatically. Masking the timers is authoritative over any
+# per-role enable (e.g. ingress).
+base_disable_auto_upgrades: true
+
 # Sysctl parameters for Kubernetes
 base_sysctl_params:
   net.bridge.bridge-nf-call-iptables: 1

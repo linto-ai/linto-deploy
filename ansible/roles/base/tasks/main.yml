@@ -209,3 +209,47 @@
     - base
     - storage
     - longhorn
+
+# ============================================================================
+# DISABLE AUTOMATIC APT UPGRADES (cluster-wide)
+# ----------------------------------------------------------------------------
+# Auto-upgrades restart service-linked daemons via needrestart. On 2026-06-10
+# an openssl/libssl3t64 auto-upgrade bounced systemd-networkd on a GPU node,
+# dropping its DHCP route to the master and isolating it for ~9h. Cluster nodes
+# are patched in controlled maintenance windows instead.
+#
+# This block has its own `auto-upgrades` tag so it can be applied standalone
+# (ansible-playbook playbooks/site.yml --tags auto-upgrades) WITHOUT running the
+# role's "Upgrade all packages" task, which would itself risk the same outage.
+# ============================================================================
+- name: Disable automatic apt upgrades (Periodic config)
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      // Managed by Ansible - automatic upgrades disabled cluster-wide.
+      // See base role defaults (base_disable_auto_upgrades) for rationale.
+      APT::Periodic::Update-Package-Lists "0";
+      APT::Periodic::Unattended-Upgrade "0";
+  when: base_disable_auto_upgrades
+  tags:
+    - base
+    - auto-upgrades
+
+- name: Mask apt auto-upgrade timers (authoritative)
+  ansible.builtin.systemd:
+    name: "{{ auto_upgrade_timer }}"
+    state: stopped
+    enabled: no
+    masked: yes
+  loop:
+    - apt-daily.timer
+    - apt-daily-upgrade.timer
+  loop_control:
+    loop_var: auto_upgrade_timer
+  when: base_disable_auto_upgrades
+  tags:
+    - base
+    - auto-upgrades
