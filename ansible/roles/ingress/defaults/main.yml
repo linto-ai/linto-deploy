@@ -32,8 +32,13 @@ ingress_public_ports:
   - { port: 80, proto: tcp, comment: "HTTP" }
   - { port: 443, proto: tcp, comment: "HTTPS" }
 
-# Unattended upgrades - security patches only
-ingress_unattended_upgrades: true
+# Unattended upgrades - DISABLED.
+# Auto-upgrades are turned off cluster-wide by the base role
+# (base_disable_auto_upgrades) after the 2026-06-10 networkd-restart outage.
+# Leave this false: setting it true re-writes 20auto-upgrades to "1", but the
+# base role masks the apt timers afterwards so it would not actually run -
+# enabling it here only creates a confusing, contradictory state.
+ingress_unattended_upgrades: false
 ingress_unattended_reboot: false
 ingress_unattended_mail: "root@localhost"
 
