@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-06-10T09:59:03.350603+00:00
+# Last updated: 2026-06-11T10:23:02.618573+00:00
 
 platform_version: latest-unstable
 linto:
@@ -16,13 +16,13 @@ linto:
     image: lintoai/studio-api
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:66e56a9cb9c5949e8a5f2f9d9572e155b66941d7e6976ffad15bf4f01ddf915a
+    digest: sha256:ad2b41f1cd7f5bf4e00bd0618258f2aa7050434c8e6de4d01131ee6caa87f571
     commit: 358caef6278710c5ae2c52678a9fb023b25edde0
   studio-frontend:
     image: lintoai/studio-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:571958610730268fa92fe08534f2820d458683abaaf4ce7c67c3497a7d676322
+    digest: sha256:ebd30425143b75cc0988fb09a2ed28db266868e6f5a572f638c5c5cdd309a921
     commit: 358caef6278710c5ae2c52678a9fb023b25edde0
   studio-websocket:
     image: lintoai/studio-websocket
@@ -86,31 +86,31 @@ linto:
     image: lintoai/studio-plugins-migration
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:a85428587e403701c4ad5a51643725008ac94d05abb62aebee472b7084e40a17
+    digest: sha256:cbdd97814443b7376f8b7340e033e4fc7a2c5f8d31b7d1f194a748235e21c77c
     commit: 58354c189b07e44c8116169c4bd5ee8f5c26c120
   studio-plugins-sessionapi:
     image: lintoai/studio-plugins-sessionapi
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:d6fa1a4aeb4a0b3271c18cb841ac0f60e6d40e15a4d5886ba38835551b370130
+    digest: sha256:303de82c2653b495da9f7d68ee2f691b129120c958fbfe61571fb6775c53b6e7
     commit: 58354c189b07e44c8116169c4bd5ee8f5c26c120
   studio-plugins-scheduler:
     image: lintoai/studio-plugins-scheduler
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:1b0924e9ecd28810e2518d299bc30720b7c75790a374b27dfb87c74801029cc5
+    digest: sha256:e021554ebab0604242620c11279a2f3767ae9e432e6a7ed7a912599a23dce948
     commit: 58354c189b07e44c8116169c4bd5ee8f5c26c120
   studio-plugins-transcriber:
     image: lintoai/studio-plugins-transcriber
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:7c00470f6bcd61838ee14c85b28f608a15e0a9db6425029e01bddb4d2092e706
+    digest: sha256:e10fdedef02415b71c51f3c96cd2e2276cf8ea3f3072db6f2d2425da30cf2532
     commit: 58354c189b07e44c8116169c4bd5ee8f5c26c120
   studio-plugins-translator:
     image: lintoai/studio-plugins-translator
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:d835414163776cf5ab5c3e52a30d70190546d004d1860877ce537f0698e2d3a9
+    digest: sha256:c9d4bb0be6a19625326be9e3d41196f0bd550d4416cef59970986cd2eed75b7c
     commit: 58354c189b07e44c8116169c4bd5ee8f5c26c120
 databases:
   studio-mongo:
