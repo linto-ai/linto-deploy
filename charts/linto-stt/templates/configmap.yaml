@@ -22,6 +22,9 @@ data:
   MODEL_TYPE: "whisper"
   SECURITY_LEVEL: {{ .Values.whisper.env.SECURITY_LEVEL | quote }}
   GATEWAY_DESCRIPTION: {{ .Values.whisper.env.GATEWAY_DESCRIPTION | default (printf "{\"en\": \"%s\", \"fr\": \"%s\"}" .Values.whisper.env.SERVICE_NAME .Values.whisper.env.SERVICE_NAME) | quote }}
+  {{- if .Values.whisper.env.SPEAKER_ID_API_TOKEN }}
+  SPEAKER_ID_API_TOKEN: {{ .Values.whisper.env.SPEAKER_ID_API_TOKEN | quote }}
+  {{- end }}
 {{- end }}
 ---
 {{- if .Values.whisperWorkers.enabled }}
@@ -106,4 +109,11 @@ data:
   DEVICE: {{ .Values.diarization.env.DEVICE | quote }}
   CONCURRENCY: {{ .Values.diarization.env.CONCURRENCY | quote }}
   MODEL_INFO: {{ .Values.diarization.env.MODEL_INFO | quote }}
+  {{- if .Values.qdrant.enabled }}
+  QDRANT_HOST: {{ include "linto-stt.qdrantHost" . | quote }}
+  QDRANT_PORT: "6333"
+  {{- if .Values.qdrant.apiKey }}
+  QDRANT_API_KEY: {{ .Values.qdrant.apiKey | quote }}
+  {{- end }}
+  {{- end }}
 {{- end }}

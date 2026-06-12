@@ -672,3 +672,74 @@ spec:
           resources:
             {{- toYaml .Values.apiGateway.resources | nindent 12 }}
 {{- end }}
+---
+{{- if .Values.qdrant.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-stt.fullname" . }}-qdrant
+  labels:
+    {{- include "linto-stt.labels" . | nindent 4 }}
+    app.kubernetes.io/component: qdrant
+spec:
+  revisionHistoryLimit: 5
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "linto-stt.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: qdrant
+  template:
+    metadata:
+      labels:
+        {{- include "linto-stt.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: qdrant
+    spec:
+      {{- if and .Values.global.storage.database.hostPath .Values.global.storage.database.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.global.storage.database.nodeSelector | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: qdrant
+          image: "{{ .Values.qdrant.image.repository }}:{{ .Values.qdrant.image.tag }}"
+          imagePullPolicy: {{ .Values.qdrant.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 6333
+              protocol: TCP
+          {{- if .Values.qdrant.apiKey }}
+          env:
+            - name: QDRANT__SERVICE__API_KEY
+              value: {{ .Values.qdrant.apiKey | quote }}
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: /qdrant/storage
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 6333
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 6333
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.qdrant.resources | nindent 12 }}
+      volumes:
+        - name: data
+          {{- if .Values.global.storage.database.hostPath }}
+          hostPath:
+            path: {{ .Values.global.storage.database.hostPath }}/stt-qdrant
+            type: DirectoryOrCreate
+          {{- else if .Values.qdrant.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "linto-stt.fullname" . }}-qdrant-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}
