@@ -61,6 +61,7 @@ whisper:
     CONCURRENCY: "2"
     BROKER_PASS: ""
     SECURITY_LEVEL: "0"
+    SPEAKER_ID_API_TOKEN: ""  # Optional shared token for /speaker-identification routes (must match studio-api)
   service:
     port: 80
   ingress:
@@ -170,6 +171,29 @@ diarization:
     CONCURRENCY: "1"
     BROKER_PASS: ""
     MODEL_INFO: '{"en": "Yes", "fr": "Oui"}'
+
+# Qdrant vector DB - speaker identification voiceprint collections
+# Used by the diarization workers; one collection per Studio voiceprint collection.
+# Disabled by default: existing deployments are NOT touched until this is
+# explicitly enabled (the diarization QDRANT_* env vars are gated on it too).
+qdrant:
+  enabled: false
+  image:
+    repository: qdrant/qdrant
+    tag: v1.12.4
+    pullPolicy: IfNotPresent
+  apiKey: ""  # Optional; injected as QDRANT_API_KEY in diarization workers
+  resources:
+    limits: {}  # No limits for databases - they manage their own memory
+    requests:
+      cpu: 10m
+      memory: 128Mi
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: ""
+  service:
+    port: 6333
 
 # Redis task broker (redis-stack-server required for JSON module used by diarization)
 redis:

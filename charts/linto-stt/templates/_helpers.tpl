@@ -77,6 +77,13 @@ Broker URL
 {{- end }}
 
 {{/*
+Qdrant host - speaker identification vector DB
+*/}}
+{{- define "linto-stt.qdrantHost" -}}
+{{- printf "%s-qdrant" .Release.Name }}
+{{- end }}
+
+{{/*
 TLS secret name - uses shared secret if configured
 */}}
 {{- define "linto-stt.tlsSecretName" -}}

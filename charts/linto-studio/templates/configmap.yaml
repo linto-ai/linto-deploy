@@ -32,6 +32,19 @@ data:
   {{- if .Values.studioApi.env.LLM_GATEWAY_SERVICES }}
   LLM_GATEWAY_SERVICES: {{ .Values.studioApi.env.LLM_GATEWAY_SERVICES | quote }}
   {{- end }}
+  {{- /* Speaker identification - requires the linto-stt chart with qdrant enabled */ -}}
+  {{- if .Values.studioApi.env.ENABLE_SPEAKER_IDENTIFICATION }}
+  ENABLE_SPEAKER_IDENTIFICATION: {{ .Values.studioApi.env.ENABLE_SPEAKER_IDENTIFICATION | quote }}
+  {{- if .Values.studioApi.env.SPEAKER_ID_SERVICE_ENDPOINT }}
+  SPEAKER_ID_SERVICE_ENDPOINT: {{ .Values.studioApi.env.SPEAKER_ID_SERVICE_ENDPOINT | quote }}
+  {{- end }}
+  {{- if .Values.studioApi.env.SPEAKER_ID_API_TOKEN }}
+  SPEAKER_ID_API_TOKEN: {{ .Values.studioApi.env.SPEAKER_ID_API_TOKEN | quote }}
+  {{- end }}
+  {{- if .Values.studioApi.env.SPEAKER_ID_CONSENT_VERSION }}
+  SPEAKER_ID_CONSENT_VERSION: {{ .Values.studioApi.env.SPEAKER_ID_CONSENT_VERSION | quote }}
+  {{- end }}
+  {{- end }}
   {{- if .Values.studioApi.env.LLM_CHAT_SERVICE_ID }}
   LLM_CHAT_SERVICE_ID: {{ .Values.studioApi.env.LLM_CHAT_SERVICE_ID | quote }}
   {{- end }}

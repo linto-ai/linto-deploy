@@ -98,6 +98,8 @@ studioFrontend:
   ingress:
     path: /
     stripPrefix: false
+  # env: extra VUE_APP_* vars injected into the frontend configmap, e.g.:
+  #   VUE_APP_ENABLE_SPEAKER_IDENTIFICATION: "true"
 
 # Studio WebSocket
 studioWebsocket:
