@@ -93,6 +93,12 @@ class ProfileConfig(BaseModel):
     # STT settings
     security_level: str = Field(default="0")
 
+    # Speaker identification (Qdrant voiceprint store + studio-api/frontend wiring).
+    # Requires stt_enabled (diarization is the embedding service). Off by default.
+    speaker_identification_enabled: bool = Field(default=False)
+    speaker_id_api_token: str | None = Field(default=None)
+    speaker_id_consent_version: str | None = Field(default=None)
+
     # Live Session
     live_session_enabled: bool = Field(default=False)
     streaming_stt_variants: list[StreamingSTTVariant] = Field(default_factory=list)
