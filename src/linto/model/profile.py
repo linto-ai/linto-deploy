@@ -76,6 +76,13 @@ class ProfileConfig(BaseModel):
     image_tag: str = Field(default="latest-unstable")
     # Individual service tags (overrides image_tag for specific services)
     service_tags: dict[str, str] = Field(default_factory=dict)
+    # Full per-service image override "registry/repo:tag" (overrides repository+tag,
+    # e.g. to deploy a feature-branch image from a private registry on a staging env)
+    service_images: dict[str, str] = Field(default_factory=dict)
+    # Private image registry for service_images (used to create an imagePullSecret)
+    registry_url: str | None = Field(default=None)
+    registry_user: str | None = Field(default=None)
+    registry_password: str | None = Field(default=None)
     tls_mode: TLSMode = Field(default=TLSMode.MKCERT)
 
     # Deployment backend
