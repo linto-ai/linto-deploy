@@ -300,6 +300,77 @@ def ensure_cluster_issuer(acme_email: str, kubeconfig: dict | None = None) -> bo
             return False
 
 
+def ensure_image_pull_secret(
+    namespace: str,
+    registry_url: str,
+    username: str,
+    password: str,
+    kubeconfig: dict | None = None,
+    secret_name: str = "registry-staging",
+) -> bool:
+    """Create a docker-registry pull secret and attach it to the namespace default SA.
+
+    Lets pods in `namespace` pull private images (profile.service_images) from a
+    private registry without per-chart imagePullSecrets. Idempotent.
+
+    Args:
+        namespace: Target namespace
+        registry_url: Private registry host (e.g. registry.staging.linto.ai)
+        username: Registry username
+        password: Registry password
+        kubeconfig: Optional kubeconfig dict to use
+        secret_name: Name of the docker-registry secret
+
+    Returns:
+        True if the pull secret is present and attached
+    """
+    with KubeconfigContext(kubeconfig):
+        try:
+            secret_yaml = subprocess.run(
+                [
+                    "kubectl", "create", "secret", "docker-registry", secret_name,
+                    "-n", namespace,
+                    f"--docker-server={registry_url}",
+                    f"--docker-username={username}",
+                    f"--docker-password={password}",
+                    "--dry-run=client", "-o", "yaml",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=15,
+            )
+            if secret_yaml.returncode != 0:
+                console.print(f"[red]Failed to build pull secret: {secret_yaml.stderr}[/red]")
+                return False
+            apply = subprocess.run(
+                ["kubectl", "apply", "-f", "-"],
+                input=secret_yaml.stdout,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=15,
+            )
+            if apply.returncode != 0:
+                console.print(f"[red]Failed to apply pull secret: {apply.stderr}[/red]")
+                return False
+            subprocess.run(
+                [
+                    "kubectl", "patch", "serviceaccount", "default", "-n", namespace,
+                    "-p", f'{{"imagePullSecrets":[{{"name":"{secret_name}"}}]}}',
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=15,
+            )
+            console.print(f"[green]Image pull secret '{secret_name}' ready in '{namespace}'[/green]")
+            return True
+        except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+            console.print(f"[red]Error creating image pull secret: {e}[/red]")
+            return False
+
+
 MONITORING_NAMESPACE = "monitoring"
 
 
@@ -769,6 +840,21 @@ def get_service_tag(profile: ProfileConfig, service_name: str) -> str:
     return profile.service_tags.get(service_name, profile.image_tag)
 
 
+def image_values(profile: ProfileConfig, service_name: str) -> dict[str, str]:
+    """Return the Helm `image` block (repository/tag) for an app service.
+
+    If the profile defines a full `service_images` override ("registry/repo:tag")
+    for this service, return both repository and tag (e.g. a feature-branch image
+    from a private registry). Otherwise return only the tag (chart default repo),
+    preserving the existing service_tags / image_tag behaviour.
+    """
+    override = profile.service_images.get(service_name)
+    if override and ":" in override:
+        repository, tag = override.rsplit(":", 1)
+        return {"repository": repository, "tag": tag}
+    return {"tag": get_service_tag(profile, service_name)}
+
+
 def get_database_tag(profile: ProfileConfig, db_name: str) -> str:
     """Get the tag for a database from profile.
 
@@ -880,9 +966,7 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
         "studioApi": {
             "enabled": True,
             "replicas": profile.studio_api_replicas,
-            "image": {
-                "tag": get_service_tag(profile, "studio-api"),
-            },
+            "image": image_values(profile, "studio-api"),
             "env": {
                 "SUPER_ADMIN_EMAIL": profile.super_admin_email,
                 "SUPER_ADMIN_PWD": profile.super_admin_password or "",
@@ -894,17 +978,13 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
         "studioFrontend": {
             "enabled": True,
             "replicas": 1,
-            "image": {
-                "tag": get_service_tag(profile, "studio-frontend"),
-            },
+            "image": image_values(profile, "studio-frontend"),
             **({"env": profile.studio_frontend_env} if profile.studio_frontend_env else {}),
         },
         "studioWebsocket": {
             "enabled": True,
             "replicas": 1,
-            "image": {
-                "tag": get_service_tag(profile, "studio-websocket"),
-            },
+            "image": image_values(profile, "studio-websocket"),
             "env": {
                 "CM_JWT_SECRET": profile.jwt_secret or "",
             },
@@ -1028,9 +1108,7 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         "apiGateway": {
             "enabled": True,
             "replicas": 1,
-            "image": {
-                "tag": get_service_tag(profile, "linto-api-gateway"),
-            },
+            "image": image_values(profile, "linto-api-gateway"),
             "env": {
                 "COMPONENTS": "ApiWatcher,WebServer",
             },
@@ -1041,9 +1119,7 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         "whisper": {
             "enabled": True,
             "replicas": 1,
-            "image": {
-                "tag": get_service_tag(profile, "linto-transcription-service"),
-            },
+            "image": image_values(profile, "linto-transcription-service"),
             "env": {
                 "SERVICE_NAME": "whisper-large-v3-turbo",
                 "GATEWAY_DESCRIPTION": '{"en": "Recommended (Whisper Large V3)", "fr": "Recommandé (Whisper Large V3)"}',
@@ -1056,9 +1132,7 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         },
         "whisperWorkers": {
             "enabled": True,
-            "image": {
-                "tag": get_service_tag(profile, "linto-stt-whisper"),
-            },
+            "image": image_values(profile, "linto-stt-whisper"),
             "env": {
                 "SERVICE_NAME": "whisper-large-v3-turbo",
                 "BROKER_PASS": profile.redis_password or "",
@@ -1069,9 +1143,7 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         "nemo": {
             "enabled": profile.stt_enabled and any(v.value.startswith("nemo") for v in profile.streaming_stt_variants),
             "replicas": 1,
-            "image": {
-                "tag": get_service_tag(profile, "linto-transcription-service"),
-            },
+            "image": image_values(profile, "linto-transcription-service"),
             "env": {
                 "SERVICE_NAME": "nemo-parakeet-tdt-v3",
                 "GATEWAY_DESCRIPTION": '{"en": "Fast (Parakeet)", "fr": "Rapide (Parakeet)"}',
@@ -1084,9 +1156,7 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         },
         "nemoWorkers": {
             "enabled": profile.stt_enabled and any(v.value.startswith("nemo") for v in profile.streaming_stt_variants),
-            "image": {
-                "tag": get_service_tag(profile, "linto-stt-nemo"),
-            },
+            "image": image_values(profile, "linto-stt-nemo"),
             "env": {
                 "SERVICE_NAME": "nemo-parakeet-tdt-v3",
                 "BROKER_PASS": profile.redis_password or "",
@@ -1096,9 +1166,7 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         },
         "diarization": {
             "enabled": True,
-            "image": {
-                "tag": get_service_tag(profile, "linto-diarization-pyannote"),
-            },
+            "image": image_values(profile, "linto-diarization-pyannote"),
             "env": {
                 "SERVICE_NAME": "stt-diarization-pyannote",
                 "QUEUE_NAME": "diarization-pyannote",
@@ -1182,16 +1250,12 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
         "global": generate_global_values(profile, create_certificate=False),
         "migration": {
             "enabled": True,
-            "image": {
-                "tag": get_service_tag(profile, "studio-plugins-migration"),
-            },
+            "image": image_values(profile, "studio-plugins-migration"),
         },
         "sessionApi": {
             "enabled": True,
             "replicas": 1,
-            "image": {
-                "tag": get_service_tag(profile, "studio-plugins-sessionapi"),
-            },
+            "image": image_values(profile, "studio-plugins-sessionapi"),
             "env": {
                 "DB_PASSWORD": profile.session_postgres_password or "",
                 "SECURITY_CRYPT_KEY": profile.session_crypt_key or "",
@@ -1201,9 +1265,7 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
         "sessionScheduler": {
             "enabled": True,
             "replicas": 1,
-            "image": {
-                "tag": get_service_tag(profile, "studio-plugins-scheduler"),
-            },
+            "image": image_values(profile, "studio-plugins-scheduler"),
             "env": {
                 "DB_PASSWORD": profile.session_postgres_password or "",
             },
@@ -1211,9 +1273,7 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
         "sessionTranscriber": {
             "enabled": True,
             "replicas": profile.session_transcriber_replicas,
-            "image": {
-                "tag": get_service_tag(profile, "studio-plugins-transcriber"),
-            },
+            "image": image_values(profile, "studio-plugins-transcriber"),
             "env": {
                 "SECURITY_CRYPT_KEY": profile.session_crypt_key or "",
             },
@@ -1245,9 +1305,7 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
         "translator": {
             "enabled": profile.translator_enabled,
             "replicas": 1,
-            "image": {
-                "tag": get_service_tag(profile, "studio-plugins-translator"),
-            },
+            "image": image_values(profile, "studio-plugins-translator"),
             "env": {
                 "TRANSLATOR_NAME": profile.translator_name or "gemma",
                 "TRANSLATION_PROVIDER": profile.translator_provider or "translategemma",
@@ -1328,9 +1386,7 @@ def generate_llm_values(profile: ProfileConfig) -> dict[str, Any]:
         "llmGatewayApi": {
             "enabled": True,
             "replicas": 1,
-            "image": {
-                "tag": get_service_tag(profile, "llm-gateway"),
-            },
+            "image": image_values(profile, "llm-gateway"),
             "env": {
                 "REDIS_PASSWORD": profile.llm_redis_password or "",
                 "ENCRYPTION_KEY": profile.llm_encryption_key or "",
@@ -1341,16 +1397,12 @@ def generate_llm_values(profile: ProfileConfig) -> dict[str, Any]:
         "celeryWorker": {
             "enabled": True,
             "replicas": 1,
-            "image": {
-                "tag": get_service_tag(profile, "llm-gateway"),
-            },
+            "image": image_values(profile, "llm-gateway"),
         },
         "llmGatewayFrontend": {
             "enabled": True,
             "replicas": 1,
-            "image": {
-                "tag": get_service_tag(profile, "llm-gateway-frontend"),
-            },
+            "image": image_values(profile, "llm-gateway-frontend"),
             "basicAuth": {
                 "enabled": True,
                 "username": profile.llm_admin_username,
@@ -1649,6 +1701,17 @@ def apply_k3s(profile_name: str, base_dir: Path | None = None) -> None:
                 console.print("[yellow]Warning: cert-manager installation failed[/yellow]")
             else:
                 ensure_cluster_issuer(profile.acme_email, kubeconfig)
+
+        # Create an image pull secret so pods can pull private feature-branch images
+        # (profile.service_images) from a private registry
+        if profile.service_images and profile.registry_url and profile.registry_user and profile.registry_password:
+            ensure_image_pull_secret(
+                namespace,
+                profile.registry_url,
+                profile.registry_user,
+                profile.registry_password,
+                kubeconfig,
+            )
 
         # Restore TLS certificates from backup (if available)
         if tls_mode == "acme":
