@@ -39,5 +39,6 @@ nvidia_container_toolkit_list: "https://nvidia.github.io/libnvidia-container/sta
 # Reboot after driver installation
 nvidia_reboot_after_install: true
 
-# Reboot timeout
-nvidia_reboot_timeout: 300
+# Reboot timeout (seconds). 600 to tolerate slow bare-metal boots (e.g. Exaion ~340s);
+# the ansible reboot module default 300 was too short and aborted the play mid-reboot.
+nvidia_reboot_timeout: 600
