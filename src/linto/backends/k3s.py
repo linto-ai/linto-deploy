@@ -941,6 +941,20 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
         if profile.llm_redis_password:
             values["studioApi"]["secrets"]["SOCKETIO_REDIS_PASSWORD"] = profile.llm_redis_password
 
+    # Speaker identification: turn on the studio-api routes + frontend UI. The
+    # endpoint is auto-discovered via the gateway (the diarization service whose
+    # info reports speaker_identification=true), so SPEAKER_ID_SERVICE_ENDPOINT is
+    # left unset. Qdrant itself is enabled in the linto-stt chart (generate_stt_values).
+    if profile.speaker_identification_enabled and profile.stt_enabled:
+        values["studioApi"]["env"]["ENABLE_SPEAKER_IDENTIFICATION"] = "true"
+        if profile.speaker_id_api_token:
+            values["studioApi"]["env"]["SPEAKER_ID_API_TOKEN"] = profile.speaker_id_api_token
+        if profile.speaker_id_consent_version:
+            values["studioApi"]["env"]["SPEAKER_ID_CONSENT_VERSION"] = profile.speaker_id_consent_version
+        values["studioFrontend"].setdefault("env", {})[
+            "VUE_APP_ENABLE_SPEAKER_IDENTIFICATION"
+        ] = "true"
+
     if profile.k3s_storage_class:
         values["mongodb"]["persistence"]["storageClass"] = profile.k3s_storage_class
 
@@ -1136,6 +1150,15 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         values["nemoWorkers"]["resources"] = {}
         values["diarization"]["replicas"] = 1
         values["diarization"]["resources"] = {}
+
+    # Speaker identification: enable the Qdrant voiceprint store. The chart wires
+    # QDRANT_HOST/PORT into the diarization workers and stores on hostPath when
+    # global.storage.database.hostPath is set (else a PVC), so nothing else to do.
+    if profile.speaker_identification_enabled and profile.stt_enabled:
+        values["qdrant"] = {"enabled": True}
+        if profile.speaker_id_api_token:
+            # Token guarding the speaker-id HTTP endpoint on the transcription service
+            values["whisper"]["env"]["SPEAKER_ID_API_TOKEN"] = profile.speaker_id_api_token
 
     if profile.k3s_storage_class:
         values["redis"]["persistence"]["storageClass"] = profile.k3s_storage_class

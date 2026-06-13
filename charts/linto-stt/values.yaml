@@ -180,7 +180,10 @@ qdrant:
   enabled: false
   image:
     repository: qdrant/qdrant
-    tag: v1.12.4
+    # Keep in sync with the qdrant-client version baked into the linto-diarization
+    # image: the client refuses a server more than 1 minor away (UserWarning, then
+    # degraded). v1.12.4 vs client 1.16.x triggers it; v1.16.x is safe.
+    tag: v1.16.2
     pullPolicy: IfNotPresent
   apiKey: ""  # Optional; injected as QDRANT_API_KEY in diarization workers
   resources:
