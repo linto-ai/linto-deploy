@@ -1,6 +1,17 @@
 ---
 # GPU role - NVIDIA driver installation with DKMS
 
+- name: Assert NVIDIA driver is the proprietary variant (never the -open kernel module)
+  ansible.builtin.assert:
+    that:
+      - "'open' not in (nvidia_driver_version | string)"
+    fail_msg: >-
+      nvidia_driver_version must be the proprietary NVIDIA driver, never the '-open' variant
+      (e.g. use "590", not "570-open"). Pick the newest proprietary version available.
+  tags:
+    - gpu
+    - check
+
 - name: Check if NVIDIA driver is already installed
   ansible.builtin.shell: |
     set -o pipefail
@@ -240,35 +251,52 @@
     - gpu
     - container-toolkit
 
-- name: Add nvidia runtime to K3S containerd template
-  ansible.builtin.blockinfile:
-    path: /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
-    insertafter: "containerd.runtimes.runc.options"
-    marker: "# {mark} ANSIBLE MANAGED - NVIDIA runtime"
-    block: |2
-
-      [plugins.'io.containerd.cri.v1.runtime'.containerd]
-        default_runtime_name = "nvidia"
-
-      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.'nvidia']
-        runtime_type = "io.containerd.runc.v2"
-
-      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.'nvidia'.options]
-        BinaryName = "/usr/bin/nvidia-container-runtime"
-        SystemdCgroup = true
-  when: k3s_containerd_config.stat.exists and nvidia_in_tmpl.rc != 0
-  notify: restart k3s agent
+- name: Check if default_runtime_name already set in K3S containerd template
+  ansible.builtin.command: grep -q "default_runtime_name" /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
+  register: default_runtime_in_tmpl
+  failed_when: false
+  changed_when: false
+  when: k3s_containerd_config.stat.exists
   tags:
     - gpu
     - container-toolkit
 
-- name: Ensure default_runtime_name is nvidia in K3S containerd template
-  ansible.builtin.lineinfile:
+# Modern k3s auto-detects nvidia-container-runtime and adds the 'nvidia' runtime to
+# containerd; older k3s does not. So we always set nvidia as the DEFAULT runtime, and
+# only add the runtime DEFINITION when k3s did not. Both blocks are inserted BEFORE the
+# runc runtime table so the parent [...containerd] table precedes its sub-tables — valid
+# TOML ordering (inserting after a sub-table breaks the containerd 2.x parser).
+- name: Set nvidia as the default runtime in K3S containerd template
+  ansible.builtin.blockinfile:
     path: /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
-    regexp: 'default_runtime_name\s*='
-    line: '  default_runtime_name = "nvidia"'
-  when: k3s_containerd_config.stat.exists
-  notify: restart k3s agent
+    insertbefore: "containerd\\.runtimes\\.runc\\]"
+    marker: "# {mark} ANSIBLE MANAGED - NVIDIA default runtime"
+    block: |2
+      [plugins.'io.containerd.cri.v1.runtime'.containerd]
+        default_runtime_name = "nvidia"
+  when: k3s_containerd_config.stat.exists and default_runtime_in_tmpl.rc != 0
+  notify:
+    - restart k3s server
+    - restart k3s agent
+  tags:
+    - gpu
+    - container-toolkit
+
+- name: Add nvidia runtime definition if not auto-detected by K3S
+  ansible.builtin.blockinfile:
+    path: /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
+    insertbefore: "containerd\\.runtimes\\.runc\\]"
+    marker: "# {mark} ANSIBLE MANAGED - NVIDIA runtime"
+    block: |2
+      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.'nvidia']
+        runtime_type = "io.containerd.runc.v2"
+      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.'nvidia'.options]
+        BinaryName = "/usr/bin/nvidia-container-runtime"
+        SystemdCgroup = true
+  when: k3s_containerd_config.stat.exists and nvidia_in_tmpl.rc != 0
+  notify:
+    - restart k3s server
+    - restart k3s agent
   tags:
     - gpu
     - container-toolkit
