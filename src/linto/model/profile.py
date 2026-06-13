@@ -99,6 +99,15 @@ class ProfileConfig(BaseModel):
     speaker_id_api_token: str | None = Field(default=None)
     speaker_id_consent_version: str | None = Field(default=None)
 
+    # Per-service image override "registry/repo:tag" (overrides repository+tag,
+    # e.g. to deploy a feature-branch image from a private registry on staging).
+    # Consumed by the staging CI/CD image-override + imagePullSecret logic.
+    service_images: dict[str, str] = Field(default_factory=dict)
+    # Private image registry for service_images (used to create an imagePullSecret)
+    registry_url: str | None = Field(default=None)
+    registry_user: str | None = Field(default=None)
+    registry_password: str | None = Field(default=None)
+
     # Live Session
     live_session_enabled: bool = Field(default=False)
     streaming_stt_variants: list[StreamingSTTVariant] = Field(default_factory=list)
