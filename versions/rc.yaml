@@ -22,7 +22,7 @@ linto:
     image: lintoai/linto-api-gateway
     tag: 0.1.2
     repo: https://github.com/linto-ai/linto-api-gateway
-    digest: sha256:340e4bbd0452ee6024e2681eb9852c1d3a173d751087d64eeae6fefebf9778ad
+    digest: sha256:04b39c8320aadd3b7e819afd03a8427121ee98d6d5c3671331c73ec5a780f1d6
     commit: c6514dfad95cef23d59534da959fa52373084741
   linto-transcription-service:
     image: lintoai/linto-transcription-service
