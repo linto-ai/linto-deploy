@@ -99,6 +99,10 @@ class ProfileConfig(BaseModel):
 
     # STT settings
     security_level: str = Field(default="0")
+    # Optional confidentiality level for the secondary NeMo/Parakeet model.
+    # Falls back to security_level when unset, so a cluster only diverges the
+    # two models' levels when it explicitly opts in (e.g. staging's gating demo).
+    nemo_security_level: str | None = Field(default=None)
 
     # Speaker identification (Qdrant voiceprint store + studio-api/frontend wiring).
     # Requires stt_enabled (diarization is the embedding service). Off by default.
