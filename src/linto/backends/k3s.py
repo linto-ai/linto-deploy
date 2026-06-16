@@ -1122,9 +1122,12 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
             "image": image_values(profile, "linto-transcription-service"),
             "env": {
                 "SERVICE_NAME": "whisper-large-v3-turbo",
-                "GATEWAY_DESCRIPTION": '{"en": "Recommended (Whisper Large V3)", "fr": "Recommandé (Whisper Large V3)"}',
+                "GATEWAY_DESCRIPTION": '{"en": "Whisper Large V3", "fr": "Whisper Large V3"}',
                 "BROKER_PASS": profile.redis_password or "",
                 "SECURITY_LEVEL": profile.security_level,
+                # Lower order = recommended. The UI derives the recommended model
+                # from this rather than a hardcoded label in the description.
+                "SERVICE_ORDER": "1",
             },
             "ingress": {
                 "enabled": False,  # Internal only
@@ -1146,9 +1149,13 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
             "image": image_values(profile, "linto-transcription-service"),
             "env": {
                 "SERVICE_NAME": "nemo-parakeet-tdt-v3",
-                "GATEWAY_DESCRIPTION": '{"en": "Fast (Parakeet)", "fr": "Rapide (Parakeet)"}',
+                "GATEWAY_DESCRIPTION": '{"en": "Parakeet v3 (0.6B)", "fr": "Parakeet v3 (0.6B)"}',
                 "BROKER_PASS": profile.redis_password or "",
-                "SECURITY_LEVEL": profile.security_level,
+                # Profile-driven so the secondary model can sit at a distinct
+                # confidentiality level (e.g. staging demos Whisper=Public /
+                # Parakeet=Sensitive); defaults to the cluster's security_level.
+                "SECURITY_LEVEL": profile.nemo_security_level or profile.security_level,
+                "SERVICE_ORDER": "2",
             },
             "ingress": {
                 "enabled": False,

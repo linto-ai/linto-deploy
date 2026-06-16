@@ -21,6 +21,7 @@ data:
   GATEWAY_PROXY_PATH: "/{{ .Values.whisper.env.SERVICE_NAME }}"
   MODEL_TYPE: "whisper"
   SECURITY_LEVEL: {{ .Values.whisper.env.SECURITY_LEVEL | quote }}
+  SERVICE_ORDER: {{ .Values.whisper.env.SERVICE_ORDER | default "" | quote }}
   GATEWAY_DESCRIPTION: {{ .Values.whisper.env.GATEWAY_DESCRIPTION | default (printf "{\"en\": \"%s\", \"fr\": \"%s\"}" .Values.whisper.env.SERVICE_NAME .Values.whisper.env.SERVICE_NAME) | quote }}
   {{- if .Values.whisper.env.SPEAKER_ID_API_TOKEN }}
   SPEAKER_ID_API_TOKEN: {{ .Values.whisper.env.SPEAKER_ID_API_TOKEN | quote }}
@@ -70,6 +71,7 @@ data:
   GATEWAY_PROXY_PATH: "/{{ .Values.nemo.env.SERVICE_NAME }}"
   MODEL_TYPE: "nemo"
   SECURITY_LEVEL: {{ .Values.nemo.env.SECURITY_LEVEL | quote }}
+  SERVICE_ORDER: {{ .Values.nemo.env.SERVICE_ORDER | default "" | quote }}
   GATEWAY_DESCRIPTION: {{ .Values.nemo.env.GATEWAY_DESCRIPTION | default (printf "{\"en\": \"%s\", \"fr\": \"%s\"}" .Values.nemo.env.SERVICE_NAME .Values.nemo.env.SERVICE_NAME) | quote }}
 {{- end }}
 ---
