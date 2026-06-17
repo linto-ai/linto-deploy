@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-06-16T11:09:09.250356+00:00
+# Last updated: 2026-06-17T10:54:30.000513+00:00
 
 platform_version: latest-unstable
 linto:
@@ -16,13 +16,13 @@ linto:
     image: lintoai/studio-api
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:ced44c7cb3d64f1e298f4648425e122daca7b880be6a79e7fdfbca742cc4ee62
+    digest: sha256:7d071f16b9c5b5f1185f970d83af6b0b6c8bf81c2fabfe0095341cd120e58e13
     commit: 358caef6278710c5ae2c52678a9fb023b25edde0
   studio-frontend:
     image: lintoai/studio-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:f6d580f526731f264880ea03e2d272ea52e80c926d7a4dc80a81739d1e4de44a
+    digest: sha256:8a762fa9c0d07452aec5792bea0748ab6f33b34902397a71dd6e494bd7f38ca3
     commit: 358caef6278710c5ae2c52678a9fb023b25edde0
   studio-websocket:
     image: lintoai/studio-websocket
@@ -46,7 +46,7 @@ linto:
     image: lintoai/linto-stt-whisper
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:64f47ee83798bafce6fcaf948edee26bf6a150d7836d0df5f50574f797c9067e
+    digest: sha256:022c17e1e590ed87b0433cc7dadc66f4ff470c87503612cc7665883532853dd1
     commit: d6fb1a0f8d131193ccecf51ce302f611f2ecd9af
   linto-diarization-pyannote:
     image: lintoai/linto-diarization-pyannote
@@ -58,7 +58,7 @@ linto:
     image: lintoai/linto-stt-kaldi
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:ce90f5228ccaaeb13efd165a91a942dd0e7e67245378954f19086210440f9079
+    digest: sha256:0f821f5ee0d3532780fe2efb8c3727b34d2133dc1203e7b6909f30f79f6e50ec
     commit: d6fb1a0f8d131193ccecf51ce302f611f2ecd9af
   linto-stt-nemo:
     image: lintoai/linto-stt-nemo
@@ -86,31 +86,31 @@ linto:
     image: lintoai/studio-plugins-migration
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:cbdd97814443b7376f8b7340e033e4fc7a2c5f8d31b7d1f194a748235e21c77c
+    digest: sha256:1ccec036e90cfa6b17e930f6cd0d130cbd11a31bc64259d89a9b7aa8418d868f
     commit: 58354c189b07e44c8116169c4bd5ee8f5c26c120
   studio-plugins-sessionapi:
     image: lintoai/studio-plugins-sessionapi
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:303de82c2653b495da9f7d68ee2f691b129120c958fbfe61571fb6775c53b6e7
+    digest: sha256:5827cdfd4383db683bf7733974dc07786d3290407eaedafb55e95632451e280c
     commit: 58354c189b07e44c8116169c4bd5ee8f5c26c120
   studio-plugins-scheduler:
     image: lintoai/studio-plugins-scheduler
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:e021554ebab0604242620c11279a2f3767ae9e432e6a7ed7a912599a23dce948
+    digest: sha256:b0c005f40a4c8e999ea6783cbb6d0a6506d11fe580c6198783c1e3f3f530a569
     commit: 58354c189b07e44c8116169c4bd5ee8f5c26c120
   studio-plugins-transcriber:
     image: lintoai/studio-plugins-transcriber
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:e10fdedef02415b71c51f3c96cd2e2276cf8ea3f3072db6f2d2425da30cf2532
+    digest: sha256:efa65f95f2e9211638e4bae6ac2e839985adbda8e1eeb7b5975dfabcadfa381a
     commit: 58354c189b07e44c8116169c4bd5ee8f5c26c120
   studio-plugins-translator:
     image: lintoai/studio-plugins-translator
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:c9d4bb0be6a19625326be9e3d41196f0bd550d4416cef59970986cd2eed75b7c
+    digest: sha256:14ad924693c606e42ed71622ac844eb2360a81ad120fe33592fbbd3ef03932f2
     commit: 58354c189b07e44c8116169c4bd5ee8f5c26c120
 databases:
   studio-mongo:
@@ -128,7 +128,7 @@ databases:
   live-postgres:
     image: postgres
     tag: 15-alpine
-    digest: sha256:f9cbc643bd3ae158a48241527e5306cdbd9958cbf65c09842770e564f5ff686e
+    digest: sha256:878ac61a6367f60973ed0eef22ade9956e075f1a21f4604867e33a2edb6939e0
   live-mosquitto:
     image: eclipse-mosquitto
     tag: '2'
