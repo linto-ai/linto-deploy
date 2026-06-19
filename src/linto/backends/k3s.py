@@ -371,6 +371,106 @@ def ensure_image_pull_secret(
             return False
 
 
+def configure_gpu_time_slicing(slices: int, kubeconfig: dict | None = None) -> bool:
+    """Enable NVIDIA GPU time-slicing so several pods share one physical GPU.
+
+    The gpu ansible playbook installs the vanilla NVIDIA device plugin (1 GPU = 1
+    allocatable slot), so e.g. whisper + diarization cannot both schedule on a
+    single card. This creates a time-slicing ConfigMap and points the device
+    plugin at it, advertising `slices` virtual GPUs. Idempotent.
+
+    Args:
+        slices: Number of virtual GPU slots per physical GPU
+        kubeconfig: Optional kubeconfig dict to use
+
+    Returns:
+        True if time-slicing was configured
+    """
+    configmap = f"""apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nvidia-device-plugin-time-slicing
+  namespace: kube-system
+data:
+  time-slicing.yaml: |
+    version: v1
+    sharing:
+      timeSlicing:
+        renameByDefault: false
+        resources:
+          - name: nvidia.com/gpu
+            replicas: {slices}
+"""
+    patch = (
+        '{"spec":{"template":{"spec":{'
+        '"containers":[{"name":"nvidia-device-plugin-ctr",'
+        '"args":["--config-file=/etc/nvidia/time-slicing.yaml"],'
+        '"volumeMounts":[{"name":"nvidia-config","mountPath":"/etc/nvidia"}]}],'
+        '"volumes":[{"name":"nvidia-config","configMap":{"name":"nvidia-device-plugin-time-slicing",'
+        '"items":[{"key":"time-slicing.yaml","path":"time-slicing.yaml"}]}}]}}}}'
+    )
+    with KubeconfigContext(kubeconfig):
+        try:
+            ds = subprocess.run(
+                [
+                    "kubectl", "get", "ds", "-n", "kube-system", "nvidia-device-plugin-daemonset",
+                    "-o", "jsonpath={.spec.template.spec.containers[0].name}|{.spec.template.spec.containers[0].args}",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=10,
+            )
+            if ds.returncode != 0:
+                console.print(
+                    "[yellow]NVIDIA device plugin not found; run the gpu playbook first. "
+                    "Skipping time-slicing.[/yellow]"
+                )
+                return False
+            ctr_name, _, ds_args = ds.stdout.partition("|")
+            # Only patch the known static device-plugin container; never inject a new
+            # container into a differently-managed plugin (e.g. the GPU operator).
+            if ctr_name.strip() != "nvidia-device-plugin-ctr":
+                console.print(
+                    f"[yellow]Device plugin container is '{ctr_name.strip()}', not the expected "
+                    "'nvidia-device-plugin-ctr'; skipping time-slicing patch[/yellow]"
+                )
+                return False
+            # Don't touch an already-time-sliced plugin (e.g. long-lived clusters).
+            if "config-file" in ds_args:
+                console.print("[dim]Device plugin already time-sliced; leaving it unchanged[/dim]")
+                return True
+            cm_res = subprocess.run(
+                ["kubectl", "apply", "-f", "-"],
+                input=configmap,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=30,
+            )
+            if cm_res.returncode != 0:
+                console.print(f"[red]Failed to create time-slicing ConfigMap: {cm_res.stderr}[/red]")
+                return False
+            patch_res = subprocess.run(
+                [
+                    "kubectl", "patch", "ds", "-n", "kube-system",
+                    "nvidia-device-plugin-daemonset", "--type", "strategic", "-p", patch,
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=30,
+            )
+            if patch_res.returncode != 0:
+                console.print(f"[red]Failed to patch device plugin for time-slicing: {patch_res.stderr}[/red]")
+                return False
+            console.print(f"[green]GPU time-slicing enabled ({slices} virtual GPUs per card)[/green]")
+            return True
+        except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+            console.print(f"[red]Error configuring GPU time-slicing: {e}[/red]")
+            return False
+
+
 MONITORING_NAMESPACE = "monitoring"
 
 
@@ -1708,6 +1808,13 @@ def apply_k3s(profile_name: str, base_dir: Path | None = None) -> None:
                 console.print("[yellow]Warning: cert-manager installation failed[/yellow]")
             else:
                 ensure_cluster_issuer(profile.acme_email, kubeconfig)
+
+        # Enable GPU time-slicing so multiple pods can share one physical GPU.
+        # The gpu playbook only installs the vanilla device plugin (1 slot/card),
+        # so without this a `timeslicing` profile still exposes a single GPU slot.
+        gpu_mode = profile.gpu_mode.value if isinstance(profile.gpu_mode, GPUMode) else profile.gpu_mode
+        if gpu_mode in ("timeslicing", "time-slicing") and profile.gpu_slices_per_gpu > 1:
+            configure_gpu_time_slicing(profile.gpu_slices_per_gpu, kubeconfig)
 
         # Create an image pull secret so pods can pull private feature-branch images
         # (profile.service_images) from a private registry

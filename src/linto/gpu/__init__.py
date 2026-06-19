@@ -120,7 +120,7 @@ def calculate_total_gpu_slots(profile: ProfileConfig) -> int:
         return 0
     elif profile.gpu_mode == GPUMode.EXCLUSIVE:
         return profile.gpu_count
-    elif profile.gpu_mode == GPUMode.TIMESLICING:
+    elif profile.gpu_mode in (GPUMode.TIMESLICING, GPUMode.TIME_SLICING):
         return profile.gpu_count * profile.gpu_slices_per_gpu
     else:
         raise NotImplementedError("MIG mode not supported")
@@ -158,7 +158,7 @@ def validate_gpu_capacity(profile: ProfileConfig) -> list[str]:
         )
         slot_info = (
             f"{profile.gpu_count} GPU x {profile.gpu_slices_per_gpu} slices"
-            if profile.gpu_mode == GPUMode.TIMESLICING
+            if profile.gpu_mode in (GPUMode.TIMESLICING, GPUMode.TIME_SLICING)
             else f"{profile.gpu_count} GPU"
         )
         warnings.append(
