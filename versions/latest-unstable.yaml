@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-06-19T10:24:57.665043+00:00
+# Last updated: 2026-06-20T08:55:28.313289+00:00
 
 platform_version: latest-unstable
 linto:
@@ -16,20 +16,20 @@ linto:
     image: lintoai/studio-api
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:04a0c3d2fddb369e2ae4044ca2418b04682baed0ee3c8e186a0aa6b773e4215a
+    digest: sha256:f798f176a0f84ba4fe6d76f954c410e2392f381170f443efcec1e04fa7a877ad
     commit: 358caef6278710c5ae2c52678a9fb023b25edde0
   studio-frontend:
     image: lintoai/studio-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:4ffd9b43bc5f04dd5666db443b995ca682d09d461fa13280d45555bf0cddb1fa
+    digest: sha256:96b8fc2121c2542b61f2050b8820011456b891002f935e1f74d7a4a28e5739c3
     commit: 358caef6278710c5ae2c52678a9fb023b25edde0
   studio-websocket:
     image: lintoai/studio-websocket
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:1f895abead3a8a242bbc13136aa4745b34e3d7b50c00b4cf8e3ee997c6f0a48c
-    commit: afe27ba3a76697d892b4ee1184400f3413640f49
+    digest: sha256:48190a8a24fecd4c511c14a651f222083abcd0a503296e3122d84435921ff4f8
+    commit: 358caef6278710c5ae2c52678a9fb023b25edde0
   linto-api-gateway:
     image: lintoai/linto-api-gateway
     tag: latest-unstable
@@ -40,8 +40,8 @@ linto:
     image: lintoai/linto-transcription-service
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:363b8683231483bdbc12faea6ca7cc0b6e4c8e46630c74e195b6f56b39a97276
-    commit: ada4b36ac4f87b8eaec6d3a0d6e821a29316c508
+    digest: sha256:2c2670d4e58fbcaa9f6baf2437b4f3a62ff25e54e04c1b26279045a1a391d800
+    commit: d6fb1a0f8d131193ccecf51ce302f611f2ecd9af
   linto-stt-whisper:
     image: lintoai/linto-stt-whisper
     tag: latest-unstable
@@ -52,8 +52,8 @@ linto:
     image: lintoai/linto-diarization-pyannote
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-diarization
-    digest: sha256:a1f51c8d0089c32c1a37ab1af2eceeaa10cf67a89234cb1d77dbf32708ee3d23
-    commit: fbabb3a7709aba507c80b14786cc65df32933905
+    digest: sha256:8d57bc1caacfe30b8950ed1a41769ced0e998e9a49e35e47507fe070b1292530
+    commit: 72eec495404bf668ff88c6b8ecaa8e852db4c76c
   linto-stt-kaldi:
     image: lintoai/linto-stt-kaldi
     tag: latest-unstable
@@ -74,13 +74,13 @@ linto:
     image: lintoai/llm-gateway
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:09bce6908dda5289b15ddc3b5e14c94e66a713b69d9e7c5b088053b6282c3349
+    digest: sha256:a35c2189b8a3a5d0458c6ae2c305791c1a0a8fa48a25c26e44b9e860d6c7d206
     commit: b96433b885874d59cd9be7b544883299a22db59a
   llm-gateway-frontend:
     image: lintoai/llm-gateway-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:001dd5502871265decfc8cf1031681f0df6234f738f28c50cd03f0f1fb4bfb25
+    digest: sha256:625ab3396e7b5649e1b367219fa77d156394dbe8e8c3cf4ce9c79a1b719d1b15
     commit: b96433b885874d59cd9be7b544883299a22db59a
   studio-plugins-migration:
     image: lintoai/studio-plugins-migration
