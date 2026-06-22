@@ -180,10 +180,14 @@ qdrant:
   enabled: false
   image:
     repository: qdrant/qdrant
-    # Keep in sync with the qdrant-client version baked into the linto-diarization
-    # image: the client refuses a server more than 1 minor away (UserWarning, then
-    # degraded). v1.12.4 vs client 1.16.x triggers it; v1.16.x is safe.
-    tag: v1.16.2
+    # Match the qdrant-client baked into the linto-diarization image (currently 1.18.0).
+    # Client/server skew only emits a benign UserWarning and keeps working; it does NOT
+    # refuse or degrade. The real constraint is SERVER storage: Qdrant guarantees on-disk
+    # compatibility for ONE minor only, and self-hosted must upgrade one minor at a time
+    # (RocksDB was dropped for gridstore at v1.17). On a cluster with EXISTING data, do
+    # NOT jump more than one minor (pod may fail to start / collection unreadable) —
+    # stage 1.x -> 1.(x+1) -> ... or snapshot + recreate the collection.
+    tag: v1.18.0
     pullPolicy: IfNotPresent
   apiKey: ""  # Optional; injected as QDRANT_API_KEY in diarization workers
   resources:
