@@ -95,6 +95,10 @@ class ProfileConfig(BaseModel):
     studio_enabled: bool = Field(default=True)
     studio_api_replicas: int = Field(default=4, ge=1)
     studio_frontend_env: dict[str, str] = Field(default_factory=dict)
+    # Vue 3 collaborative editor (Hocuspocus). Loads the EditorHandler component in
+    # studio-api + a dedicated /ws/editor ingress to the API. Off by default; only
+    # turn on with a studio image that ships @hocuspocus/server (e.g. staging/vue3).
+    collaborative_editor_enabled: bool = Field(default=False)
     stt_enabled: bool = Field(default=True)
 
     # STT settings

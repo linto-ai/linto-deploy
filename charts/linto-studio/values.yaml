@@ -77,6 +77,13 @@ studioApi:
   ingress:
     path: /cm-api
     stripPrefix: true
+  # Collaborative editor (Vue 3 / Hocuspocus). When enabled, studio-api loads the
+  # EditorHandler component and a dedicated ingress routes the editor WebSocket to
+  # the API on `path` (no prefix strip — EditorHandler matches the full path).
+  # Requires a studio-api image that ships @hocuspocus/server (e.g. staging/vue3).
+  editor:
+    enabled: false
+    path: /ws/editor
 
 # Studio Frontend
 # Note: Frontend builds Vue.js at startup, requires significant memory

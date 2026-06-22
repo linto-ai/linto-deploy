@@ -1108,6 +1108,11 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
     if "secrets" not in values["studioApi"]:
         values["studioApi"]["secrets"] = {}
 
+    # Vue 3 collaborative editor: load the EditorHandler component in studio-api and
+    # expose a dedicated /ws/editor ingress to the API (the chart defaults to off).
+    if profile.collaborative_editor_enabled:
+        values["studioApi"]["editor"] = {"enabled": True, "path": "/ws/editor"}
+
     # Add service gateway URLs if STT/LLM enabled
     if profile.stt_enabled:
         values["studioApi"]["env"]["GATEWAY_SERVICES"] = "http://linto-stt-api-gateway:80"
