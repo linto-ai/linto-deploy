@@ -47,6 +47,7 @@ data:
   SECURITY_LEVEL: {{ .Values.whisperWorkers.env.SECURITY_LEVEL | quote }}
   VAD: {{ .Values.whisperWorkers.env.VAD | quote }}
   PROMPT: {{ .Values.whisperWorkers.env.PROMPT | quote }}
+  HOTWORDS: {{ .Values.whisperWorkers.env.HOTWORDS | quote }}
 {{- end }}
 ---
 {{- if .Values.nemo.enabled }}
