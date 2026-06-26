@@ -38,10 +38,10 @@ linto:
     commit: ada4b36ac4f87b8eaec6d3a0d6e821a29316c508
   linto-diarization-pyannote:
     image: lintoai/linto-diarization-pyannote
-    tag: 2.2.0
+    tag: 2.3.0
     repo: https://github.com/linto-ai/linto-diarization
-    digest: sha256:8d57bc1caacfe30b8950ed1a41769ced0e998e9a49e35e47507fe070b1292530
-    commit: c35ff70b2e4747bc2aa937a9aea68645ab6b575b
+    digest: sha256:1a6960e1a7a95723e19bd4bc10bf71378580991aa5f56024ba6049f82593db73
+    commit: 776a34d38730b5bc25952ccdf3de33939e9dc7f8
   linto-stt-kaldi:
     image: lintoai/linto-stt-kaldi
     tag: 2.0.0
