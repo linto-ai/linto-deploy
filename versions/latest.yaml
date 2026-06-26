@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-06-25T09:20:24.710257+00:00
+# Last updated: 2026-06-26T09:25:33.188380+00:00
 
 platform_version: latest
 linto:
@@ -52,8 +52,8 @@ linto:
     image: lintoai/linto-diarization-pyannote
     tag: latest
     repo: https://github.com/linto-ai/linto-diarization
-    digest: sha256:a1f51c8d0089c32c1a37ab1af2eceeaa10cf67a89234cb1d77dbf32708ee3d23
-    commit: 72eec495404bf668ff88c6b8ecaa8e852db4c76c
+    digest: sha256:8d57bc1caacfe30b8950ed1a41769ced0e998e9a49e35e47507fe070b1292530
+    commit: c35ff70b2e4747bc2aa937a9aea68645ab6b575b
   linto-stt-kaldi:
     image: lintoai/linto-stt-kaldi
     tag: latest
