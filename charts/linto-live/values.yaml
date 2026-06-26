@@ -149,6 +149,22 @@ translator:
     TRANSLATEGEMMA_MODEL: "Infomaniak-AI/vllm-translategemma-4b-it"
     PARTIAL_DEBOUNCE_MS: "300"
 
+# BotService (headless Chromium joins Visio/Teams/Jitsi/BBB; broker-only, no inbound Service)
+botService:
+  enabled: false
+  replicas: 1
+  image:
+    repository: lintoai/studio-plugins-botservice
+    pullPolicy: IfNotPresent
+  shmSize: 1Gi  # Chromium /dev/shm (in-memory emptyDir, counts against the memory limit)
+  resources:
+    limits:
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  env: {}  # extra env merged into the ConfigMap; tunables keep image defaults otherwise
+
 # Streaming STT variants
 streamingStt:
   whisper:
