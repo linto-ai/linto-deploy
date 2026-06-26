@@ -1426,6 +1426,11 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
                 "PARTIAL_DEBOUNCE_MS": "300",
             },
         },
+        "botService": {
+            "enabled": True,
+            "replicas": profile.bot_service_replicas,
+            "image": image_values(profile, "studio-plugins-botservice"),
+        },
         "streamingStt": {},
     }
 

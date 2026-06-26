@@ -50,6 +50,10 @@ data:
   LOG_FORMAT: text
   LOG_LEVEL: debug
   SCHEDULER_WEBSERVER_HTTP_PORT: "80"
+  STREAMING_WS_BOT_HOST: {{ include "linto-live.fullname" . }}-session-transcriber
+  STREAMING_WS_TCP_PORT: "8080"
+  STREAMING_WS_ENDPOINT: transcriber-ws
+  STREAMING_WS_SECURE: "false"
 {{- end }}
 ---
 {{- if .Values.sessionTranscriber.enabled }}
@@ -103,4 +107,26 @@ data:
   TRANSLATEGEMMA_MODEL: {{ .Values.translator.env.TRANSLATEGEMMA_MODEL | quote }}
   PARTIAL_DEBOUNCE_MS: {{ .Values.translator.env.PARTIAL_DEBOUNCE_MS | quote }}
   LOG_LEVEL: debug
+{{- end }}
+---
+{{- if .Values.botService.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "linto-live.fullname" . }}-bot-service-config
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: bot-service
+data:
+  BROKER_HOST: {{ include "linto-live.brokerHost" . | quote }}
+  BROKER_PORT: "1883"
+  BROKER_PROTOCOL: mqtt
+  BROKER_KEEPALIVE: "60"
+  BOTSERVICE_COMPONENTS: "BrokerClient,Healthcheck"
+  BOTSERVICE_HEALTHCHECK_HTTP: "8080"
+  LOG_FORMAT: text
+  LOG_LEVEL: debug
+  {{- range $key, $value := .Values.botService.env }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
 {{- end }}

@@ -355,6 +355,66 @@ spec:
             {{- toYaml .Values.translator.resources | nindent 12 }}
 {{- end }}
 ---
+{{- if .Values.botService.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-live.fullname" . }}-bot-service
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: bot-service
+spec:
+  revisionHistoryLimit: 5
+  replicas: {{ .Values.botService.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-live.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: bot-service
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "linto-live.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: bot-service
+    spec:
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: bot-service
+          image: "{{ .Values.botService.image.repository }}:{{ .Values.botService.image.tag | default (include "linto-live.imageTag" .) }}"
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" (dict "tag" .Values.botService.image.tag "ctx" .) }}
+          ports:
+            - name: health
+              containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-live.fullname" . }}-bot-service-config
+          readinessProbe:
+            httpGet:
+              path: /
+              port: health
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: health
+            initialDelaySeconds: 45
+            periodSeconds: 20
+            failureThreshold: 3
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+          resources:
+            {{- toYaml .Values.botService.resources | nindent 12 }}
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: {{ .Values.botService.shmSize | default "1Gi" }}
+{{- end }}
+---
 {{/* Streaming STT services */}}
 {{- if .Values.streamingStt.whisper.enabled }}
 apiVersion: apps/v1

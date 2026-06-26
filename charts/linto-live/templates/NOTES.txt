@@ -13,4 +13,5 @@ Components deployed:
   - Session API
   - Session Scheduler
   - Session Transcriber
+  - Bot Service
   - PostgreSQL

@@ -128,6 +128,7 @@ class ProfileConfig(BaseModel):
     streaming_stt_variants: list[StreamingSTTVariant] = Field(default_factory=list)
     kyutai_gpu_architecture: GPUArchitecture | None = Field(default=None)
     session_transcriber_replicas: int = Field(default=4, ge=1)
+    bot_service_replicas: int = Field(default=1, ge=1)
 
     # Translator (external translation service)
     translator_enabled: bool = Field(default=False)
