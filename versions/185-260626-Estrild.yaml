@@ -2,22 +2,22 @@ platform_version: 185-260626-Estrild
 linto:
   studio-api:
     image: lintoai/studio-api
-    tag: 1.8.4
+    tag: 1.8.5
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:76820b18007db697ab51e84fd5ebbc14d4fe49cbd79906c100d2109e7b9d25a1
-    commit: c1d4fcbbbb3af26d81929b7c644bb3ee7112af7b
+    digest: sha256:1bf501741732a69affb8db5328e6dc70b0be30b7392e7d45cea3815123e81cb8
+    commit: c134ef3663fcb433ad650194e4ce8605550a91cc
   studio-frontend:
     image: lintoai/studio-frontend
-    tag: 1.8.4
+    tag: 1.8.5
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:3da696a860b270748c774ead290e4a58971dbd0c369d45aa28a3d5b7031cd0ba
-    commit: 358caef6278710c5ae2c52678a9fb023b25edde0
+    digest: sha256:5fd5c0f241058c68611540e04faea340dcbd2ad5122649434e27cfe333b44eb9
+    commit: c134ef3663fcb433ad650194e4ce8605550a91cc
   studio-websocket:
     image: lintoai/studio-websocket
-    tag: 1.8.4
+    tag: 1.8.5
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:d62807496d5b1a96066afd9fd07654c0312ac4fedb10b413756d6db531df09a3
-    commit: e17d6b33c55b9f9ed95e8064e8421cf9c169d4e8
+    digest: sha256:cddefa9e1c2cc04d5e4ede23d45ef93acc4891aefb35dd00bdbaa24a87efb256
+    commit: c134ef3663fcb433ad650194e4ce8605550a91cc
   linto-api-gateway:
     image: lintoai/linto-api-gateway
     tag: 0.1.2
