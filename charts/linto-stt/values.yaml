@@ -102,6 +102,10 @@ whisperWorkers:
     # non-trivial prompt avoids the bug. We additionally seed it with the
     # brand vocabulary we want Whisper to recognize (LINAGORA, LinTO, …).
     PROMPT: "Réunion chez LINAGORA. Produits : LinTO, OpenRag, Twake."
+    # Hotwords bias the faster-whisper decoder toward specific spellings
+    # (proper nouns / brand vocabulary). Free text, comma/space-separated.
+    # New in linto-stt 2.1.0; only the CTranslate2/faster-whisper backend uses it.
+    HOTWORDS: "LinTO, Twake, OpenRAG, LINAGORA"
 
 # NeMo transcription service (HTTP API, like whisper but for NeMo workers)
 nemo:
