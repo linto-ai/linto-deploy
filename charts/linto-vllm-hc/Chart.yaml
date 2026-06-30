@@ -1,0 +1,14 @@
+apiVersion: v2
+name: linto-vllm-hc
+description: High-capacity vLLM GPU inference for LinTO on the L40S node (Voxtral realtime + TranslateGemma). Deployed as a release separate from linto-vllm so it never shares blast radius with the BM-hosted vLLM.
+type: application
+version: 0.1.0
+appVersion: "nightly"
+keywords:
+  - linto
+  - vllm
+  - gpu
+  - voxtral
+  - translategemma
+  - l40s
+  - high-capacity

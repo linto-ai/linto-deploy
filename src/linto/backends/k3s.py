@@ -1618,6 +1618,56 @@ def generate_vllm_values(profile: ProfileConfig) -> dict:
     }
 
 
+def generate_vllm_hc_values(profile: ProfileConfig) -> dict:
+    """Generate Helm values for the linto-vllm-hc chart (high-capacity, dedicated node).
+
+    Same shape as generate_vllm_values but driven by profile.vllm_hc_instances and
+    deployed as a separate Helm release, so it never shares blast radius with the
+    BM-hosted vLLM. Honors per-instance resources/replicas/hugging_face_token.
+    """
+    global_values = generate_global_values(profile, create_certificate=False)
+
+    # High-capacity default when an instance doesn't pin its own resources.
+    default_resources = {
+        "limits": {"nvidia.com/gpu": "1", "memory": "24Gi"},
+        "requests": {"nvidia.com/gpu": "1", "memory": "8Gi"},
+    }
+
+    instances = {}
+    for inst in profile.vllm_hc_instances:
+        instance_values = {
+            "enabled": inst.enabled,
+            "image": {
+                "repository": inst.image.rsplit(":", 1)[0] if ":" in inst.image else inst.image,
+                "tag": inst.image.rsplit(":", 1)[1] if ":" in inst.image else "",
+            },
+            "model": inst.model,
+            "gpuMemoryUtilization": str(inst.gpu_memory_utilization),
+            "replicas": inst.replicas,
+            "service": {"port": 8000},
+            "resources": inst.resources or default_resources,
+        }
+        if inst.model_cache_path:
+            instance_values["modelCachePath"] = inst.model_cache_path
+        if inst.extra_args:
+            instance_values["extraArgs"] = inst.extra_args
+        if inst.extra_pip_packages:
+            instance_values["extraPipPackages"] = inst.extra_pip_packages
+        if inst.hugging_face_token:
+            instance_values["huggingFaceToken"] = inst.hugging_face_token
+        if inst.node_selector:
+            instance_values["nodeSelector"] = inst.node_selector
+        if inst.tolerations:
+            instance_values["tolerations"] = inst.tolerations
+
+        instances[inst.name] = instance_values
+
+    return {
+        "global": global_values,
+        "instances": instances,
+    }
+
+
 def generate_values(profile: ProfileConfig, chart: str) -> dict[str, Any]:
     """Generate values.yaml content for a specific chart.
 
@@ -1638,6 +1688,8 @@ def generate_values(profile: ProfileConfig, chart: str) -> dict[str, Any]:
         return generate_llm_values(profile)
     elif chart == "linto-vllm":
         return generate_vllm_values(profile)
+    elif chart == "linto-vllm-hc":
+        return generate_vllm_hc_values(profile)
     else:
         raise ValueError(f"Unknown chart: {chart}")
 
@@ -1696,6 +1748,14 @@ def render_k3s(profile: ProfileConfig, output_dir: Path) -> dict[str, Path]:
         with values_path.open("w") as f:
             yaml.dump(values, f, default_flow_style=False, sort_keys=False)
         generated_files["vllm"] = values_path
+
+    # Generate high-capacity vLLM values (separate release on a dedicated node)
+    if profile.vllm_hc_instances:
+        values = generate_vllm_hc_values(profile)
+        values_path = values_dir / "vllm-hc-values.yaml"
+        with values_path.open("w") as f:
+            yaml.dump(values, f, default_flow_style=False, sort_keys=False)
+        generated_files["vllm-hc"] = values_path
 
     return generated_files
 
@@ -1860,6 +1920,8 @@ def apply_k3s(profile_name: str, base_dir: Path | None = None) -> None:
             charts_to_deploy.append(("linto-llm", "llm-values.yaml"))
         if profile.vllm_instances:
             charts_to_deploy.append(("linto-vllm", "vllm-values.yaml"))
+        if profile.vllm_hc_instances:
+            charts_to_deploy.append(("linto-vllm-hc", "vllm-hc-values.yaml"))
 
         for chart_name, values_file in charts_to_deploy:
             chart_path = get_charts_dir() / chart_name
