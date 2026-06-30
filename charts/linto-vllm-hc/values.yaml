@@ -1,0 +1,110 @@
+# linto-vllm-hc — high-capacity vLLM on the L40S node (linto-gpu-2).
+# Deployed as its OWN Helm release (linto-vllm-hc), separate from the linto-vllm
+# release that serves the BM nodes — so redeploying this never touches the BM vLLM.
+#
+# Both instances run on ONE custom vLLM image and share the single L40S (48 GB) via
+# time-slicing (no hard memory isolation), so gpuMemoryUtilization is split to use the
+# card to the MAX (sum ~0.95 ≈ 45.6 GB, ~2.4 GB margin):
+#   - voxtral 0.42 (~20.2 GB): fixed footprint ~10 GB (measured on bm3: util 0.95 →
+#     5.42 GB KV, so ~9.8 GB weights+overhead) + ~10 GB KV. With sliding_window 256 a
+#     stream costs ~18 MiB of KV, so 24 admitted streams need <0.5 GB — Voxtral is
+#     compute-bound, not memory-bound; the extra KV is re-anchor/unbounded + growth headroom.
+#   - translategemma 0.53 (~25.4 GB): ~9 GB weights + ~16 GB KV. Measured on bm4: 20
+#     concurrent translations used only ~10% of a ~5 GB KV pool (prefix-cache hit ~89%),
+#     so KV scales to hundreds of concurrent translations here. Bound is compute/maxNumSeqs.
+# Push the sum toward ~0.95 if you want the last few GB; keep a margin on a shared card.
+global:
+  imageTag: "nightly"
+  imagePullPolicy: ""
+  storage:
+    files:
+      hostPath: ""
+
+instances:
+  # Voxtral realtime ASR — HIGH CAPACITY, runs on the custom LinTO vLLM fork build.
+  # BF16 (model is BF16-native; no FP8 — keeps ASR quality). Capacity gain comes from
+  # the L40S (48 GB + far more compute than the A4000), not quantization.
+  voxtral:
+    enabled: true
+    image:
+      # Latest custom fork build (branch voxtral-realtime-rfc, commit f7a0c9b0d).
+      # The profile pins this by digest (sha256:081b9c3f…); this tag is the readable default.
+      repository: lintoai/vllm
+      tag: "voxtral-realtime-f7a0c9b0d"
+    model: "mistralai/Voxtral-Mini-4B-Realtime-2602"
+    modelCachePath: "/data/models/voxtral"
+    # Custom image already ships the audio libs (soundfile/soxr/librosa) — no extra pip.
+    extraPipPackages: ""
+    extraArgs:
+      - "--tokenizer-mode"
+      - "mistral"
+      - "--max-model-len"
+      - "8192"
+      - "--max-num-batched-tokens"
+      - "256"
+      # L40S has the compute headroom the A4000 lacked → more concurrent realtime streams.
+      # Start at 24; dial in with the voxtral-capacity-design skill against real load.
+      - "--max-num-seqs"
+      - "24"
+      - "--no-enable-prefix-caching"
+      - "--enable-realtime-unbounded"
+      - "--hf-overrides"
+      - '{"text_config":{"sliding_window":256},"audio_config":{"sliding_window":256}}'
+      - "--compilation-config"
+      - '{"cudagraph_mode":"PIECEWISE"}'
+    # Fraction of the SHARED 48 GB card (time-slicing). Voxtral is compute-bound, not
+    # memory-bound (sliding window) → ~20 GB is comfortable headroom; rest to translategemma.
+    gpuMemoryUtilization: "0.42"
+    replicas: 1
+    service:
+      port: 8000
+    resources:
+      limits:
+        nvidia.com/gpu: "1"
+        memory: 24Gi
+      requests:
+        nvidia.com/gpu: "1"
+        memory: 8Gi
+    nodeSelector:
+      linto.ai/gpu-role: vllm-l40s
+    tolerations:
+      - key: linto.ai/dedicated
+        value: vllm-l40s
+        effect: NoSchedule
+    env: {}
+
+  # TranslateGemma — runs on the SAME custom vLLM image as voxtral (one image to manage;
+  # the fork is a superset of stock vLLM and serves Gemma fine). Prefix caching stays ON
+  # (default) — translation prompts share prefixes, ~89% cache hit measured on bm4.
+  translategemma:
+    enabled: true
+    image:
+      repository: lintoai/vllm
+      tag: "voxtral-realtime-f7a0c9b0d"
+    model: "Infomaniak-AI/vllm-translategemma-4b-it"
+    modelCachePath: "/data/models/translategemma"
+    extraArgs:
+      - "--max-model-len"
+      - "2048"
+      # Admission cap on concurrent translations. bm4 peaked at 20 concurrent @ ~10% KV,
+      # so 64 has plenty of headroom on the bigger L40S budget; raise if compute allows.
+      - "--max-num-seqs"
+      - "64"
+    gpuMemoryUtilization: "0.53"
+    replicas: 1
+    service:
+      port: 8000
+    resources:
+      limits:
+        nvidia.com/gpu: "1"
+        memory: 16Gi
+      requests:
+        nvidia.com/gpu: "1"
+        memory: 4Gi
+    nodeSelector:
+      linto.ai/gpu-role: vllm-l40s
+    tolerations:
+      - key: linto.ai/dedicated
+        value: vllm-l40s
+        effect: NoSchedule
+    env: {}

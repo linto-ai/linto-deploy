@@ -1,0 +1,22 @@
+{{- range $name, $instance := .Values.instances }}
+{{- if $instance.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "linto-vllm-hc.fullname" $ }}-{{ $name }}
+  labels:
+    {{- include "linto-vllm-hc.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ $instance.service.port | default 8000 }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/component: {{ $name }}
+{{- end }}
+{{- end }}

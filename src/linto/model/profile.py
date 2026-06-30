@@ -63,6 +63,9 @@ class VllmInstance(BaseModel):
     gpu_memory_utilization: float = 0.90
     node_selector: dict[str, str] = {}
     tolerations: list[dict] = []
+    replicas: int = 1
+    resources: dict | None = None  # k8s resources; None → renderer default
+    hugging_face_token: str = ""  # for gated model downloads (e.g. Voxtral realtime)
 
 
 class ProfileConfig(BaseModel):
@@ -137,8 +140,12 @@ class ProfileConfig(BaseModel):
     translator_endpoint: str | None = Field(default=None)
     translator_model: str | None = Field(default="Infomaniak-AI/vllm-translategemma-4b-it")
 
-    # vLLM GPU inference servers
+    # vLLM GPU inference servers (linto-vllm chart; e.g. the BM-hosted Voxtral/TranslateGemma)
     vllm_instances: list[VllmInstance] = Field(default_factory=list)
+    # High-capacity vLLM on a dedicated node (e.g. L40S). Deployed as a SEPARATE Helm
+    # release (linto-vllm-hc) so redeploying it never shares blast radius with the BM
+    # vLLM (vllm_instances). See charts/linto-vllm-hc.
+    vllm_hc_instances: list[VllmInstance] = Field(default_factory=list)
 
     # LLM
     llm_enabled: bool = Field(default=False)
