@@ -93,8 +93,8 @@ linto:
     image: lintoai/studio-plugins-transcriber
     tag: 1.5.0
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:7e182bdd7ba99690435810b0fc536a7d76a2abd633e96bafb98fc9f47fd23b6c
-    commit: 3d7a5fe386d5e454c14b63c6deb48fa9e71bcf73
+    digest: sha256:bc91c0524a28e1b4cd2aac12fe6cd80151af05732e542be801cc6c959ee75f66
+    commit: 939f4253b882223755eb1402dd0c52a1361cd503
   studio-plugins-translator:
     image: lintoai/studio-plugins-translator
     tag: 1.5.0
