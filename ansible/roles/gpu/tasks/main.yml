@@ -352,3 +352,28 @@
   tags:
     - gpu
     - verify
+
+# NVIDIA MPS control daemon — shared-GPU nodes only (nvidia_mps_enabled).
+# Guarded so time-sliced nodes are never touched. Lets co-located vLLM processes
+# (e.g. voxtral + translategemma on the L40S) run concurrently on one card.
+- name: Configure NVIDIA MPS control daemon (shared-GPU nodes)
+  when: nvidia_mps_enabled | bool
+  tags:
+    - gpu
+    - mps
+  block:
+    - name: Template nvidia-mps.service unit
+      ansible.builtin.template:
+        src: nvidia-mps.service.j2
+        dest: /etc/systemd/system/nvidia-mps.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: restart nvidia-mps
+
+    - name: Enable and start NVIDIA MPS control daemon
+      ansible.builtin.systemd:
+        name: nvidia-mps
+        enabled: yes
+        state: started
+        daemon_reload: yes

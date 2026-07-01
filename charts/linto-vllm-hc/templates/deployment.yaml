@@ -70,6 +70,12 @@ spec:
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
+            {{- if and $instance.mps $instance.mps.enabled }}
+            # Point this vLLM process at the host MPS control daemon so it shares the
+            # GPU concurrently with the other instance instead of time-slicing.
+            - name: CUDA_MPS_PIPE_DIRECTORY
+              value: {{ $instance.mps.pipeDir | default "/tmp/nvidia-mps" | quote }}
+            {{- end }}
           ports:
             - name: http
               containerPort: {{ $instance.service.port | default 8000 }}
@@ -104,6 +110,10 @@ spec:
               mountPath: /root/.cache/huggingface
             - name: shm
               mountPath: /dev/shm
+            {{- if and $instance.mps $instance.mps.enabled }}
+            - name: mps-pipe
+              mountPath: {{ $instance.mps.pipeDir | default "/tmp/nvidia-mps" }}
+            {{- end }}
       volumes:
         - name: models-cache
           {{- if $instance.modelCachePath }}
@@ -121,5 +131,12 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 4Gi
+        {{- if and $instance.mps $instance.mps.enabled }}
+        # Host MPS pipe dir, served by the gpu-role nvidia-mps.service on the node.
+        - name: mps-pipe
+          hostPath:
+            path: {{ $instance.mps.pipeDir | default "/tmp/nvidia-mps" }}
+            type: Directory
+        {{- end }}
 {{- end }}
 {{- end }}

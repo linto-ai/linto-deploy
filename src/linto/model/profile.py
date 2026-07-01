@@ -66,6 +66,14 @@ class VllmInstance(BaseModel):
     replicas: int = 1
     resources: dict | None = None  # k8s resources; None → renderer default
     hugging_face_token: str = ""  # for gated model downloads (e.g. Voxtral realtime)
+    # NVIDIA MPS (Multi-Process Service): share ONE GPU between concurrent vLLM
+    # processes (e.g. voxtral + translategemma on the L40S) with real parallelism
+    # (kernels from both run on different SMs) instead of time-slicing (separate
+    # CUDA contexts the GPU alternates between + context-switch cost). Renders
+    # CUDA_MPS_PIPE_DIRECTORY + a hostPath mount of the pipe dir into the pod;
+    # requires the host MPS control daemon (gpu role nvidia-mps.service) on the node.
+    mps_enabled: bool = False
+    mps_pipe_dir: str = "/tmp/nvidia-mps"
 
 
 class ProfileConfig(BaseModel):

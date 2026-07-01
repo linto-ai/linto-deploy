@@ -3,8 +3,9 @@
 # release that serves the BM nodes — so redeploying this never touches the BM vLLM.
 #
 # Both instances run on ONE custom vLLM image and share the single L40S (48 GB) via
-# time-slicing (no hard memory isolation), so gpuMemoryUtilization is split to use the
-# card to the MAX (sum ~0.95 ≈ 45.6 GB, ~2.4 GB margin):
+# NVIDIA MPS (see `mps:` on each instance) — kernels from both run concurrently on
+# different SMs, not time-sliced. There's still no hard memory isolation, so
+# gpuMemoryUtilization is split to use the card to the MAX (sum ~0.95 ≈ 45.6 GB, ~2.4 GB margin):
 #   - voxtral 0.42 (~20.2 GB): fixed footprint ~10 GB (measured on bm3: util 0.95 →
 #     5.42 GB KV, so ~9.8 GB weights+overhead) + ~10 GB KV. With sliding_window 256 a
 #     stream costs ~18 MiB of KV, so 24 admitted streams need <0.5 GB — Voxtral is
@@ -27,8 +28,9 @@ instances:
   voxtral:
     enabled: true
     image:
-      # Latest custom fork build (branch voxtral-realtime-rfc, commit f7a0c9b0d).
-      # The profile pins this by digest (sha256:081b9c3f…); this tag is the readable default.
+      # Custom LinTO vLLM fork build (branch voxtral-realtime-rfc). kube-linto-ai's
+      # profile pins the exact build by digest (currently sha256:05da6a70…); this tag
+      # is the readable default for a profile-less `helm install`.
       repository: lintoai/vllm
       tag: "voxtral-realtime-f7a0c9b0d"
     model: "mistralai/Voxtral-Mini-4B-Realtime-2602"
@@ -41,7 +43,11 @@ instances:
       - "--max-model-len"
       - "8192"
       - "--max-num-batched-tokens"
-      - "256"
+      # 4096 (not 256): a small batch serialises concurrent realtime streams
+      # (each stream's audio prefill competes per step), which starved the L40S
+      # to ~0.45x real-time at 4+ streams. 4096 lets 7+ streams run real-time.
+      # Fits the 0.42 mem budget (activation ~4-6GB); 8192+ OOMs the KV cache.
+      - "4096"
       # L40S has the compute headroom the A4000 lacked → more concurrent realtime streams.
       # Start at 24; dial in with the voxtral-capacity-design skill against real load.
       - "--max-num-seqs"
@@ -72,6 +78,13 @@ instances:
         value: vllm-l40s
         effect: NoSchedule
     env: {}
+    # Run voxtral + translategemma concurrently on the shared L40S via NVIDIA MPS
+    # instead of time-slicing (which serialised them and dropped voxtral to ~0.49x
+    # real-time whenever translation was active). Needs the host MPS control daemon
+    # (gpu role nvidia-mps.service). The profile drives this via mps_enabled.
+    mps:
+      enabled: true
+      pipeDir: /tmp/nvidia-mps
 
   # TranslateGemma — runs on the SAME custom vLLM image as voxtral (one image to manage;
   # the fork is a superset of stock vLLM and serves Gemma fine). Prefix caching stays ON
@@ -108,3 +121,7 @@ instances:
         value: vllm-l40s
         effect: NoSchedule
     env: {}
+    # Attach to the same host MPS daemon as voxtral so both share the GPU concurrently.
+    mps:
+      enabled: true
+      pipeDir: /tmp/nvidia-mps
