@@ -1659,6 +1659,8 @@ def generate_vllm_hc_values(profile: ProfileConfig) -> dict:
             instance_values["nodeSelector"] = inst.node_selector
         if inst.tolerations:
             instance_values["tolerations"] = inst.tolerations
+        if inst.mps_enabled:
+            instance_values["mps"] = {"enabled": True, "pipeDir": inst.mps_pipe_dir}
 
         instances[inst.name] = instance_values
 

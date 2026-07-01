@@ -42,3 +42,13 @@ nvidia_reboot_after_install: true
 # Reboot timeout (seconds). 600 to tolerate slow bare-metal boots (e.g. Exaion ~340s);
 # the ansible reboot module default 300 was too short and aborted the play mid-reboot.
 nvidia_reboot_timeout: 600
+
+# NVIDIA MPS (Multi-Process Service) — node-level GPU sharing for hosts that run
+# SEVERAL GPU processes on one card and need them to run CONCURRENTLY (e.g. the L40S
+# running voxtral + translategemma vLLM). Installs a systemd control daemon only.
+# OFF by default: leave time-sliced nodes untouched. Enable per-host in the inventory
+# (e.g. nvidia_mps_enabled: true on linto-gpu-2). This is orthogonal to the cluster
+# device-plugin's time-slicing config — it does NOT touch that shared DaemonSet.
+nvidia_mps_enabled: false
+nvidia_mps_pipe_dir: "/tmp/nvidia-mps"
+nvidia_mps_log_dir: "/var/log/nvidia-mps"

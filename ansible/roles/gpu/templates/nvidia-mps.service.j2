@@ -1,0 +1,21 @@
+# Managed by Ansible (linto-deploy gpu role) — do not edit by hand.
+# NVIDIA CUDA MPS control daemon. Lets several GPU processes on this node share the
+# card concurrently (one MPS server, many clients) instead of time-slicing.
+# A vLLM pod uses it only if CUDA_MPS_PIPE_DIRECTORY is set at process start (the
+# linto-vllm-hc chart injects that env + a hostPath mount of the pipe dir when
+# instance.mps.enabled). Starting this daemon does NOT disturb pods already running.
+[Unit]
+Description=NVIDIA CUDA MPS Control Daemon (shared-GPU node)
+After=nvidia-persistenced.service
+
+[Service]
+Type=forking
+Environment=CUDA_MPS_PIPE_DIRECTORY={{ nvidia_mps_pipe_dir }}
+Environment=CUDA_MPS_LOG_DIRECTORY={{ nvidia_mps_log_dir }}
+ExecStartPre=/usr/bin/mkdir -p {{ nvidia_mps_pipe_dir }} {{ nvidia_mps_log_dir }}
+ExecStart=/usr/bin/nvidia-cuda-mps-control -d
+ExecStop=/bin/sh -c 'echo quit | /usr/bin/nvidia-cuda-mps-control'
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

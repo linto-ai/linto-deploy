@@ -19,3 +19,12 @@
     name: k3s-agent
     state: restarted
   when: "'masters' not in group_names"
+
+# NOTE: restarting MPS tears down the shared server, so any vLLM process currently
+# attached loses the GPU until it reconnects. Only fires when the unit file changes,
+# and the gpu role is already reboot-heavy, so this is not a hot-path handler.
+- name: restart nvidia-mps
+  ansible.builtin.systemd:
+    name: nvidia-mps
+    state: restarted
+    daemon_reload: yes
