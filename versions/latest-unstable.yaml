@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-07-02T08:55:02.145379+00:00
+# Last updated: 2026-07-03T09:16:50.078133+00:00
 
 platform_version: latest-unstable
 linto:
@@ -52,8 +52,8 @@ linto:
     image: lintoai/linto-diarization-pyannote
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-diarization
-    digest: sha256:1a6960e1a7a95723e19bd4bc10bf71378580991aa5f56024ba6049f82593db73
-    commit: 5ca9aa4a16d0fb466af2cd1cfe133e460f0f04c9
+    digest: sha256:f315d48dcee2bfaa4081158fec57a76e2baa98d1cb5df498cc7a66c0dbe6ebc4
+    commit: 776a34d38730b5bc25952ccdf3de33939e9dc7f8
   linto-stt-kaldi:
     image: lintoai/linto-stt-kaldi
     tag: latest-unstable
@@ -74,14 +74,14 @@ linto:
     image: lintoai/llm-gateway
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:47f49a11e2e48d8430e13df68168a0c60e262d382ff4d3cace3a097e8a6001b1
-    commit: 9a3eb8e33dc7a2c061a6ba3d969972ea9e1245ca
+    digest: sha256:171dcbbd97e0e5d71896fd885e95f004dd4da7baa1a3ec06ddebbac3a32b5c13
+    commit: f32bef822b59e77ee85e4b947df9d00c09fbee6c
   llm-gateway-frontend:
     image: lintoai/llm-gateway-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:4782853d75d9a116bd1f1040d0c0f5ba2c3108efbdd77d7493afb202046fa87b
-    commit: 9a3eb8e33dc7a2c061a6ba3d969972ea9e1245ca
+    digest: sha256:c89bbc7d0c7a68296b35f5eca11f545e261b654eeb923c508c0c2555d6241fd5
+    commit: f32bef822b59e77ee85e4b947df9d00c09fbee6c
   studio-plugins-migration:
     image: lintoai/studio-plugins-migration
     tag: latest-unstable
@@ -111,13 +111,13 @@ linto:
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:14ad924693c606e42ed71622ac844eb2360a81ad120fe33592fbbd3ef03932f2
-    commit: 939f4253b882223755eb1402dd0c52a1361cd503
+    commit: <rate-limited>
   studio-plugins-botservice:
     image: lintoai/studio-plugins-botservice
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:9bc457e80d9f25d88a39c8e3d3d90a93a875bced720bf3c74fcdf6adca754ec5
-    commit: 939f4253b882223755eb1402dd0c52a1361cd503
+    commit: <rate-limited>
 databases:
   studio-mongo:
     image: mongo
