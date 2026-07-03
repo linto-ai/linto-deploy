@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-07-02T08:54:54.965424+00:00
+# Last updated: 2026-07-03T09:16:44.527670+00:00
 
 platform_version: latest
 linto:
@@ -74,14 +74,14 @@ linto:
     image: lintoai/llm-gateway
     tag: latest
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:b927ac0f1ae8c267ec842ff7b42d83ee46cc9b4b582db506c13c9a8b3b6e2020
-    commit: 9a3eb8e33dc7a2c061a6ba3d969972ea9e1245ca
+    digest: sha256:171dcbbd97e0e5d71896fd885e95f004dd4da7baa1a3ec06ddebbac3a32b5c13
+    commit: f32bef822b59e77ee85e4b947df9d00c09fbee6c
   llm-gateway-frontend:
     image: lintoai/llm-gateway-frontend
     tag: latest
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:4782853d75d9a116bd1f1040d0c0f5ba2c3108efbdd77d7493afb202046fa87b
-    commit: 9a3eb8e33dc7a2c061a6ba3d969972ea9e1245ca
+    digest: sha256:c89bbc7d0c7a68296b35f5eca11f545e261b654eeb923c508c0c2555d6241fd5
+    commit: f32bef822b59e77ee85e4b947df9d00c09fbee6c
   studio-plugins-migration:
     image: lintoai/studio-plugins-migration
     tag: latest
