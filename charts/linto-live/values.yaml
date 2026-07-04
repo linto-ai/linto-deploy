@@ -75,6 +75,7 @@ sessionTranscriber:
   image:
     repository: lintoai/studio-plugins-transcriber
     pullPolicy: IfNotPresent
+  env: {}  # extra env merged into the ConfigMap (e.g. ASR_MUTE_WATCHDOG_SPEECH_MS); image defaults otherwise
   resources:
     limits: {}  # No limits - transcriber uses GStreamer workers + ASR, memory varies with session load
     requests:
@@ -147,7 +148,10 @@ translator:
     TRANSLATION_PROVIDER: translategemma
     TRANSLATEGEMMA_ENDPOINT: ""
     TRANSLATEGEMMA_MODEL: "Infomaniak-AI/vllm-translategemma-4b-it"
-    PARTIAL_DEBOUNCE_MS: "300"
+    # Redesigned translator (prefix freezing): tunables like TAIL_LIVE_MS,
+    # SOFT_CHUNK_CHARS, MAX_CONCURRENT_TRANSLATIONS, TRANSLATE_PARTIALS can be
+    # added here; image defaults apply otherwise. PARTIAL_DEBOUNCE_MS and
+    # MAX_HOLD_SECONDS are deprecated (warning at boot if set).
 
 # BotService (headless Chromium joins Visio/Teams/Jitsi/BBB; broker-only, no inbound Service)
 botService:

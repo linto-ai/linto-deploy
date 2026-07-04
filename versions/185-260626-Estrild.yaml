@@ -61,16 +61,16 @@ linto:
     commit: 76c1c32abb7edf9c33cdb46c106f58193045d660
   llm-gateway:
     image: lintoai/llm-gateway
-    tag: 2.5.1
+    tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:171dcbbd97e0e5d71896fd885e95f004dd4da7baa1a3ec06ddebbac3a32b5c13
-    commit: f32bef822b59e77ee85e4b947df9d00c09fbee6c
+    digest: sha256:3dfed8e3845ccfe22ba8ba8cfd1783032e8a41b1a3c070455ae76113cc06fd6c
+    commit: 38cdf202e700ea35684eeefaa8aa3789ed2b9dc8
   llm-gateway-frontend:
     image: lintoai/llm-gateway-frontend
-    tag: 2.5.1
+    tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:c89bbc7d0c7a68296b35f5eca11f545e261b654eeb923c508c0c2555d6241fd5
-    commit: f32bef822b59e77ee85e4b947df9d00c09fbee6c
+    digest: sha256:11cb732f4f09fce9146705a4dc66002dc9e42e7f58899b44d649e3fcb3a83fee
+    commit: 38cdf202e700ea35684eeefaa8aa3789ed2b9dc8
   studio-plugins-migration:
     image: lintoai/studio-plugins-migration
     tag: 1.5.0
@@ -91,16 +91,16 @@ linto:
     commit: 3d7a5fe386d5e454c14b63c6deb48fa9e71bcf73
   studio-plugins-transcriber:
     image: lintoai/studio-plugins-transcriber
-    tag: 1.5.0
+    tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:bc91c0524a28e1b4cd2aac12fe6cd80151af05732e542be801cc6c959ee75f66
-    commit: 939f4253b882223755eb1402dd0c52a1361cd503
+    digest: sha256:0ac0e338f3225bde24706899118e471e9e2e696b2c4771167760810a6eb55a10
+    commit: ef5a35d0fc404a9ee2e028ae3f89bd82803abb94
   studio-plugins-translator:
     image: lintoai/studio-plugins-translator
-    tag: 1.5.0
+    tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:14ad924693c606e42ed71622ac844eb2360a81ad120fe33592fbbd3ef03932f2
-    commit: 3d7a5fe386d5e454c14b63c6deb48fa9e71bcf73
+    digest: sha256:58feef7cab0a48251803629f1269bd2ffd3c398d6d239df56e8cf06c1b800208
+    commit: ef5a35d0fc404a9ee2e028ae3f89bd82803abb94
   studio-plugins-botservice:
     image: lintoai/studio-plugins-botservice
     tag: 1.5.0
@@ -143,7 +143,7 @@ llm:
     digest: sha256:b9340b9d8650e8181585ca70590dfb589f1f959bbfd50a46cefc92ff81e663ca
   vllm-voxtral:
     image: lintoai/vllm
-    tag: voxtral-realtime-168feb13e
+    tag: voxtral-realtime-64aee63373
     repo: https://github.com/linto-ai/vllm
-    digest: sha256:05da6a704614881cbe79f707a3ebcd06caaaf300f6ea5787a4dfc4cb0a26e9d0
-    commit: 168feb13e0219eaf4215e86b34b47006045747d6
+    digest: sha256:224a0ac51d19d755f43a8f7667896d6999654da9df69b30c5865c2f9236916c6
+    commit: 64aee63373547156e3741be98d6452a8006869bf
