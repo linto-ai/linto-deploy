@@ -1423,6 +1423,7 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
                 "TRANSLATION_PROVIDER": profile.translator_provider or "translategemma",
                 "TRANSLATEGEMMA_ENDPOINT": profile.translator_endpoint or "",
                 "TRANSLATEGEMMA_MODEL": profile.translator_model or "Infomaniak-AI/vllm-translategemma-4b-it",
+                "TAIL_LIVE_MS": str(profile.translator_tail_live_ms),
             },
         },
         "botService": {
