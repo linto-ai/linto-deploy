@@ -147,6 +147,9 @@ class ProfileConfig(BaseModel):
     translator_provider: str | None = Field(default="translategemma")
     translator_endpoint: str | None = Field(default=None)
     translator_model: str | None = Field(default="Infomaniak-AI/vllm-translategemma-4b-it")
+    # Live subtitling: refresh cadence (ms) of the in-progress sentence for the
+    # redesigned translator. 0 = finals/punctuation only; N>0 = live tail.
+    translator_tail_live_ms: int = Field(default=0)
 
     # vLLM GPU inference servers (linto-vllm chart; e.g. the BM-hosted Voxtral/TranslateGemma)
     vllm_instances: list[VllmInstance] = Field(default_factory=list)
