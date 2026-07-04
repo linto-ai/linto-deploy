@@ -20,6 +20,12 @@ data:
   STREAMING_HOST: {{ include "linto-live.transcriberHost" . | quote }}
   STREAMING_PASSPHRASE: "false"
   STREAMING_PROXY_RTMP_HOST: {{ .Values.global.domain | quote }}
+  {{- /* Extra transcriber tunables (e.g. ASR_MUTE_WATCHDOG_SPEECH_MS,
+       ASR_MUTE_RMS_DBFS, ASR_WATCHDOG_*): merged verbatim, image defaults
+       otherwise. */}}
+  {{- range $k, $v := .Values.sessionTranscriber.env }}
+  {{ $k }}: {{ $v | quote }}
+  {{- end }}
   STREAMING_PROXY_RTMP_TCP_PORT: "1935"
   STREAMING_PROXY_SRT_HOST: {{ .Values.global.domain | quote }}
   STREAMING_PROXY_SRT_UDP_PORT: "8889"
@@ -81,6 +87,12 @@ data:
   STREAMING_PASSPHRASE: "false"
   STREAMING_HEALTHCHECK_TCP: "9999"
   STREAMING_PROXY_RTMP_HOST: {{ .Values.global.domain | quote }}
+  {{- /* Extra transcriber tunables (e.g. ASR_MUTE_WATCHDOG_SPEECH_MS,
+       ASR_MUTE_RMS_DBFS, ASR_WATCHDOG_*): merged verbatim, image defaults
+       otherwise. */}}
+  {{- range $k, $v := .Values.sessionTranscriber.env }}
+  {{ $k }}: {{ $v | quote }}
+  {{- end }}
   STREAMING_PROXY_RTMP_TCP_PORT: "1935"
   STREAMING_PROXY_SRT_HOST: {{ .Values.global.domain | quote }}
   STREAMING_PROXY_SRT_UDP_PORT: "8889"
@@ -101,11 +113,12 @@ metadata:
 data:
   BROKER_HOST: {{ include "linto-live.brokerHost" . | quote }}
   BROKER_PORT: "1883"
-  TRANSLATOR_NAME: {{ .Values.translator.env.TRANSLATOR_NAME | quote }}
-  TRANSLATION_PROVIDER: {{ .Values.translator.env.TRANSLATION_PROVIDER | quote }}
-  TRANSLATEGEMMA_ENDPOINT: {{ .Values.translator.env.TRANSLATEGEMMA_ENDPOINT | quote }}
-  TRANSLATEGEMMA_MODEL: {{ .Values.translator.env.TRANSLATEGEMMA_MODEL | quote }}
-  PARTIAL_DEBOUNCE_MS: {{ .Values.translator.env.PARTIAL_DEBOUNCE_MS | quote }}
+  {{- /* All translator tunables come from values.translator.env verbatim, so new
+       knobs (TAIL_LIVE_MS, SOFT_CHUNK_CHARS, MAX_CONCURRENT_TRANSLATIONS, ...)
+       are settable without a chart change; unset ones keep image defaults. */}}
+  {{- range $k, $v := .Values.translator.env }}
+  {{ $k }}: {{ $v | quote }}
+  {{- end }}
   LOG_LEVEL: debug
 {{- end }}
 ---
