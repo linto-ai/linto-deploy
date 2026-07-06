@@ -1,0 +1,13 @@
+# Managed by Ansible (web role, flannel_mtu_enforce) — do not edit by hand.
+[Unit]
+Description=Pin flannel.1 VXLAN MTU to the WireGuard overlay (wg0 - 50)
+After=k3s.service k3s-agent.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/linto-flannel-mtu.sh {{ flannel_mtu }}
+
+[Install]
+WantedBy=multi-user.target

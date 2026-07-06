@@ -1,0 +1,11 @@
+# Managed by Ansible (web role, flannel_mtu_enforce) — do not edit by hand.
+[Unit]
+Description=Re-assert flannel.1 VXLAN MTU periodically (self-heal after flannel restarts)
+
+[Timer]
+OnBootSec=90s
+OnUnitActiveSec=5min
+AccuracySec=30s
+
+[Install]
+WantedBy=timers.target
