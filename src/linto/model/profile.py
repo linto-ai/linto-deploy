@@ -203,6 +203,14 @@ class ProfileConfig(BaseModel):
     # K3S additional settings
     k3s_database_node_role: str | None = Field(default=None)  # Node label for database placement
 
+    # Dedicated GPU node for STT/whisper/diarization workers. When set (e.g.
+    # "stt"), the GPU worker deployments get nodeSelector {linto.ai/gpu-role:
+    # <role>} + a toleration for taint linto.ai/dedicated=<role>:NoSchedule, so
+    # the GPU node carries ONLY GPU workloads and CPU/live pods (e.g. the SRT
+    # transcriber, whose UDP packets die crossing the overlay) never land there.
+    # Mirrors the bm3=asr / bm4=translation / gpu-2=vllm-l40s dedicated scheme.
+    stt_gpu_node_role: str | None = Field(default=None)
+
     # Monitoring
     monitoring_enabled: bool = Field(default=False)  # Prometheus + Grafana stack
 

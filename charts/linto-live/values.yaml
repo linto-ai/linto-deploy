@@ -17,6 +17,12 @@ global:
     files:
       hostPath: ""  # NFS storage
   storageClass: ""
+  # Scheduling for the GPU streaming-STT whisper deployment. Pins it to a
+  # dedicated GPU node (nodeSelector) and lets it tolerate that node's taint,
+  # so the GPU node runs ONLY GPU workloads. Empty = no constraint (default).
+  gpuScheduling:
+    nodeSelector: {}   # e.g. {linto.ai/gpu-role: stt}
+    tolerations: []    # e.g. [{key: linto.ai/dedicated, operator: Equal, value: stt, effect: NoSchedule}]
 
 # Database Migration (runs before other services)
 migration:
