@@ -93,8 +93,8 @@ linto:
     image: lintoai/studio-plugins-transcriber
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:5f6f91d8f901eed21772fa0c654cd265781ec8f0e2f12b8431c9fd87aeaa1727
-    commit: 39822b1afded175e2d2b73eec71ee9bef44a0d19
+    digest: sha256:a262c531d95975b93c38f0c9d4062011f675c464fc6df0cd86631f68efe98ca7
+    commit: 0955d09b61f00ec8ba2374f0949e842eeeedfd66
   studio-plugins-translator:
     image: lintoai/studio-plugins-translator
     tag: latest-unstable
