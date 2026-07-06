@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-07-05T08:51:30.667981+00:00
+# Last updated: 2026-07-06T10:19:43.393923+00:00
 
 platform_version: latest-unstable
 linto:
@@ -16,20 +16,20 @@ linto:
     image: lintoai/studio-api
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:78cdca8f8c1dd149b02421a36487b0364118815e0558d5ff1347fbc9073e50ea
+    digest: sha256:8c2d9644d9d572a76de9823c64144367088c10fdf487a74b6c922703485fdd28
     commit: e71e97825ef220dcbe32604c657a1a743291eb6f
   studio-frontend:
     image: lintoai/studio-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:c15cef9acad6ae9fafa62ab78932a831f7759a8c0507ebd8187c57a2718a35c9
+    digest: sha256:04cec4b5b166fb2353cfeaedf6c466b7ff1409207b2d9f2db064abac518d85bf
     commit: e71e97825ef220dcbe32604c657a1a743291eb6f
   studio-websocket:
     image: lintoai/studio-websocket
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:cddefa9e1c2cc04d5e4ede23d45ef93acc4891aefb35dd00bdbaa24a87efb256
-    commit: 3d6866afeeabe02b337533595123ef4e847e1410
+    digest: sha256:6306bea826dea67b7b52ab5ae1469d1169690c48ce0a244474ef6888162f265d
+    commit: e71e97825ef220dcbe32604c657a1a743291eb6f
   linto-api-gateway:
     image: lintoai/linto-api-gateway
     tag: latest-unstable
@@ -75,13 +75,13 @@ linto:
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
     digest: sha256:3dfed8e3845ccfe22ba8ba8cfd1783032e8a41b1a3c070455ae76113cc06fd6c
-    commit: f32bef822b59e77ee85e4b947df9d00c09fbee6c
+    commit: 08028db6313eb971c709be33d5bb4b48e1039ef8
   llm-gateway-frontend:
     image: lintoai/llm-gateway-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
     digest: sha256:11cb732f4f09fce9146705a4dc66002dc9e42e7f58899b44d649e3fcb3a83fee
-    commit: f32bef822b59e77ee85e4b947df9d00c09fbee6c
+    commit: 08028db6313eb971c709be33d5bb4b48e1039ef8
   studio-plugins-migration:
     image: lintoai/studio-plugins-migration
     tag: latest-unstable
