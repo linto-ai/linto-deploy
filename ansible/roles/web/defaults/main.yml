@@ -17,8 +17,14 @@ k3s_api_san: "{{ hostvars[groups['masters'][0]]['ansible_host'] }}"
 # Each node must define private_ip in the inventory
 k3s_node_ip: "{{ private_ip | default(ansible_host) }}"
 
-# Network interface for Flannel VXLAN (auto-detect or set manually)
-# If not defined, K3S uses the default interface
+# Interface pour le VXLAN Flannel. Vide = auto-detection sur la route par defaut.
+# ATTENTION : sur un cluster ou l'overlay pod-a-pod transite par un mesh WireGuard,
+# l'auto-detection choisit l'iface publique/vRack (ex. ens3, MTU 1500) et fixe flannel.1
+# a 1450, alors que les paquets VXLAN partent en realite par wg0 (MTU 1390) -> les gros
+# paquets (SRT ~1360) depassent wg0, ICMP frag-needed -> Traefik "read: message too long"
+# et flap des flux UDP toutes les ~10 min (TTL du cache PMTU). flannel.1 doit refleter le
+# chemin reel : positionner "wg0" pour que flannel derive flannel.1 = MTU(wg0) - 50 et
+# publie le bon VTEP. A regler pour tout cluster dont les VTEP flannel sont des IP WireGuard.
 k3s_flannel_iface: ""
 
 # Disable Traefik (we install our own)
