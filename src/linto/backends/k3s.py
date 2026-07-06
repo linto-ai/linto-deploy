@@ -1196,6 +1196,30 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
     return values
 
 
+def gpu_scheduling_values(profile: ProfileConfig) -> dict[str, Any]:
+    """nodeSelector + tolerations pinning GPU workers to a dedicated GPU node.
+
+    When profile.stt_gpu_node_role is set (e.g. "stt"), returns the selector +
+    toleration matching that node's linto.ai/gpu-role label and its
+    linto.ai/dedicated=<role>:NoSchedule taint, so GPU worker pods land there
+    while the taint keeps CPU/live pods off. Empty (no constraint) otherwise.
+    """
+    role = profile.stt_gpu_node_role
+    if not role:
+        return {"nodeSelector": {}, "tolerations": []}
+    return {
+        "nodeSelector": {"linto.ai/gpu-role": role},
+        "tolerations": [
+            {
+                "key": "linto.ai/dedicated",
+                "operator": "Equal",
+                "value": role,
+                "effect": "NoSchedule",
+            }
+        ],
+    }
+
+
 def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
     """Generate values for linto-stt chart.
 
@@ -1344,6 +1368,10 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         values["redis"]["persistence"]["storageClass"] = profile.k3s_storage_class
         values["mongodb"]["persistence"]["storageClass"] = profile.k3s_storage_class
 
+    # Pin the GPU worker deployments (whisper/nemo/diarization) to a dedicated
+    # GPU node when configured, so it runs GPU workloads only.
+    values["global"]["gpuScheduling"] = gpu_scheduling_values(profile)
+
     return values
 
 
@@ -1476,6 +1504,10 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
 
     if profile.k3s_storage_class:
         values["postgres"]["persistence"]["storageClass"] = profile.k3s_storage_class
+
+    # The live streaming-STT whisper is a GPU deployment; pin it to the same
+    # dedicated GPU node as the STT workers when configured.
+    values["global"]["gpuScheduling"] = gpu_scheduling_values(profile)
 
     return values
 

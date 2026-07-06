@@ -437,6 +437,14 @@ spec:
         {{- include "linto-live.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: stt-whisper
     spec:
+      {{- with .Values.global.gpuScheduling.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.gpuScheduling.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: stt-whisper
           image: "{{ .Values.streamingStt.whisper.image.repository }}:{{ .Values.streamingStt.whisper.image.tag | default (include "linto-live.imageTag" .) }}"

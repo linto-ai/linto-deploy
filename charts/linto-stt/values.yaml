@@ -17,6 +17,12 @@ global:
     files:
       hostPath: ""  # NFS storage for models
   storageClass: ""
+  # Scheduling for GPU worker deployments (whisper/nemo/diarization workers).
+  # Pins them to a dedicated GPU node (nodeSelector) and lets them tolerate its
+  # taint, so that node runs ONLY GPU workloads. Empty = no constraint (default).
+  gpuScheduling:
+    nodeSelector: {}   # e.g. {linto.ai/gpu-role: stt}
+    tolerations: []    # e.g. [{key: linto.ai/dedicated, operator: Equal, value: stt, effect: NoSchedule}]
 
 # API Gateway for STT services
 apiGateway:
