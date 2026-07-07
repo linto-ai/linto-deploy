@@ -88,7 +88,7 @@ linto:
     tag: 1.5.0
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:3e8f51c820c5371eedfb04e5c399e2ab7f30a8a721193c1f6daae4454cfd1b85
-    commit: 939f4253b882223755eb1402dd0c52a1361cd503
+    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
   studio-plugins-transcriber:
     image: lintoai/studio-plugins-transcriber
     tag: 1.5.0
