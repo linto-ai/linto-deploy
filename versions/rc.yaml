@@ -106,7 +106,7 @@ linto:
     tag: 1.5.0
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:9bc457e80d9f25d88a39c8e3d3d90a93a875bced720bf3c74fcdf6adca754ec5
-    commit: 939f4253b882223755eb1402dd0c52a1361cd503
+    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
 databases:
   studio-mongo:
     image: mongo
