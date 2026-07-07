@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-07-06T10:19:43.393923+00:00
+# Last updated: 2026-07-07T09:39:28.640107+00:00
 
 platform_version: latest-unstable
 linto:
@@ -92,7 +92,7 @@ linto:
     image: lintoai/studio-plugins-sessionapi
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:0a1055ae9ae0676f21e298337cbd9aca6a0aa77e88c6801433143c2b180437a7
+    digest: sha256:920a67ffeed23090d73b108ac305cd483d4ac00a7551826f91e62bdad1370b5d
     commit: 939f4253b882223755eb1402dd0c52a1361cd503
   studio-plugins-scheduler:
     image: lintoai/studio-plugins-scheduler
@@ -104,7 +104,7 @@ linto:
     image: lintoai/studio-plugins-transcriber
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:5f6f91d8f901eed21772fa0c654cd265781ec8f0e2f12b8431c9fd87aeaa1727
+    digest: sha256:b76e6e40d89ab8190c09738d13b663e232c608fecaf4b57e0cc313c69e6a39e2
     commit: 939f4253b882223755eb1402dd0c52a1361cd503
   studio-plugins-translator:
     image: lintoai/studio-plugins-translator
