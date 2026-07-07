@@ -161,42 +161,6 @@ spec:
                   number: {{ .Values.studioFrontend.service.port }}
           {{- end }}
 {{- end }}
-{{- if and .Values.studioApi.enabled .Values.studioApi.editor.enabled }}
----
-# Collaborative editor WebSocket ingress (Hocuspocus runs inside studio-api).
-# No prefix strip: EditorHandler matches the full {{ .Values.studioApi.editor.path }}/* path.
-# The longer path gives this router priority over the websocket /ws rule in Traefik.
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: {{ include "linto-studio.fullname" . }}-editor
-  labels:
-    {{- include "linto-studio.labels" . | nindent 4 }}
-  annotations:
-    {{- if .Values.global.tls.enabled }}
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    {{- else }}
-    traefik.ingress.kubernetes.io/router.entrypoints: web
-    {{- end }}
-spec:
-  {{- if .Values.global.tls.enabled }}
-  tls:
-    - hosts:
-        - {{ .Values.global.domain }}
-      secretName: {{ include "linto-studio.tlsSecretName" . }}
-  {{- end }}
-  rules:
-    - host: {{ .Values.global.domain }}
-      http:
-        paths:
-          - path: {{ .Values.studioApi.editor.path }}
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "linto-studio.fullname" . }}-api
-                port:
-                  number: {{ .Values.studioApi.service.port }}
-{{- end }}
 ---
 {{- if and .Values.studioApi.enabled .Values.studioApi.ingress.stripPrefix }}
 # Traefik middleware for stripping /cm-api prefix
