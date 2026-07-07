@@ -99,8 +99,8 @@ linto:
     image: lintoai/studio-plugins-translator
     tag: 1.5.0
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:14ad924693c606e42ed71622ac844eb2360a81ad120fe33592fbbd3ef03932f2
-    commit: 939f4253b882223755eb1402dd0c52a1361cd503
+    digest: sha256:58feef7cab0a48251803629f1269bd2ffd3c398d6d239df56e8cf06c1b800208
+    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
   studio-plugins-botservice:
     image: lintoai/studio-plugins-botservice
     tag: 1.5.0
