@@ -67,5 +67,3 @@ base_ufw_rules:
   - { port: 10252, proto: tcp, comment: "Kube-controller-manager" }
   - { port: "30000:32767", proto: tcp, comment: "NodePort range" }
   - { port: 2049, proto: tcp, comment: "NFS" }
-  - { port: 51820, proto: udp, comment: "WireGuard (Flannel backend)" }
-  - { port: 51821, proto: udp, comment: "WireGuard IPv6" }

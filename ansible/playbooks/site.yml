@@ -11,9 +11,8 @@
 # 2. Security hardening on ingress nodes
 # 3. NFS server installation
 # 4. GPU drivers installation
-# 5. WireGuard mesh (cross-datacenter nodes)
-# 6. K3S cluster deployment
-# 7. vLLM model pre-download
+# 5. K3S cluster deployment
+# 6. vLLM model pre-download
 
 - name: Apply base configuration to all nodes
   hosts: all
@@ -49,50 +48,6 @@
     - role: gpu
       tags:
         - gpu
-
-- name: Setup WireGuard mesh (cross-datacenter connectivity)
-  hosts: wireguard
-  become: true
-  roles:
-    - role: wireguard
-      tags:
-        - wireguard
-        - network
-
-- name: Add routes to WireGuard network on vRack nodes
-  hosts: workers:!wireguard
-  become: true
-  tasks:
-    - name: Check if WireGuard group exists
-      ansible.builtin.set_fact:
-        wg_hub_ip: "{{ hostvars[groups['wireguard'] | select('match', wireguard_hub | default('')) | first | default('')].wireguard_address | default('') | regex_replace('/.*', '') }}"
-      when:
-        - groups['wireguard'] is defined
-        - wireguard_hub is defined
-      tags:
-        - wireguard
-        - network
-
-    - name: Add persistent route to WireGuard network
-      ansible.builtin.command: ip route replace 10.10.0.0/24 via {{ wg_hub_ip }}
-      when: wg_hub_ip | default('') | length > 0
-      changed_when: false
-      tags:
-        - wireguard
-        - network
-
-    - name: Persist route via netplan
-      ansible.builtin.blockinfile:
-        path: /etc/networkd-dispatcher/routable.d/50-wireguard-route.sh
-        create: true
-        mode: "0755"
-        block: |
-          #!/bin/bash
-          ip route replace 10.10.0.0/24 via {{ wg_hub_ip }}
-      when: wg_hub_ip | default('') | length > 0
-      tags:
-        - wireguard
-        - network
 
 - name: Deploy K3S masters
   hosts: masters

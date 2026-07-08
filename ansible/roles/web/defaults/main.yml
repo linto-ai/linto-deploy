@@ -18,31 +18,11 @@ k3s_api_san: "{{ hostvars[groups['masters'][0]]['ansible_host'] }}"
 k3s_node_ip: "{{ private_ip | default(ansible_host) }}"
 
 # Interface pour le VXLAN Flannel. Vide = auto-detection sur la route par defaut.
-# ATTENTION : sur un cluster ou l'overlay pod-a-pod transite par un mesh WireGuard,
-# l'auto-detection choisit l'iface publique/vRack (ex. ens3, MTU 1500) et fixe flannel.1
-# a 1450, alors que les paquets VXLAN partent en realite par wg0 (MTU 1390) -> les gros
-# paquets (SRT ~1360) depassent wg0, ICMP frag-needed -> Traefik "read: message too long"
-# et flap des flux UDP toutes les ~10 min (TTL du cache PMTU). flannel.1 doit refleter le
-# chemin reel : positionner "wg0" pour que flannel derive flannel.1 = MTU(wg0) - 50 et
-# publie le bon VTEP. A regler pour tout cluster dont les VTEP flannel sont des IP WireGuard.
-# NB : sur le master, flannel-iface reste ens7 (VTEP/FDB) donc flannel derive 1450 ->
-# voir flannel_mtu_enforce ci-dessous qui repince flannel.1 a MTU(wg0)-50 la ou l'iface
-# ne peut pas etre wg0.
+# Sur un cluster multi-noeuds avec reseau prive (vRack), positionner l'iface privee
+# (ex. ens7/ens3) pour que le VXLAN et le VTEP restent sur le reseau prive.
+# flannel.1 derive naturellement MTU(iface) - 50 ; la MTU pod doit rester coherente
+# avec cni0/veth (recreer les pods apres tout changement d'iface/MTU).
 k3s_flannel_iface: ""
-
-# --- Flannel VXLAN MTU enforcement (clusters a overlay WireGuard) -----------
-# k3s derive flannel.1 = (MTU flannel-iface) - 50. Correct sur un spoke dont
-# l'iface est wg0 (1420 -> 1370), mais PAS sur le master dont l'iface est ens7
-# (1500 -> 1450) pour des raisons de VTEP/FDB alors que l'egress VXLAN reel passe
-# par wg0. La divergence 1450 vs 1370 drop silencieusement les gros paquets UDP
-# inter-noeuds (le flap SRT ~10 min) et est recreee a chaque restart k3s / reboot.
-# Active -> un service oneshot + timer systemd repince flannel.1 a (MTU wg0 - 50),
-# derive en live depuis wg0, sur chaque noeud. Idempotent (ne touche flannel.1 que
-# si la MTU differe). Off par defaut : les clusters mono-noeud / sans overlay n'en
-# ont pas besoin (et ne doivent pas voir leur flannel.1 rabaisse a 1370).
-flannel_mtu_enforce: false
-# Cible de repli si wg0 est absent (les clusters a overlay ont toujours wg0).
-flannel_mtu: 1370
 
 # Disable Traefik (we install our own)
 k3s_disable_traefik: true
