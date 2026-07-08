@@ -516,6 +516,10 @@ serviceMonitor:
     release: prometheus
 nodeSelector:
   nvidia.com/gpu: "true"
+tolerations:
+  - key: linto.ai/dedicated
+    operator: Exists
+    effect: NoSchedule
 resources:
   requests:
     cpu: 100m
