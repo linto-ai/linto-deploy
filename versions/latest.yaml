@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-07-07T09:39:23.659942+00:00
+# Last updated: 2026-07-08T08:26:30.402229+00:00
 
 platform_version: latest
 linto:
@@ -16,20 +16,20 @@ linto:
     image: lintoai/studio-api
     tag: latest
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:1bf501741732a69affb8db5328e6dc70b0be30b7392e7d45cea3815123e81cb8
-    commit: c134ef3663fcb433ad650194e4ce8605550a91cc
+    digest: sha256:8c2d9644d9d572a76de9823c64144367088c10fdf487a74b6c922703485fdd28
+    commit: 6cd74a8932c7f65863fb304b04c9c5567909665e
   studio-frontend:
     image: lintoai/studio-frontend
     tag: latest
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:07c530c4f5d1a5611b10c4b06cf1ceb606bc66dbd54a0678fb7acbfde53cd3ed
-    commit: e71e97825ef220dcbe32604c657a1a743291eb6f
+    digest: sha256:554ca26ce17be5e8f82a4eedb34981d695f45f2ba10026dc1d7dfe5e83e4d661
+    commit: 6cd74a8932c7f65863fb304b04c9c5567909665e
   studio-websocket:
     image: lintoai/studio-websocket
     tag: latest
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:cddefa9e1c2cc04d5e4ede23d45ef93acc4891aefb35dd00bdbaa24a87efb256
-    commit: c134ef3663fcb433ad650194e4ce8605550a91cc
+    digest: sha256:6306bea826dea67b7b52ab5ae1469d1169690c48ce0a244474ef6888162f265d
+    commit: 6cd74a8932c7f65863fb304b04c9c5567909665e
   linto-api-gateway:
     image: lintoai/linto-api-gateway
     tag: latest
@@ -87,37 +87,37 @@ linto:
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:07a1e7c788f4844d3d9fe16496a712f203e412f2d8e58e9e2c0dd6f2a6fe516f
-    commit: 939f4253b882223755eb1402dd0c52a1361cd503
+    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
   studio-plugins-sessionapi:
     image: lintoai/studio-plugins-sessionapi
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:0a1055ae9ae0676f21e298337cbd9aca6a0aa77e88c6801433143c2b180437a7
-    commit: 939f4253b882223755eb1402dd0c52a1361cd503
+    digest: sha256:920a67ffeed23090d73b108ac305cd483d4ac00a7551826f91e62bdad1370b5d
+    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
   studio-plugins-scheduler:
     image: lintoai/studio-plugins-scheduler
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:3e8f51c820c5371eedfb04e5c399e2ab7f30a8a721193c1f6daae4454cfd1b85
-    commit: 939f4253b882223755eb1402dd0c52a1361cd503
+    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
   studio-plugins-transcriber:
     image: lintoai/studio-plugins-transcriber
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:bc91c0524a28e1b4cd2aac12fe6cd80151af05732e542be801cc6c959ee75f66
-    commit: 939f4253b882223755eb1402dd0c52a1361cd503
+    digest: sha256:b76e6e40d89ab8190c09738d13b663e232c608fecaf4b57e0cc313c69e6a39e2
+    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
   studio-plugins-translator:
     image: lintoai/studio-plugins-translator
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:14ad924693c606e42ed71622ac844eb2360a81ad120fe33592fbbd3ef03932f2
-    commit: 939f4253b882223755eb1402dd0c52a1361cd503
+    digest: sha256:58feef7cab0a48251803629f1269bd2ffd3c398d6d239df56e8cf06c1b800208
+    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
   studio-plugins-botservice:
     image: lintoai/studio-plugins-botservice
     tag: latest
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:9bc457e80d9f25d88a39c8e3d3d90a93a875bced720bf3c74fcdf6adca754ec5
-    commit: 939f4253b882223755eb1402dd0c52a1361cd503
+    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
 databases:
   studio-mongo:
     image: mongo
@@ -134,7 +134,7 @@ databases:
   live-postgres:
     image: postgres
     tag: 15-alpine
-    digest: sha256:878ac61a6367f60973ed0eef22ade9956e075f1a21f4604867e33a2edb6939e0
+    digest: sha256:cae15a3b718f23497a60b7cafdcf205216d7949680972da0584db00fb68bf3e6
   live-mosquitto:
     image: eclipse-mosquitto
     tag: '2'
