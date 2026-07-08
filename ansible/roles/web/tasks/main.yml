@@ -22,13 +22,3 @@
   tags:
     - k3s
     - agent
-
-# Pin flannel.1 MTU to the WireGuard overlay path (wg0 - 50). Applies to both
-# server and agent nodes; gated so single-node / non-overlay clusters skip it.
-- name: Enforce flannel VXLAN MTU (WireGuard overlay)
-  ansible.builtin.include_tasks: flannel-mtu.yml
-  when: flannel_mtu_enforce | bool
-  tags:
-    - k3s
-    - flannel
-    - mtu
