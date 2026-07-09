@@ -150,6 +150,10 @@ class ProfileConfig(BaseModel):
     # Live subtitling: refresh cadence (ms) of the in-progress sentence for the
     # redesigned translator. 0 = finals/punctuation only; N>0 = live tail.
     translator_tail_live_ms: int = Field(default=0)
+    # Subtitle banner pacing (chars/second). 0 = off; N>0 = drip partials at
+    # reading speed and hold finals until the display catches up. Combine with
+    # translator_tail_live_ms > 0 for the low-latency tail mode.
+    translator_banner_cps: int = Field(default=0)
 
     # vLLM GPU inference servers (linto-vllm chart; e.g. the BM-hosted Voxtral/TranslateGemma)
     vllm_instances: list[VllmInstance] = Field(default_factory=list)
