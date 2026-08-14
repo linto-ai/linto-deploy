@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-08-13T07:24:52.800843+00:00
+# Last updated: 2026-08-14T07:22:15.971115+00:00
 
 platform_version: latest
 linto:
@@ -134,7 +134,7 @@ databases:
   live-postgres:
     image: postgres
     tag: 15-alpine
-    digest: sha256:cae15a3b718f23497a60b7cafdcf205216d7949680972da0584db00fb68bf3e6
+    digest: sha256:a2c20749c564b4eb73a77bfda626f8a3cde1bbfae020fb97c616a00cdc1a2181
   live-mosquitto:
     image: eclipse-mosquitto
     tag: '2'
