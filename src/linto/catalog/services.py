@@ -213,12 +213,16 @@ def _studio_api_service(
     llm_enabled: bool = False,
     stt_enabled: bool = False,
     llm_redis_password: str = "",
+    collaborative_editor_enabled: bool = False,
 ) -> ServiceDefinition:
     """Create Studio API service definition."""
     # Build COMPONENTS based on enabled features
     components = ["WebServer", "MongoMigration"]
     if live_session_enabled:
         components.extend(["BrokerClient", "IoHandler"])
+    # Vue 3 collaborative editor (Hocuspocus runs inside studio-api)
+    if collaborative_editor_enabled:
+        components.append("EditorHandler")
 
     networks = ["linto", "net_studio"]
     if live_session_enabled:
