@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-09-06T10:19:52.682426+00:00
+# Last updated: 2026-09-07T11:40:27.628320+00:00
 
 platform_version: latest-unstable
 linto:
@@ -17,19 +17,19 @@ linto:
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
     digest: sha256:54cd89b70e4c08cf00acb1c8c947fc2be5aa9897723967abc0dc93a7109ee544
-    commit: 393b5b08c47ab0ab989d7cf50173a0140cfdb6c0
+    commit: 3289f0c18403cb417e6d390cc37fc22385ce5b14
   studio-frontend:
     image: lintoai/studio-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
     digest: sha256:edbf1e9b338986481fbe18c107c67ccef3965247473b68df37c71fa6e312097d
-    commit: 393b5b08c47ab0ab989d7cf50173a0140cfdb6c0
+    commit: 3289f0c18403cb417e6d390cc37fc22385ce5b14
   studio-websocket:
     image: lintoai/studio-websocket
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
     digest: sha256:3e1e2647eb02d4f01f56b9954717360f3dc1ba3525006d6abf4d2d12484256ab
-    commit: 393b5b08c47ab0ab989d7cf50173a0140cfdb6c0
+    commit: 3289f0c18403cb417e6d390cc37fc22385ce5b14
   linto-api-gateway:
     image: lintoai/linto-api-gateway
     tag: latest-unstable
