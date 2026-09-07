@@ -94,6 +94,7 @@ def render_stack(profile: ProfileConfig) -> dict[str, Any]:
             llm_enabled=profile.llm_enabled,
             stt_enabled=profile.stt_enabled,
             llm_redis_password=profile.llm_redis_password or "",
+            collaborative_editor_enabled=profile.collaborative_editor_enabled,
         )
         services[api.name] = service_to_swarm_dict(api, profile.domain, tls_mode)
 
