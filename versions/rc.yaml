@@ -46,8 +46,8 @@ linto:
     image: lintoai/linto-stt-kaldi
     tag: 2.1.1
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:e430035249545154d46b53b126c0677f98e64a17266df92519b03e9819ad4944
-    commit: 073bf6fa1fb969b4a48b7d9e86d87d7a02fbc506
+    digest: sha256:fc9dce8b9fce5beca6f5eefadf0f8f6599dc99c8c154ba505164800f64891d2b
+    commit: 5d94f22ac9f5367177771de8209217b3714d7a7f
   linto-stt-nemo:
     image: lintoai/linto-stt-nemo
     tag: 2.1.1
