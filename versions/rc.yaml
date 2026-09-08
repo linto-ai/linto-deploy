@@ -34,8 +34,8 @@ linto:
     image: lintoai/linto-stt-whisper
     tag: 2.1.1
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:9dad3ccb95bf6dcd1c1b06e6a746c83885804b951ef6adc9e243e52064cffcf6
-    commit: 073bf6fa1fb969b4a48b7d9e86d87d7a02fbc506
+    digest: sha256:582655078486d077eb001555b5deb4a47d8b4d715c1a41aced356a766eb50d49
+    commit: 5d94f22ac9f5367177771de8209217b3714d7a7f
   linto-diarization-pyannote:
     image: lintoai/linto-diarization-pyannote
     tag: 2.3.0
