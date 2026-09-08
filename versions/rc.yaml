@@ -53,7 +53,7 @@ linto:
     tag: 2.1.1
     repo: https://github.com/linto-ai/linto-stt
     digest: sha256:f99b590794df13347c473fe3ac63e2cff0368213cefa4f012a32814667b51ceb
-    commit: 073bf6fa1fb969b4a48b7d9e86d87d7a02fbc506
+    commit: 5d94f22ac9f5367177771de8209217b3714d7a7f
   kyutai-moshi-stt-server-cuda:
     image: lintoai/kyutai-moshi-stt-server-cuda
     tag: 0.1.0
