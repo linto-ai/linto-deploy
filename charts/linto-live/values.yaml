@@ -56,6 +56,12 @@ sessionApi:
   service:
     port: 80
   ingress:
+    # The Session-API has NO authentication. Studio reaches it in-cluster via
+    # the service DNS (SESSION_API_ENDPOINT), so it must NOT be exposed
+    # publicly: an anonymous ingress lets anyone read/modify/purge every
+    # organization's sessions, profiles and keys. Keep this false unless a
+    # deployment genuinely needs direct external API access AND adds auth.
+    enabled: false
     path: /session-api
     stripPrefix: true
 
