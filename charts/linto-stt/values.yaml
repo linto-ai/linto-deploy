@@ -96,11 +96,16 @@ whisperWorkers:
     CONCURRENCY: "1"
     BROKER_PASS: ""
     SECURITY_LEVEL: "0"
-    # Disable the per-chunk VAD inside the worker. The audio is already chunked
-    # upstream by the transcription-service VAD; this second VAD (auditok by
-    # default) was stripping low-energy speech, causing 15-25% missing words
-    # on multi-speaker meetings. Letting Whisper see the full chunk avoids it.
-    VAD: "false"
+    # Per-chunk VAD inside the worker. Needed: without it Whisper hallucinates
+    # ("Sous-titrage ST' 501", "Radio-Canada"...) on the silence/noise/music
+    # stretches the upstream WebRTC splitter leaves inside each chunk.
+    # Was "false" on 2.1.0 because the worker passed its segments as vad_filter,
+    # which faster-whisper reads as a bool, so its own Silero VAD ran instead and
+    # dropped 15-25% of speech. Fixed in 2.1.1 (segments via clip_timestamps).
+    # "silero" rather than "auditok": auditok normalises each chunk before its
+    # energy threshold, so music/white noise pass as speech and get hallucinated,
+    # and it drops ~20% of very quiet speech. Requires linto-stt >= 2.1.1.
+    VAD: "silero"
     # Override the empty PROMPT default in linto-stt-whisper's .envdefault.
     # When PROMPT="" is loaded, decoding.py passes initial_prompt="" to
     # faster-whisper which collapses all word timestamps to the end of the
