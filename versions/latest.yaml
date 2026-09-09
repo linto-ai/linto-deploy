@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-09-08T10:39:25.250854+00:00
+# Last updated: 2026-09-09T10:48:52.559193+00:00
 
 platform_version: latest
 linto:
@@ -46,8 +46,8 @@ linto:
     image: lintoai/linto-stt-whisper
     tag: latest
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:da2a93654b34c06c702eccf94e62e5b9434c18a121a5cdd937936d7e1e994ff4
-    commit: 073bf6fa1fb969b4a48b7d9e86d87d7a02fbc506
+    digest: sha256:582655078486d077eb001555b5deb4a47d8b4d715c1a41aced356a766eb50d49
+    commit: 5d94f22ac9f5367177771de8209217b3714d7a7f
   linto-diarization-pyannote:
     image: lintoai/linto-diarization-pyannote
     tag: latest
@@ -58,14 +58,14 @@ linto:
     image: lintoai/linto-stt-kaldi
     tag: latest
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:e430035249545154d46b53b126c0677f98e64a17266df92519b03e9819ad4944
-    commit: 073bf6fa1fb969b4a48b7d9e86d87d7a02fbc506
+    digest: sha256:fc9dce8b9fce5beca6f5eefadf0f8f6599dc99c8c154ba505164800f64891d2b
+    commit: 5d94f22ac9f5367177771de8209217b3714d7a7f
   linto-stt-nemo:
     image: lintoai/linto-stt-nemo
     tag: latest
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:f99b590794df13347c473fe3ac63e2cff0368213cefa4f012a32814667b51ceb
-    commit: 073bf6fa1fb969b4a48b7d9e86d87d7a02fbc506
+    digest: sha256:67e5750e4a99a8b9ddb562623d35e16e8850e65e526e89d5e615c7c5f43940dc
+    commit: 5d94f22ac9f5367177771de8209217b3714d7a7f
   kyutai-moshi-stt-server-cuda:
     image: lintoai/kyutai-moshi-stt-server-cuda
     tag: latest
