@@ -32,10 +32,10 @@ linto:
     commit: 7e53b43ebe71e21c06dfe1abf41cff749feca690
   linto-stt-whisper:
     image: lintoai/linto-stt-whisper
-    tag: 2.1.0
+    tag: 2.1.1
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:022c17e1e590ed87b0433cc7dadc66f4ff470c87503612cc7665883532853dd1
-    commit: 9e2ab9f8db889d86705a81591ecbe7b4999798b8
+    digest: sha256:582655078486d077eb001555b5deb4a47d8b4d715c1a41aced356a766eb50d49
+    commit: 5d94f22ac9f5367177771de8209217b3714d7a7f
   linto-diarization-pyannote:
     image: lintoai/linto-diarization-pyannote
     tag: 2.3.0
@@ -44,16 +44,16 @@ linto:
     commit: 776a34d38730b5bc25952ccdf3de33939e9dc7f8
   linto-stt-kaldi:
     image: lintoai/linto-stt-kaldi
-    tag: 2.1.0
+    tag: 2.1.1
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:0f821f5ee0d3532780fe2efb8c3727b34d2133dc1203e7b6909f30f79f6e50ec
-    commit: 9e2ab9f8db889d86705a81591ecbe7b4999798b8
+    digest: sha256:fc9dce8b9fce5beca6f5eefadf0f8f6599dc99c8c154ba505164800f64891d2b
+    commit: 5d94f22ac9f5367177771de8209217b3714d7a7f
   linto-stt-nemo:
     image: lintoai/linto-stt-nemo
-    tag: 2.1.0
+    tag: 2.1.1
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:7a5db7bb40f879a0791ca647915410edad5e0917abf8067ac1e83f4fc5e55aa2
-    commit: 9e2ab9f8db889d86705a81591ecbe7b4999798b8
+    digest: sha256:67e5750e4a99a8b9ddb562623d35e16e8850e65e526e89d5e615c7c5f43940dc
+    commit: 5d94f22ac9f5367177771de8209217b3714d7a7f
   kyutai-moshi-stt-server-cuda:
     image: lintoai/kyutai-moshi-stt-server-cuda
     tag: 0.1.0
