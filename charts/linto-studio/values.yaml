@@ -105,8 +105,13 @@ studioFrontend:
   ingress:
     path: /
     stripPrefix: false
-  # env: extra VUE_APP_* vars injected into the frontend configmap, e.g.:
+  # Extra VUE_APP_* vars injected into the frontend configmap (profile
+  # `studio_frontend_env` entries are merged on top), e.g.:
   #   VUE_APP_ENABLE_SPEAKER_IDENTIFICATION: "true"
+  env:
+    # Studio >= 1.8.7: phones (touch screen, short side <= 767px) open the
+    # mobile app under /m/. Set to "false" to keep phones on the classic UI.
+    VUE_APP_ENABLE_MOBILE_APP: "true"
 
 # Studio WebSocket
 studioWebsocket:
