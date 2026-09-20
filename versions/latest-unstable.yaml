@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-09-19T10:23:05.681980+00:00
+# Last updated: 2026-09-20T10:42:24.658933+00:00
 
 platform_version: latest-unstable
 linto:
@@ -17,55 +17,55 @@ linto:
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
     digest: sha256:109fdbbdd7a24a182efc8ca62a35954bba136c9913783a3f1d7a57381d510d7e
-    commit: <rate-limited>
+    commit: 4ca147afb564c7cd0238db48f9febb9dbcf42abb
   studio-frontend:
     image: lintoai/studio-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
     digest: sha256:fdff07cea051708702839695f5e7f30c1d4183235a68a6ba8719280478f446db
-    commit: <rate-limited>
+    commit: 4ea578b226bce7a113904322986538fd0b570a81
   studio-websocket:
     image: lintoai/studio-websocket
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
     digest: sha256:468fd8f0eebb73c9b305df26ed321977a0191321e036beedca19b9d016ed3dd3
-    commit: <rate-limited>
+    commit: 4ca147afb564c7cd0238db48f9febb9dbcf42abb
   linto-api-gateway:
     image: lintoai/linto-api-gateway
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-api-gateway
     digest: sha256:340e4bbd0452ee6024e2681eb9852c1d3a173d751087d64eeae6fefebf9778ad
-    commit: <rate-limited>
+    commit: c6514dfad95cef23d59534da959fa52373084741
   linto-transcription-service:
     image: lintoai/linto-transcription-service
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-stt
     digest: sha256:2c2670d4e58fbcaa9f6baf2437b4f3a62ff25e54e04c1b26279045a1a391d800
-    commit: <rate-limited>
+    commit: 102265f2a5f4f7ffb74a490ae5729a8c13660c85
   linto-stt-whisper:
     image: lintoai/linto-stt-whisper
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-stt
     digest: sha256:582655078486d077eb001555b5deb4a47d8b4d715c1a41aced356a766eb50d49
-    commit: <rate-limited>
+    commit: 5d94f22ac9f5367177771de8209217b3714d7a7f
   linto-diarization-pyannote:
     image: lintoai/linto-diarization-pyannote
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-diarization
     digest: sha256:f315d48dcee2bfaa4081158fec57a76e2baa98d1cb5df498cc7a66c0dbe6ebc4
-    commit: <rate-limited>
+    commit: 776a34d38730b5bc25952ccdf3de33939e9dc7f8
   linto-stt-kaldi:
     image: lintoai/linto-stt-kaldi
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-stt
     digest: sha256:fc9dce8b9fce5beca6f5eefadf0f8f6599dc99c8c154ba505164800f64891d2b
-    commit: <rate-limited>
+    commit: 5d94f22ac9f5367177771de8209217b3714d7a7f
   linto-stt-nemo:
     image: lintoai/linto-stt-nemo
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-stt
     digest: sha256:779b27b3f8054a6f936aaba1b93cfb8c999eda83a2aa798ed89dd712ce4b0dcd
-    commit: <rate-limited>
+    commit: 5d94f22ac9f5367177771de8209217b3714d7a7f
   kyutai-moshi-stt-server-cuda:
     image: lintoai/kyutai-moshi-stt-server-cuda
     tag: latest-unstable
@@ -75,49 +75,49 @@ linto:
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
     digest: sha256:f2da4dc5fd85d88d4abcea9919193c349a38d3727b8c8a7a206f99e47eba7d13
-    commit: <rate-limited>
+    commit: 5c3a584b028b5240df41825650bc1d81513c21e9
   llm-gateway-frontend:
     image: lintoai/llm-gateway-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
     digest: sha256:adee1cd5d54e694fea4076a092c69255c567cd5d44b2ef8317b91004e212da53
-    commit: <rate-limited>
+    commit: 5c3a584b028b5240df41825650bc1d81513c21e9
   studio-plugins-migration:
     image: lintoai/studio-plugins-migration
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:07a1e7c788f4844d3d9fe16496a712f203e412f2d8e58e9e2c0dd6f2a6fe516f
-    commit: <rate-limited>
+    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
   studio-plugins-sessionapi:
     image: lintoai/studio-plugins-sessionapi
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:7874e91c41a12f0882215d7748cc2f5fc707b58f4b5fa9f28b3bb923e8cd9bcf
-    commit: <rate-limited>
+    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
   studio-plugins-scheduler:
     image: lintoai/studio-plugins-scheduler
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:664a6b1df61a65f96c431a555a1f031e3d6ce4d0e571f13652ba0f7a77796f4e
-    commit: <rate-limited>
+    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
   studio-plugins-transcriber:
     image: lintoai/studio-plugins-transcriber
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:c3bf402860450687c830272d015fbc8e2ba6c227f3a9b46f98f3e0e4a7a1eee3
-    commit: <rate-limited>
+    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
   studio-plugins-translator:
     image: lintoai/studio-plugins-translator
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:0dd56e47eac0d49a3b07c962be40b24b588dd87ccc8dbc64a6e04ece5219ccbe
-    commit: <rate-limited>
+    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
   studio-plugins-botservice:
     image: lintoai/studio-plugins-botservice
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:cd8ed7cae5d96fbc4a4e0a937508609a168182aa02940d771c469f9827854877
-    commit: <rate-limited>
+    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
 databases:
   studio-mongo:
     image: mongo
