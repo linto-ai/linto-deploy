@@ -118,6 +118,10 @@ class ProfileConfig(BaseModel):
     # Falls back to security_level when unset, so a cluster only diverges the
     # two models' levels when it explicitly opts in (e.g. staging's gating demo).
     nemo_security_level: str | None = Field(default=None)
+    # Whisper decoding hints. None keeps the chart defaults (LINAGORA vocabulary),
+    # "" disables the hint (safe with linto-stt >= 2.1.1, which drops empty prompts).
+    whisper_prompt: str | None = Field(default=None)
+    whisper_hotwords: str | None = Field(default=None)
 
     # Speaker identification (Qdrant voiceprint store + studio-api/frontend wiring).
     # Requires stt_enabled (diarization is the embedding service). Off by default.

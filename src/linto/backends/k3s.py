@@ -1343,6 +1343,12 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         },
     }
 
+    # Per-cluster Whisper hints; unset keeps the chart defaults
+    if profile.whisper_prompt is not None:
+        values["whisperWorkers"]["env"]["PROMPT"] = profile.whisper_prompt
+    if profile.whisper_hotwords is not None:
+        values["whisperWorkers"]["env"]["HOTWORDS"] = profile.whisper_hotwords
+
     # GPU configuration: use replicasPerGpu for multi-GPU setups
     if gpu_enabled and gpu_count > 1:
         # Create array [1, 1, ...] with one replica per GPU
