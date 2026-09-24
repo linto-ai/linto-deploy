@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-09-23T10:50:27.122533+00:00
+# Last updated: 2026-09-24T11:10:35.288429+00:00
 
 platform_version: latest-unstable
 linto:
@@ -74,14 +74,14 @@ linto:
     image: lintoai/llm-gateway
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:f2da4dc5fd85d88d4abcea9919193c349a38d3727b8c8a7a206f99e47eba7d13
-    commit: 5c3a584b028b5240df41825650bc1d81513c21e9
+    digest: sha256:65fb6759af3e8012b5551390ecf3602e31e5b1e03b33b7d284744c8ab1bb207c
+    commit: 04d279740b97bc8c87c2f72c49ca386626326b68
   llm-gateway-frontend:
     image: lintoai/llm-gateway-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
     digest: sha256:adee1cd5d54e694fea4076a092c69255c567cd5d44b2ef8317b91004e212da53
-    commit: 5c3a584b028b5240df41825650bc1d81513c21e9
+    commit: 04d279740b97bc8c87c2f72c49ca386626326b68
   studio-plugins-migration:
     image: lintoai/studio-plugins-migration
     tag: latest-unstable
