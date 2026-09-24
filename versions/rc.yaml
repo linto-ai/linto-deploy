@@ -67,10 +67,10 @@ linto:
     commit: 808e29425f56dff36296fa4469ed1d9cfd00b6a3
   llm-gateway-frontend:
     image: lintoai/llm-gateway-frontend
-    tag: 2.6.0
+    tag: 2.7.0
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:adee1cd5d54e694fea4076a092c69255c567cd5d44b2ef8317b91004e212da53
-    commit: 04d279740b97bc8c87c2f72c49ca386626326b68
+    digest: sha256:afd203643c7e481cd7a9c290ec744bcdcc911fe2f22cbc9c833adbc7c6202637
+    commit: 808e29425f56dff36296fa4469ed1d9cfd00b6a3
   studio-plugins-migration:
     image: lintoai/studio-plugins-migration
     tag: 1.5.0
