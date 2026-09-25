@@ -123,6 +123,12 @@ class ProfileConfig(BaseModel):
     whisper_prompt: str | None = Field(default=None)
     whisper_hotwords: str | None = Field(default=None)
 
+    # Nemotron diarization (NVIDIA Nemotron 3 Diarization, up to 8 speakers, GPU Ampere or
+    # newer). Runs next to pyannote: transcription services route to Nemotron and fall back
+    # to pyannote above 7 speakers, on saturation or failure. pyannote then keeps one
+    # worker (first GPU). Requires stt_enabled and a GPU. Off by default.
+    nemotron_diarization_enabled: bool = Field(default=False)
+
     # Speaker identification (Qdrant voiceprint store + studio-api/frontend wiring).
     # Requires stt_enabled (diarization is the embedding service). Off by default.
     speaker_identification_enabled: bool = Field(default=False)

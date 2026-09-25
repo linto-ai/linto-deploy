@@ -119,3 +119,14 @@ Always
 IfNotPresent
 {{- end -}}
 {{- end }}
+
+{{/*
+Diarization routing env for transcription services: Nemotron first, pyannote as fallback
+(more speakers than Nemotron handles, saturated result or failure). Only when both run.
+*/}}
+{{- define "linto-stt.diarizationRoutingEnv" -}}
+{{- if and .Values.diarization.enabled .Values.diarizationNemotron.enabled }}
+  DIARIZATION_FAST_SERVICE: {{ .Values.diarizationNemotron.env.SERVICE_NAME | quote }}
+  DIARIZATION_FALLBACK_SERVICE: {{ .Values.diarization.env.SERVICE_NAME | quote }}
+{{- end }}
+{{- end }}

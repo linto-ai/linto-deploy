@@ -34,6 +34,9 @@ class LintoVersions(BaseModel):
     linto_diarization_pyannote: ServiceVersion = Field(
         default_factory=ServiceVersion, alias="linto-diarization-pyannote"
     )
+    linto_diarization_nemotron: ServiceVersion = Field(
+        default_factory=ServiceVersion, alias="linto-diarization-nemotron"
+    )
     linto_stt_kaldi: ServiceVersion = Field(default_factory=ServiceVersion, alias="linto-stt-kaldi")
     linto_stt_nemo: ServiceVersion = Field(default_factory=ServiceVersion, alias="linto-stt-nemo")
     kyutai_moshi_stt_server_cuda: ServiceVersion = Field(
@@ -235,6 +238,7 @@ class VersionsConfig(BaseModel):
                 "linto-transcription-service": self.get_linto_tag("linto-transcription-service"),
                 "linto-stt-whisper": self.get_linto_tag("linto-stt-whisper"),
                 "linto-diarization-pyannote": self.get_linto_tag("linto-diarization-pyannote"),
+                "linto-diarization-nemotron": self.get_linto_tag("linto-diarization-nemotron"),
                 "linto-stt-kaldi": self.get_linto_tag("linto-stt-kaldi"),
                 "linto-stt-nemo": self.get_linto_tag("linto-stt-nemo"),
                 "kyutai-moshi-stt-server-cuda": self.get_linto_tag("kyutai-moshi-stt-server-cuda"),
