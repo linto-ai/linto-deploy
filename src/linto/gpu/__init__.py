@@ -10,6 +10,7 @@ GPU_REQUIRED_SERVICES: dict[str, dict[str, int | bool]] = {
     "stt-nemo-french-streaming": {"required": True, "slots": 1},
     "stt-nemo-english-streaming": {"required": True, "slots": 1},
     "stt-kyutai-streaming": {"required": True, "slots": 1},
+    "diarization-nemotron": {"required": True, "slots": 1},
 }
 
 # Services where GPU is optional but recommended
@@ -103,6 +104,14 @@ def get_enabled_gpu_services(profile: ProfileConfig) -> list[GPURequirement]:
                 optional=True,
             )
         )
+        if profile.nemotron_diarization_enabled:
+            requirements.append(
+                GPURequirement(
+                    service_name="diarization-nemotron",
+                    slots_required=1,
+                    optional=False,
+                )
+            )
 
     return requirements
 

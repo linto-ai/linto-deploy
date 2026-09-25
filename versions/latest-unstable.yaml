@@ -54,6 +54,10 @@ linto:
     repo: https://github.com/linto-ai/linto-diarization
     digest: sha256:f315d48dcee2bfaa4081158fec57a76e2baa98d1cb5df498cc7a66c0dbe6ebc4
     commit: 776a34d38730b5bc25952ccdf3de33939e9dc7f8
+  linto-diarization-nemotron:
+    image: lintoai/linto-diarization-nemotron
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-diarization
   linto-stt-kaldi:
     image: lintoai/linto-stt-kaldi
     tag: latest-unstable

@@ -1235,6 +1235,8 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
     """
     gpu_enabled = profile.gpu_mode != GPUMode.NONE
     gpu_count = profile.gpu_count if gpu_enabled else 0
+    # Nemotron needs a GPU (Ampere or newer)
+    nemotron_enabled = profile.nemotron_diarization_enabled and gpu_enabled
 
     values: dict[str, Any] = {
         "global": generate_global_values(profile, create_certificate=False),
@@ -1314,6 +1316,16 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
                 "DEVICE": "cuda" if gpu_enabled else "cpu",
             },
         },
+        "diarizationNemotron": {
+            "enabled": nemotron_enabled,
+            "image": image_values(profile, "linto-diarization-nemotron"),
+            "env": {
+                "SERVICE_NAME": "stt-diarization-nemotron",
+                "QUEUE_NAME": "diarization-nemotron",
+                "BROKER_PASS": profile.redis_password or "",
+                "DEVICE": "cuda",
+            },
+        },
         "redis": {
             "enabled": True,
             "image": {
@@ -1356,6 +1368,10 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         values["whisperWorkers"]["replicasPerGpu"] = replicas_per_gpu
         values["nemoWorkers"]["replicasPerGpu"] = replicas_per_gpu
         values["diarization"]["replicasPerGpu"] = replicas_per_gpu
+        if nemotron_enabled:
+            # Nemotron on every GPU, pyannote only kept for the fallback cases
+            values["diarizationNemotron"]["replicasPerGpu"] = replicas_per_gpu
+            values["diarization"]["replicasPerGpu"] = [1] + [0] * (gpu_count - 1)
     else:
         # Single GPU or CPU: use simple replicas
         values["whisperWorkers"]["replicas"] = 1

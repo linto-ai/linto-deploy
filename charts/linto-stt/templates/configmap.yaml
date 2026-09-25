@@ -26,6 +26,7 @@ data:
   {{- if .Values.whisper.env.SPEAKER_ID_API_TOKEN }}
   SPEAKER_ID_API_TOKEN: {{ .Values.whisper.env.SPEAKER_ID_API_TOKEN | quote }}
   {{- end }}
+  {{- include "linto-stt.diarizationRoutingEnv" . }}
 {{- end }}
 ---
 {{- if .Values.whisperWorkers.enabled }}
@@ -74,6 +75,7 @@ data:
   SECURITY_LEVEL: {{ .Values.nemo.env.SECURITY_LEVEL | quote }}
   SERVICE_ORDER: {{ .Values.nemo.env.SERVICE_ORDER | default "" | quote }}
   GATEWAY_DESCRIPTION: {{ .Values.nemo.env.GATEWAY_DESCRIPTION | default (printf "{\"en\": \"%s\", \"fr\": \"%s\"}" .Values.nemo.env.SERVICE_NAME .Values.nemo.env.SERVICE_NAME) | quote }}
+  {{- include "linto-stt.diarizationRoutingEnv" . }}
 {{- end }}
 ---
 {{- if .Values.nemoWorkers.enabled }}
@@ -112,6 +114,31 @@ data:
   DEVICE: {{ .Values.diarization.env.DEVICE | quote }}
   CONCURRENCY: {{ .Values.diarization.env.CONCURRENCY | quote }}
   MODEL_INFO: {{ .Values.diarization.env.MODEL_INFO | quote }}
+  {{- if .Values.qdrant.enabled }}
+  QDRANT_HOST: {{ include "linto-stt.qdrantHost" . | quote }}
+  QDRANT_PORT: "6333"
+  {{- if .Values.qdrant.apiKey }}
+  QDRANT_API_KEY: {{ .Values.qdrant.apiKey | quote }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+{{- if .Values.diarizationNemotron.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "linto-stt.fullname" . }}-diarization-nemotron-config
+  labels:
+    {{- include "linto-stt.labels" . | nindent 4 }}
+    app.kubernetes.io/component: diarization-nemotron
+data:
+  SERVICES_BROKER: {{ include "linto-stt.brokerUrl" . | quote }}
+  SERVICE_NAME: {{ .Values.diarizationNemotron.env.SERVICE_NAME | quote }}
+  QUEUE_NAME: {{ .Values.diarizationNemotron.env.QUEUE_NAME | quote }}
+  SERVICE_MODE: "task"
+  DEVICE: {{ .Values.diarizationNemotron.env.DEVICE | quote }}
+  CONCURRENCY: {{ .Values.diarizationNemotron.env.CONCURRENCY | quote }}
+  MODEL_INFO: {{ .Values.diarizationNemotron.env.MODEL_INFO | quote }}
   {{- if .Values.qdrant.enabled }}
   QDRANT_HOST: {{ include "linto-stt.qdrantHost" . | quote }}
   QDRANT_PORT: "6333"

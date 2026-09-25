@@ -187,6 +187,28 @@ diarization:
     BROKER_PASS: ""
     MODEL_INFO: '{"en": "Yes", "fr": "Oui"}'
 
+# Nemotron diarization (NVIDIA Nemotron 3 Diarization, up to 8 speakers, GPU Ampere or newer)
+# When enabled with `diarization` (pyannote), transcription services route requests to
+# Nemotron and fall back to pyannote above 7 speakers, on saturation or on failure.
+# Model baked in the image: no models cache volume.
+diarizationNemotron:
+  enabled: false
+  replicasPerGpu: [1]
+  image:
+    repository: lintoai/linto-diarization-nemotron
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  env:
+    SERVICE_NAME: stt-diarization-nemotron
+    QUEUE_NAME: diarization-nemotron
+    DEVICE: cuda
+    CONCURRENCY: "1"
+    BROKER_PASS: ""
+    MODEL_INFO: '{"en": "Yes", "fr": "Oui"}'
+
 # Qdrant vector DB - speaker identification voiceprint collections
 # Used by the diarization workers; one collection per Studio voiceprint collection.
 # Disabled by default: existing deployments are NOT touched until this is
