@@ -1,0 +1,3 @@
+[submodule ".linto"]
+	path = .linto
+	url = git@github.com:linto-ai/linto-private.git

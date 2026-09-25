@@ -1,0 +1,1344 @@
+{
+  "sessions": [
+    {
+      "id": "ae79efdd-32ff-463c-be4e-eeee5c3ce0e4",
+      "status": "ready",
+      "name": "débat toulouse",
+      "startTime": "2026-03-10T12:52:26.247Z",
+      "endTime": null,
+      "scheduleOn": null,
+      "endOn": null,
+      "erroredOn": null,
+      "pausedAt": null,
+      "owner": "637f986e85f0ca0019c8a560",
+      "organizationId": "6788e27e0de6667583de05ad",
+      "visibility": "public",
+      "autoStart": true,
+      "autoEnd": false,
+      "meta": { "securityLevel": 0 },
+      "createdAt": "2026-03-10T12:51:06.277Z",
+      "updatedAt": "2026-03-10T12:56:35.485Z",
+      "channels": [
+        {
+          "id": 464,
+          "keepAudio": false,
+          "diarization": true,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [],
+          "name": "Mistral Voxtral Mini 4B Realtime - GPU interne",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=ae79efdd-32ff-463c-be4e-eeee5c3ce0e4,0&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/ae79efdd-32ff-463c-be4e-eeee5c3ce0e4/0",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/ae79efdd-32ff-463c-be4e-eeee5c3ce0e4,0"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 0,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-03-10T12:51:06.285Z",
+          "updatedAt": "2026-03-10T12:56:35.483Z",
+          "transcriberProfileId": 20,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "836c4d76-f9f7-487a-ad8a-2a9a60b1a7cb",
+      "status": "ready",
+      "name": "test debat 2",
+      "startTime": "2026-03-10T12:59:49.736Z",
+      "endTime": null,
+      "scheduleOn": null,
+      "endOn": null,
+      "erroredOn": null,
+      "pausedAt": null,
+      "owner": "637f986e85f0ca0019c8a560",
+      "organizationId": "6788e27e0de6667583de05ad",
+      "visibility": "public",
+      "autoStart": true,
+      "autoEnd": false,
+      "meta": { "securityLevel": 0 },
+      "createdAt": "2026-03-10T12:59:29.474Z",
+      "updatedAt": "2026-03-10T13:00:27.540Z",
+      "channels": [
+        {
+          "id": 465,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "it-IT",
+            "pt-BR",
+            "nl-NL",
+            "ar-SA",
+            "ru-RU"
+          ],
+          "translations": [],
+          "name": "LinTO Whisper large-v3-turbo multilingue - GPU interne",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=836c4d76-f9f7-487a-ad8a-2a9a60b1a7cb,0&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/836c4d76-f9f7-487a-ad8a-2a9a60b1a7cb/0",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/836c4d76-f9f7-487a-ad8a-2a9a60b1a7cb,0"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 0,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-03-10T12:59:29.481Z",
+          "updatedAt": "2026-03-10T13:00:27.538Z",
+          "transcriberProfileId": 21,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "6807e352-d90b-4b9e-bff1-0b1d90e4dd69",
+      "status": "ready",
+      "name": "test 2",
+      "startTime": null,
+      "endTime": null,
+      "scheduleOn": null,
+      "endOn": null,
+      "erroredOn": null,
+      "pausedAt": null,
+      "owner": "63654235333347001f53e9e5",
+      "organizationId": "63654235333347001f53e9e6",
+      "visibility": "public",
+      "autoStart": true,
+      "autoEnd": false,
+      "meta": { "securityLevel": 0 },
+      "createdAt": "2026-04-08T09:33:58.834Z",
+      "updatedAt": "2026-04-08T09:33:58.834Z",
+      "channels": [
+        {
+          "id": 544,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "it-IT",
+            "pt-PT",
+            "nl-NL",
+            "pl-PL",
+            "sv-SE",
+            "da-DK",
+            "fi-FI",
+            "el-GR",
+            "cs-CZ",
+            "ro-RO",
+            "hu-HU",
+            "bg-BG",
+            "hr-HR",
+            "sk-SK",
+            "sl-SI",
+            "et-EE",
+            "lv-LV",
+            "lt-LT",
+            "ru-RU",
+            "uk-UA"
+          ],
+          "translations": [],
+          "name": "NVIDIA Parakeet TDT 0.6B v3 - Multilingue (25 langues EU) - GPU interne",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=6807e352-d90b-4b9e-bff1-0b1d90e4dd69,0&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/6807e352-d90b-4b9e-bff1-0b1d90e4dd69/0",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/6807e352-d90b-4b9e-bff1-0b1d90e4dd69,0"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 0,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-04-08T09:33:58.843Z",
+          "updatedAt": "2026-04-08T09:33:58.852Z",
+          "transcriberProfileId": 23,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "a76e29b8-8fed-4fa0-ac5e-e50d375eabdc",
+      "status": "ready",
+      "name": "jdll",
+      "startTime": "2026-05-31T14:01:41.021Z",
+      "endTime": null,
+      "scheduleOn": null,
+      "endOn": null,
+      "erroredOn": null,
+      "pausedAt": null,
+      "owner": "637f986e85f0ca0019c8a560",
+      "organizationId": "6785248086d6ffb5a431d0b2",
+      "visibility": "public",
+      "autoStart": true,
+      "autoEnd": false,
+      "meta": { "securityLevel": 0 },
+      "createdAt": "2026-05-30T23:12:02.030Z",
+      "updatedAt": "2026-05-31T15:14:49.489Z",
+      "channels": [
+        {
+          "id": 645,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" },
+            { "mode": "external", "target": "it", "translator": "gemma" }
+          ],
+          "name": "Mistral Voxtral Mini 4B Realtime - GPU interne",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=a76e29b8-8fed-4fa0-ac5e-e50d375eabdc,0&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/a76e29b8-8fed-4fa0-ac5e-e50d375eabdc/0",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/a76e29b8-8fed-4fa0-ac5e-e50d375eabdc,0"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 358,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-05-30T23:12:02.042Z",
+          "updatedAt": "2026-05-31T15:14:49.485Z",
+          "transcriberProfileId": 20,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "8c249655-d1ae-4390-8860-9216da3b30b9",
+      "status": "ready",
+      "name": "TR Education",
+      "startTime": "2026-06-05T12:43:57.444Z",
+      "endTime": null,
+      "scheduleOn": null,
+      "endOn": null,
+      "erroredOn": null,
+      "pausedAt": null,
+      "owner": "6a17004170e0a447063354a2",
+      "organizationId": "6a17004170e0a447063354a3",
+      "visibility": "public",
+      "autoStart": true,
+      "autoEnd": false,
+      "meta": { "securityLevel": 0 },
+      "createdAt": "2026-06-05T12:37:46.859Z",
+      "updatedAt": "2026-06-05T16:46:34.659Z",
+      "channels": [
+        {
+          "id": 687,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" },
+            { "mode": "external", "target": "fr", "translator": "gemma" }
+          ],
+          "name": "Mistral Voxtral Mini 4B Realtime - GPU interne",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=8c249655-d1ae-4390-8860-9216da3b30b9,0&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/8c249655-d1ae-4390-8860-9216da3b30b9/0",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/8c249655-d1ae-4390-8860-9216da3b30b9,0"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 73,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-06-05T12:37:46.889Z",
+          "updatedAt": "2026-06-05T16:46:34.657Z",
+          "transcriberProfileId": 20,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "8d30ef9d-394e-4725-8e6e-f2eb1123500c",
+      "status": "ready",
+      "name": "Test POSAIS",
+      "startTime": "2026-06-30T20:38:46.138Z",
+      "endTime": null,
+      "scheduleOn": null,
+      "endOn": null,
+      "erroredOn": null,
+      "pausedAt": null,
+      "owner": "6a43e02270368168dde4511d",
+      "organizationId": "6a43e02270368168dde4511e",
+      "visibility": "public",
+      "autoStart": true,
+      "autoEnd": false,
+      "meta": {
+        "securityLevel": 0,
+        "@watermark": {
+          "display": true,
+          "pinned": true,
+          "content": "Transcription by LinTO.ai $linto Open Source AI by $linagora",
+          "frequency": 600,
+          "duration": 10
+        }
+      },
+      "createdAt": "2026-06-30T15:44:42.415Z",
+      "updatedAt": "2026-07-01T17:07:52.508Z",
+      "channels": [
+        {
+          "id": 739,
+          "keepAudio": true,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "fr", "translator": "gemma" },
+            { "mode": "external", "target": "en", "translator": "gemma" }
+          ],
+          "name": "LinTO",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=8d30ef9d-394e-4725-8e6e-f2eb1123500c,0&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/8d30ef9d-394e-4725-8e6e-f2eb1123500c/0",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/8d30ef9d-394e-4725-8e6e-f2eb1123500c,0"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 116,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-06-30T15:44:42.440Z",
+          "updatedAt": "2026-07-01T17:07:52.506Z",
+          "transcriberProfileId": 20,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "4ac018d2-7c8a-43be-955c-d9f00710555a",
+      "status": "ready",
+      "name": "Test sans TRAD",
+      "startTime": "2026-07-01T20:41:08.173Z",
+      "endTime": null,
+      "scheduleOn": null,
+      "endOn": null,
+      "erroredOn": null,
+      "pausedAt": null,
+      "owner": "6a43e02270368168dde4511d",
+      "organizationId": "6a43e02270368168dde4511e",
+      "visibility": "public",
+      "autoStart": true,
+      "autoEnd": false,
+      "meta": { "securityLevel": 0 },
+      "createdAt": "2026-07-01T20:40:11.945Z",
+      "updatedAt": "2026-07-06T08:07:26.512Z",
+      "channels": [
+        {
+          "id": 771,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [],
+          "name": "LinTO",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=4ac018d2-7c8a-43be-955c-d9f00710555a,0&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/4ac018d2-7c8a-43be-955c-d9f00710555a/0",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/4ac018d2-7c8a-43be-955c-d9f00710555a,0"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 1549,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-01T20:40:11.954Z",
+          "updatedAt": "2026-07-06T08:07:26.510Z",
+          "transcriberProfileId": 20,
+          "index": 0
+        }
+      ]
+    },
+    {
+      "id": "4370f949-624a-481a-afc8-60bcf20f268f",
+      "status": "ready",
+      "name": "10x Voxtral",
+      "startTime": "2026-07-04T22:03:14.695Z",
+      "endTime": null,
+      "scheduleOn": null,
+      "endOn": null,
+      "erroredOn": null,
+      "pausedAt": null,
+      "owner": "636906b2a05a1d001b81f0c7",
+      "organizationId": "637f986e85f0ca0019c8a561",
+      "visibility": "public",
+      "autoStart": true,
+      "autoEnd": false,
+      "meta": {
+        "securityLevel": 0,
+        "@template": { "id": 13, "name": "10x Voxtral" }
+      },
+      "createdAt": "2026-07-04T21:55:38.728Z",
+      "updatedAt": "2026-07-05T12:26:53.402Z",
+      "channels": [
+        {
+          "id": 820,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" }
+          ],
+          "name": "Mistral Voxtral Mini 4B Realtime - L40S (haute charge)",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=4370f949-624a-481a-afc8-60bcf20f268f,0&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/4370f949-624a-481a-afc8-60bcf20f268f/0",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/4370f949-624a-481a-afc8-60bcf20f268f,0"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 4948,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-04T21:55:38.767Z",
+          "updatedAt": "2026-07-05T12:26:53.316Z",
+          "transcriberProfileId": 26,
+          "index": 0
+        },
+        {
+          "id": 821,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" }
+          ],
+          "name": "Mistral Voxtral Mini 4B Realtime - L40S (haute charge)",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=4370f949-624a-481a-afc8-60bcf20f268f,1&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/4370f949-624a-481a-afc8-60bcf20f268f/1",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/4370f949-624a-481a-afc8-60bcf20f268f,1"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 4919,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-04T21:55:38.778Z",
+          "updatedAt": "2026-07-05T12:26:53.341Z",
+          "transcriberProfileId": 26,
+          "index": 1
+        },
+        {
+          "id": 822,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" }
+          ],
+          "name": "Mistral Voxtral Mini 4B Realtime - L40S (haute charge)",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=4370f949-624a-481a-afc8-60bcf20f268f,2&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/4370f949-624a-481a-afc8-60bcf20f268f/2",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/4370f949-624a-481a-afc8-60bcf20f268f,2"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 5563,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-04T21:55:38.786Z",
+          "updatedAt": "2026-07-05T12:26:53.347Z",
+          "transcriberProfileId": 26,
+          "index": 2
+        },
+        {
+          "id": 823,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" }
+          ],
+          "name": "Mistral Voxtral Mini 4B Realtime - L40S (haute charge)",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=4370f949-624a-481a-afc8-60bcf20f268f,3&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/4370f949-624a-481a-afc8-60bcf20f268f/3",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/4370f949-624a-481a-afc8-60bcf20f268f,3"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 5560,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-04T21:55:38.794Z",
+          "updatedAt": "2026-07-05T12:26:53.387Z",
+          "transcriberProfileId": 26,
+          "index": 3
+        },
+        {
+          "id": 824,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" }
+          ],
+          "name": "Mistral Voxtral Mini 4B Realtime - L40S (haute charge)",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=4370f949-624a-481a-afc8-60bcf20f268f,4&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/4370f949-624a-481a-afc8-60bcf20f268f/4",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/4370f949-624a-481a-afc8-60bcf20f268f,4"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 5431,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-04T21:55:38.802Z",
+          "updatedAt": "2026-07-05T12:26:53.301Z",
+          "transcriberProfileId": 26,
+          "index": 4
+        },
+        {
+          "id": 825,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" }
+          ],
+          "name": "Mistral Voxtral Mini 4B Realtime - L40S (haute charge)",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=4370f949-624a-481a-afc8-60bcf20f268f,5&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/4370f949-624a-481a-afc8-60bcf20f268f/5",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/4370f949-624a-481a-afc8-60bcf20f268f,5"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 4852,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-04T21:55:38.809Z",
+          "updatedAt": "2026-07-05T12:26:53.381Z",
+          "transcriberProfileId": 26,
+          "index": 5
+        },
+        {
+          "id": 826,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" }
+          ],
+          "name": "Mistral Voxtral Mini 4B Realtime - L40S (haute charge)",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=4370f949-624a-481a-afc8-60bcf20f268f,6&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/4370f949-624a-481a-afc8-60bcf20f268f/6",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/4370f949-624a-481a-afc8-60bcf20f268f,6"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 5657,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-04T21:55:38.815Z",
+          "updatedAt": "2026-07-05T12:26:53.353Z",
+          "transcriberProfileId": 26,
+          "index": 6
+        },
+        {
+          "id": 827,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" }
+          ],
+          "name": "Mistral Voxtral Mini 4B Realtime - L40S (haute charge)",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=4370f949-624a-481a-afc8-60bcf20f268f,7&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/4370f949-624a-481a-afc8-60bcf20f268f/7",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/4370f949-624a-481a-afc8-60bcf20f268f,7"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 5453,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-04T21:55:38.822Z",
+          "updatedAt": "2026-07-05T12:26:53.399Z",
+          "transcriberProfileId": 26,
+          "index": 7
+        },
+        {
+          "id": 828,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" }
+          ],
+          "name": "Mistral Voxtral Mini 4B Realtime - L40S (haute charge)",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=4370f949-624a-481a-afc8-60bcf20f268f,8&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/4370f949-624a-481a-afc8-60bcf20f268f/8",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/4370f949-624a-481a-afc8-60bcf20f268f,8"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 5330,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-04T21:55:38.829Z",
+          "updatedAt": "2026-07-05T12:26:53.288Z",
+          "transcriberProfileId": 26,
+          "index": 8
+        },
+        {
+          "id": 829,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" }
+          ],
+          "name": "Mistral Voxtral Mini 4B Realtime - L40S (haute charge)",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=4370f949-624a-481a-afc8-60bcf20f268f,9&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/4370f949-624a-481a-afc8-60bcf20f268f/9",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/4370f949-624a-481a-afc8-60bcf20f268f,9"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 4950,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-04T21:55:38.836Z",
+          "updatedAt": "2026-07-05T12:26:53.365Z",
+          "transcriberProfileId": 26,
+          "index": 9
+        }
+      ]
+    },
+    {
+      "id": "6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5",
+      "status": "ready",
+      "name": "Wikimania",
+      "startTime": "2026-07-05T15:15:44.102Z",
+      "endTime": null,
+      "scheduleOn": null,
+      "endOn": null,
+      "erroredOn": null,
+      "pausedAt": null,
+      "owner": "636906b2a05a1d001b81f0c7",
+      "organizationId": "637f986e85f0ca0019c8a561",
+      "visibility": "public",
+      "autoStart": true,
+      "autoEnd": false,
+      "meta": { "securityLevel": 0 },
+      "createdAt": "2026-07-05T15:12:00.828Z",
+      "updatedAt": "2026-07-05T23:31:20.459Z",
+      "channels": [
+        {
+          "id": 840,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" },
+            { "mode": "external", "target": "es", "translator": "gemma" },
+            { "mode": "external", "target": "it", "translator": "gemma" },
+            { "mode": "external", "target": "nl", "translator": "gemma" },
+            { "mode": "external", "target": "fr", "translator": "gemma" },
+            { "mode": "external", "target": "de", "translator": "gemma" }
+          ],
+          "name": "1",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5,0&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5/0",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5,0"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 3498,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-05T15:12:00.856Z",
+          "updatedAt": "2026-07-05T23:21:20.587Z",
+          "transcriberProfileId": 26,
+          "index": 0
+        },
+        {
+          "id": 841,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "de", "translator": "gemma" },
+            { "mode": "external", "target": "en", "translator": "gemma" },
+            { "mode": "external", "target": "es", "translator": "gemma" },
+            { "mode": "external", "target": "it", "translator": "gemma" },
+            { "mode": "external", "target": "nl", "translator": "gemma" },
+            { "mode": "external", "target": "fr", "translator": "gemma" }
+          ],
+          "name": "2",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5,1&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5/1",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5,1"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 3586,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-05T15:12:00.865Z",
+          "updatedAt": "2026-07-05T23:23:20.422Z",
+          "transcriberProfileId": 26,
+          "index": 1
+        },
+        {
+          "id": 842,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" },
+            { "mode": "external", "target": "de", "translator": "gemma" },
+            { "mode": "external", "target": "es", "translator": "gemma" },
+            { "mode": "external", "target": "it", "translator": "gemma" },
+            { "mode": "external", "target": "nl", "translator": "gemma" },
+            { "mode": "external", "target": "fr", "translator": "gemma" }
+          ],
+          "name": "3",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5,2&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5/2",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5,2"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 1610,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-05T15:12:00.871Z",
+          "updatedAt": "2026-07-05T23:25:20.434Z",
+          "transcriberProfileId": 26,
+          "index": 2
+        },
+        {
+          "id": 843,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "de", "translator": "gemma" },
+            { "mode": "external", "target": "en", "translator": "gemma" },
+            { "mode": "external", "target": "es", "translator": "gemma" },
+            { "mode": "external", "target": "it", "translator": "gemma" },
+            { "mode": "external", "target": "nl", "translator": "gemma" },
+            { "mode": "external", "target": "fr", "translator": "gemma" }
+          ],
+          "name": "4",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5,3&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5/3",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5,3"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 1550,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-05T15:12:00.880Z",
+          "updatedAt": "2026-07-05T23:27:20.436Z",
+          "transcriberProfileId": 26,
+          "index": 3
+        },
+        {
+          "id": 844,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" },
+            { "mode": "external", "target": "es", "translator": "gemma" },
+            { "mode": "external", "target": "it", "translator": "gemma" },
+            { "mode": "external", "target": "nl", "translator": "gemma" },
+            { "mode": "external", "target": "de", "translator": "gemma" },
+            { "mode": "external", "target": "fr", "translator": "gemma" }
+          ],
+          "name": "5",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5,4&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5/4",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5,4"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 1567,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-05T15:12:00.887Z",
+          "updatedAt": "2026-07-05T23:29:20.443Z",
+          "transcriberProfileId": 26,
+          "index": 4
+        },
+        {
+          "id": 845,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "de", "translator": "gemma" },
+            { "mode": "external", "target": "en", "translator": "gemma" },
+            { "mode": "external", "target": "es", "translator": "gemma" },
+            { "mode": "external", "target": "fr", "translator": "gemma" },
+            { "mode": "external", "target": "it", "translator": "gemma" },
+            { "mode": "external", "target": "nl", "translator": "gemma" }
+          ],
+          "name": "6",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5,5&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5/5",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/6ea6e136-e6ca-4c9a-a9b3-980207cb4ab5,5"
+          },
+          "streamStatus": "inactive",
+          "transcriberId": null,
+          "lastSegmentId": 3164,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-05T15:12:00.893Z",
+          "updatedAt": "2026-07-05T23:31:20.457Z",
+          "transcriberProfileId": 26,
+          "index": 5
+        }
+      ]
+    },
+    {
+      "id": "1d640ae7-e935-44b5-8d4f-f9b2954e3d72",
+      "status": "active",
+      "name": "Wikimania",
+      "startTime": "2026-07-06T08:51:16.193Z",
+      "endTime": null,
+      "scheduleOn": null,
+      "endOn": null,
+      "erroredOn": null,
+      "pausedAt": null,
+      "owner": "636906b2a05a1d001b81f0c7",
+      "organizationId": "637f986e85f0ca0019c8a561",
+      "visibility": "public",
+      "autoStart": true,
+      "autoEnd": false,
+      "meta": {
+        "securityLevel": 0,
+        "@template": { "id": 16, "name": "Wikimania" }
+      },
+      "createdAt": "2026-07-06T08:49:00.021Z",
+      "updatedAt": "2026-07-06T09:01:22.002Z",
+      "channels": [
+        {
+          "id": 848,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" },
+            { "mode": "external", "target": "es", "translator": "gemma" },
+            { "mode": "external", "target": "it", "translator": "gemma" },
+            { "mode": "external", "target": "nl", "translator": "gemma" },
+            { "mode": "external", "target": "fr", "translator": "gemma" },
+            { "mode": "external", "target": "de", "translator": "gemma" }
+          ],
+          "name": "1",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=1d640ae7-e935-44b5-8d4f-f9b2954e3d72,0&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/1d640ae7-e935-44b5-8d4f-f9b2954e3d72/0",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/1d640ae7-e935-44b5-8d4f-f9b2954e3d72,0"
+          },
+          "streamStatus": "active",
+          "transcriberId": "3138b08b-6b0c-4479-86fa-395f048431ce",
+          "lastSegmentId": 232,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-06T08:49:00.052Z",
+          "updatedAt": "2026-07-06T09:25:45.554Z",
+          "transcriberProfileId": 26,
+          "index": 0
+        },
+        {
+          "id": 849,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "de", "translator": "gemma" },
+            { "mode": "external", "target": "en", "translator": "gemma" },
+            { "mode": "external", "target": "es", "translator": "gemma" },
+            { "mode": "external", "target": "it", "translator": "gemma" },
+            { "mode": "external", "target": "nl", "translator": "gemma" },
+            { "mode": "external", "target": "fr", "translator": "gemma" }
+          ],
+          "name": "2",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=1d640ae7-e935-44b5-8d4f-f9b2954e3d72,1&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/1d640ae7-e935-44b5-8d4f-f9b2954e3d72/1",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/1d640ae7-e935-44b5-8d4f-f9b2954e3d72,1"
+          },
+          "streamStatus": "active",
+          "transcriberId": "ebee245e-ccb5-4233-96b7-c309164c018d",
+          "lastSegmentId": 186,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-06T08:49:00.061Z",
+          "updatedAt": "2026-07-06T09:25:49.144Z",
+          "transcriberProfileId": 26,
+          "index": 1
+        },
+        {
+          "id": 850,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" },
+            { "mode": "external", "target": "de", "translator": "gemma" },
+            { "mode": "external", "target": "es", "translator": "gemma" },
+            { "mode": "external", "target": "it", "translator": "gemma" },
+            { "mode": "external", "target": "nl", "translator": "gemma" },
+            { "mode": "external", "target": "fr", "translator": "gemma" }
+          ],
+          "name": "3",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=1d640ae7-e935-44b5-8d4f-f9b2954e3d72,2&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/1d640ae7-e935-44b5-8d4f-f9b2954e3d72/2",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/1d640ae7-e935-44b5-8d4f-f9b2954e3d72,2"
+          },
+          "streamStatus": "active",
+          "transcriberId": "3138b08b-6b0c-4479-86fa-395f048431ce",
+          "lastSegmentId": 151,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-06T08:49:00.069Z",
+          "updatedAt": "2026-07-06T09:25:06.257Z",
+          "transcriberProfileId": 26,
+          "index": 2
+        },
+        {
+          "id": 851,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "de", "translator": "gemma" },
+            { "mode": "external", "target": "en", "translator": "gemma" },
+            { "mode": "external", "target": "es", "translator": "gemma" },
+            { "mode": "external", "target": "it", "translator": "gemma" },
+            { "mode": "external", "target": "nl", "translator": "gemma" },
+            { "mode": "external", "target": "fr", "translator": "gemma" }
+          ],
+          "name": "4",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=1d640ae7-e935-44b5-8d4f-f9b2954e3d72,3&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/1d640ae7-e935-44b5-8d4f-f9b2954e3d72/3",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/1d640ae7-e935-44b5-8d4f-f9b2954e3d72,3"
+          },
+          "streamStatus": "active",
+          "transcriberId": "ebee245e-ccb5-4233-96b7-c309164c018d",
+          "lastSegmentId": 168,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-06T08:49:00.075Z",
+          "updatedAt": "2026-07-06T09:25:47.155Z",
+          "transcriberProfileId": 26,
+          "index": 3
+        },
+        {
+          "id": 852,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "en", "translator": "gemma" },
+            { "mode": "external", "target": "es", "translator": "gemma" },
+            { "mode": "external", "target": "it", "translator": "gemma" },
+            { "mode": "external", "target": "nl", "translator": "gemma" },
+            { "mode": "external", "target": "de", "translator": "gemma" },
+            { "mode": "external", "target": "fr", "translator": "gemma" }
+          ],
+          "name": "5",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=1d640ae7-e935-44b5-8d4f-f9b2954e3d72,4&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/1d640ae7-e935-44b5-8d4f-f9b2954e3d72/4",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/1d640ae7-e935-44b5-8d4f-f9b2954e3d72,4"
+          },
+          "streamStatus": "active",
+          "transcriberId": "3138b08b-6b0c-4479-86fa-395f048431ce",
+          "lastSegmentId": 135,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-06T08:49:00.081Z",
+          "updatedAt": "2026-07-06T09:25:38.201Z",
+          "transcriberProfileId": 26,
+          "index": 4
+        },
+        {
+          "id": 853,
+          "keepAudio": false,
+          "diarization": false,
+          "compressAudio": true,
+          "enableLiveTranscripts": true,
+          "languages": [
+            "fr-FR",
+            "en-US",
+            "es-ES",
+            "de-DE",
+            "nl-NL",
+            "pt-BR",
+            "ar-SA",
+            "it-IT",
+            "ru-RU"
+          ],
+          "translations": [
+            { "mode": "external", "target": "de", "translator": "gemma" },
+            { "mode": "external", "target": "en", "translator": "gemma" },
+            { "mode": "external", "target": "es", "translator": "gemma" },
+            { "mode": "external", "target": "fr", "translator": "gemma" },
+            { "mode": "external", "target": "it", "translator": "gemma" },
+            { "mode": "external", "target": "nl", "translator": "gemma" }
+          ],
+          "name": "6",
+          "streamEndpoints": {
+            "srt": "srt://studio.linto.ai:8889?streamid=1d640ae7-e935-44b5-8d4f-f9b2954e3d72,5&mode=caller",
+            "rtmp": "rtmp://studio.linto.ai:1935/1d640ae7-e935-44b5-8d4f-f9b2954e3d72/5",
+            "ws": "wss://studio.linto.ai:443/transcriber-ws/1d640ae7-e935-44b5-8d4f-f9b2954e3d72,5"
+          },
+          "streamStatus": "active",
+          "transcriberId": "ebee245e-ccb5-4233-96b7-c309164c018d",
+          "lastSegmentId": 145,
+          "audioFile": "",
+          "meta": null,
+          "createdAt": "2026-07-06T08:49:00.087Z",
+          "updatedAt": "2026-07-06T09:25:49.917Z",
+          "transcriberProfileId": 26,
+          "index": 5
+        }
+      ]
+    }
+  ],
+  "totalItems": 30
+}
