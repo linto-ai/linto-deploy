@@ -427,6 +427,10 @@ metadata:
 spec:
   revisionHistoryLimit: 5
   replicas: {{ .Values.streamingStt.whisper.replicas }}
+  # GPU workers: a new pod needs a GPU slot the old one only frees when it stops,
+  # so a rolling update never completes. Stop the old pod first.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "linto-live.selectorLabels" . | nindent 6 }}
@@ -479,6 +483,10 @@ metadata:
 spec:
   revisionHistoryLimit: 5
   replicas: {{ .Values.streamingStt.nemo_tdt_v3.replicas }}
+  # GPU workers: a new pod needs a GPU slot the old one only frees when it stops,
+  # so a rolling update never completes. Stop the old pod first.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "linto-live.selectorLabels" . | nindent 6 }}
@@ -537,6 +545,10 @@ metadata:
 spec:
   revisionHistoryLimit: 5
   replicas: {{ .Values.streamingStt.kyutai.replicas }}
+  # GPU workers: a new pod needs a GPU slot the old one only frees when it stops,
+  # so a rolling update never completes. Stop the old pod first.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "linto-live.selectorLabels" . | nindent 6 }}

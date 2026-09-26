@@ -23,6 +23,10 @@ metadata:
 spec:
   revisionHistoryLimit: 5
   replicas: {{ $replicas }}
+  # GPU workers: a new pod needs a GPU slot the old one only frees when it stops,
+  # so a rolling update never completes. Stop the old pod first.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "linto-stt.selectorLabels" $root | nindent 6 }}
