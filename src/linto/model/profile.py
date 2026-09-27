@@ -128,6 +128,11 @@ class ProfileConfig(BaseModel):
     # to pyannote above 7 speakers, on saturation or failure. pyannote then keeps one
     # worker (first GPU). Requires stt_enabled and a GPU. Off by default.
     nemotron_diarization_enabled: bool = Field(default=False)
+    # Live diarization over websocket on the Nemotron workers (client: the Transcriber of
+    # linto-studio-plugins). Requires nemotron_diarization_enabled. Off by default.
+    nemotron_live_enabled: bool = Field(default=False)
+    nemotron_live_max_sessions: int = Field(default=16)
+    nemotron_live_token: str | None = Field(default=None)
 
     # Speaker identification (Qdrant voiceprint store + studio-api/frontend wiring).
     # Requires stt_enabled (diarization is the embedding service). Off by default.

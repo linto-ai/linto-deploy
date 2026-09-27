@@ -62,6 +62,10 @@ def generate_secrets(profile: ProfileConfig) -> ProfileConfig:
         if not data.get("session_crypt_key"):
             data["session_crypt_key"] = generate_crypt_key(10)
 
+    # Live diarization token (shared with the Transcriber)
+    if data.get("nemotron_live_enabled") and not data.get("nemotron_live_token"):
+        data["nemotron_live_token"] = generate_password()
+
     # LLM secrets
     if data.get("llm_enabled"):
         if not data.get("llm_postgres_password"):

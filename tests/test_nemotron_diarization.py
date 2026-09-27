@@ -60,3 +60,32 @@ def test_gpu_requirement():
     assert "diarization-nemotron" in names
     names = [r.service_name for r in get_enabled_gpu_services(profile())]
     assert "diarization-nemotron" not in names
+
+
+# --- live diarization over websocket ---
+
+
+def test_live_absent_from_values_by_default():
+    values = generate_stt_values(profile(nemotron_diarization_enabled=True))
+    assert "live" not in values["diarizationNemotron"]
+
+
+def test_live_needs_nemotron():
+    values = generate_stt_values(profile(nemotron_live_enabled=True, nemotron_live_token="x"))
+    assert "live" not in values["diarizationNemotron"]
+
+
+def test_live_values():
+    values = generate_stt_values(profile(nemotron_diarization_enabled=True, nemotron_live_enabled=True,
+                                         nemotron_live_max_sessions=24, nemotron_live_token="s3cret"))
+    assert values["diarizationNemotron"]["live"] == {"enabled": True, "maxSessions": 24, "token": "s3cret"}
+
+
+def test_live_token_generated_only_when_enabled():
+    from linto.utils.secrets import generate_secrets
+
+    assert generate_secrets(profile(nemotron_diarization_enabled=True)).nemotron_live_token is None
+    token = generate_secrets(profile(nemotron_diarization_enabled=True, nemotron_live_enabled=True)).nemotron_live_token
+    assert token and len(token) == 32
+    kept = generate_secrets(profile(nemotron_live_enabled=True, nemotron_live_token="keep"))
+    assert kept.nemotron_live_token == "keep"

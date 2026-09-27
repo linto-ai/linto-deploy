@@ -1355,6 +1355,15 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         },
     }
 
+    # Live diarization on the Nemotron workers; absent from the values when off, so the
+    # render of profiles without it does not change
+    if nemotron_enabled and profile.nemotron_live_enabled:
+        values["diarizationNemotron"]["live"] = {
+            "enabled": True,
+            "maxSessions": profile.nemotron_live_max_sessions,
+            "token": profile.nemotron_live_token or "",
+        }
+
     # Per-cluster Whisper hints; unset keeps the chart defaults
     if profile.whisper_prompt is not None:
         values["whisperWorkers"]["env"]["PROMPT"] = profile.whisper_prompt
