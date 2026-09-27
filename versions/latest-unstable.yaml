@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-09-26T10:52:20.649089+00:00
+# Last updated: 2026-09-27T11:28:25.296947+00:00
 
 platform_version: latest-unstable
 linto:
@@ -52,7 +52,7 @@ linto:
     image: lintoai/linto-diarization-pyannote
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-diarization
-    digest: sha256:f315d48dcee2bfaa4081158fec57a76e2baa98d1cb5df498cc7a66c0dbe6ebc4
+    digest: sha256:3842408ce1005787d989649b609b3ec16c26cb3f241076d3b510348615dad2b4
     commit: 776a34d38730b5bc25952ccdf3de33939e9dc7f8
   linto-diarization-nemotron:
     image: lintoai/linto-diarization-nemotron
