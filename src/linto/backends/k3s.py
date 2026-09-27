@@ -300,6 +300,35 @@ def ensure_cluster_issuer(acme_email: str, kubeconfig: dict | None = None) -> bo
             return False
 
 
+def ensure_gpu_workers_recreate(namespace: str, kubeconfig: dict | None = None) -> list[str]:
+    """Switch GPU Deployments still in RollingUpdate to Recreate, before helm upgrade.
+
+    The charts render Recreate for every GPU Deployment, but server-side apply cannot
+    change an existing RollingUpdate one: its defaulted rollingUpdate field is not owned
+    by helm and the API refuses Recreate next to it. The pod template is not touched,
+    so no pod restarts. Returns the patched Deployment names.
+    """
+    patched = []
+    with KubeconfigContext(kubeconfig):
+        result = run_cmd(["kubectl", "get", "deploy", "-n", namespace, "-o", "json"], check=False)
+        if result.returncode != 0:
+            return patched
+        for deployment in json.loads(result.stdout).get("items", []):
+            spec = deployment["spec"]
+            if (spec.get("strategy") or {}).get("type") == "Recreate":
+                continue
+            containers = spec["template"]["spec"].get("containers", [])
+            if not any(((c.get("resources") or {}).get("limits") or {}).get("nvidia.com/gpu") for c in containers):
+                continue
+            name = deployment["metadata"]["name"]
+            patch = json.dumps({"spec": {"strategy": {"type": "Recreate", "rollingUpdate": None}}})
+            if run_cmd(["kubectl", "patch", "deploy", name, "-n", namespace, "--type", "merge", "-p", patch],
+                       check=False).returncode == 0:
+                patched.append(name)
+                console.print(f"[cyan]{name}: strategy set to Recreate (GPU worker)[/cyan]")
+    return patched
+
+
 def ensure_image_pull_secret(
     namespace: str,
     registry_url: str,
@@ -1977,6 +2006,7 @@ def apply_k3s(profile_name: str, base_dir: Path | None = None) -> None:
         generate_k3s(profile_name, base_dir=base_dir)
 
         console.print(f"[cyan]Deploying to namespace '{namespace}'...[/cyan]")
+        ensure_gpu_workers_recreate(namespace, kubeconfig)
 
         # Deploy each enabled chart
         charts_to_deploy = []
