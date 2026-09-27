@@ -208,6 +208,15 @@ diarizationNemotron:
     CONCURRENCY: "1"
     BROKER_PASS: ""
     MODEL_INFO: '{"en": "Yes", "fr": "Oui"}'
+  # Live diarization over websocket (client: the Transcriber of linto-studio-plugins), served
+  # by the same workers behind the <release>-diarization-nemotron-live Service. The Service
+  # only sends new sessions to ready pods (GET /ready: 503 when a worker is full).
+  live:
+    enabled: false
+    port: 8080
+    maxSessions: 16
+    # Shared token required from clients (Authorization: Bearer); stored in the chart secret
+    token: ""
 
 # Qdrant vector DB - speaker identification voiceprint collections
 # Used by the diarization workers; one collection per Studio voiceprint collection.

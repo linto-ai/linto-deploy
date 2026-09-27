@@ -139,6 +139,10 @@ data:
   DEVICE: {{ .Values.diarizationNemotron.env.DEVICE | quote }}
   CONCURRENCY: {{ .Values.diarizationNemotron.env.CONCURRENCY | quote }}
   MODEL_INFO: {{ .Values.diarizationNemotron.env.MODEL_INFO | quote }}
+  {{- if .Values.diarizationNemotron.live.enabled }}
+  NEMOTRON_LIVE_PORT: {{ .Values.diarizationNemotron.live.port | quote }}
+  NEMOTRON_MAX_LIVE_SESSIONS: {{ .Values.diarizationNemotron.live.maxSessions | quote }}
+  {{- end }}
   {{- if .Values.qdrant.enabled }}
   QDRANT_HOST: {{ include "linto-stt.qdrantHost" . | quote }}
   QDRANT_PORT: "6333"

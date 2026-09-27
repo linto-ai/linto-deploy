@@ -119,3 +119,24 @@ spec:
     {{- include "linto-stt.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: qdrant
 {{- end }}
+---
+{{- if and .Values.diarizationNemotron.enabled .Values.diarizationNemotron.live.enabled }}
+# Live diarization: a websocket stays on the pod that accepted it; new sessions go to ready pods
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "linto-stt.fullname" . }}-diarization-nemotron-live
+  labels:
+    {{- include "linto-stt.labels" . | nindent 4 }}
+    app.kubernetes.io/component: diarization-nemotron
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.diarizationNemotron.live.port }}
+      targetPort: live
+      protocol: TCP
+      name: live
+  selector:
+    {{- include "linto-stt.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: diarization-nemotron
+{{- end }}

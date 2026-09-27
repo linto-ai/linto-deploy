@@ -8,6 +8,7 @@ modelsCache (mount the shared models cache; images with baked models do not need
 {{- $cfg := .cfg -}}
 {{- $component := .component -}}
 {{- $modelsCache := .modelsCache -}}
+{{- $live := and $cfg.live $cfg.live.enabled -}}
 {{- range $gpuIndex, $replicas := $cfg.replicasPerGpu }}
 {{- if gt (int $replicas) 0 }}
 ---
@@ -80,6 +81,23 @@ spec:
                   key: redis-password
             - name: NVIDIA_VISIBLE_DEVICES
               value: "{{ $gpuIndex }}"
+            {{- if $live }}
+            - name: NEMOTRON_LIVE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-stt.fullname" $root }}-secrets
+                  key: nemotron-live-token
+          ports:
+            - name: live
+              containerPort: {{ $cfg.live.port }}
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: live
+            periodSeconds: 5
+            failureThreshold: 1
+            {{- end }}
           volumeMounts:
             - name: audio-shared
               mountPath: /opt/audio
