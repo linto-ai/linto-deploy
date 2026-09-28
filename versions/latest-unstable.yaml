@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-09-27T11:28:25.296947+00:00
+# Last updated: 2026-09-28T13:00:42.290357+00:00
 
 platform_version: latest-unstable
 linto:
@@ -40,8 +40,8 @@ linto:
     image: lintoai/linto-transcription-service
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:2c2670d4e58fbcaa9f6baf2437b4f3a62ff25e54e04c1b26279045a1a391d800
-    commit: 102265f2a5f4f7ffb74a490ae5729a8c13660c85
+    digest: sha256:b9bb434624d24f83d705eebff1d2110a4ad08a6a32c36ae7f614c3d3d476fee7
+    commit: 5d94f22ac9f5367177771de8209217b3714d7a7f
   linto-stt-whisper:
     image: lintoai/linto-stt-whisper
     tag: latest-unstable
@@ -52,12 +52,14 @@ linto:
     image: lintoai/linto-diarization-pyannote
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-diarization
-    digest: sha256:3842408ce1005787d989649b609b3ec16c26cb3f241076d3b510348615dad2b4
+    digest: sha256:65ded2b9a197968403533e3d22227e92005170b3c7cb1ee208f288181ba2e8c8
     commit: 776a34d38730b5bc25952ccdf3de33939e9dc7f8
   linto-diarization-nemotron:
     image: lintoai/linto-diarization-nemotron
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-diarization
+    digest: sha256:3713a2f8fff202856dc274f0823bdc38951090aba98ab28122891bd273aa0b74
+    commit: 776a34d38730b5bc25952ccdf3de33939e9dc7f8
   linto-stt-kaldi:
     image: lintoai/linto-stt-kaldi
     tag: latest-unstable
