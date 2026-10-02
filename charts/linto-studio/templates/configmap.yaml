@@ -14,11 +14,7 @@ data:
   WEBSERVER_HTTP_PORT: "80"
   NODE_ENV: "production"
   CORS_API_WHITELIST: "{{ include "linto-studio.scheme" . }}://{{ .Values.global.domain }}"
-  {{- if .Values.studioApi.editor.enabled }}
-  COMPONENTS: "WebServer,MongoMigration,BrokerClient,IoHandler,EditorHandler"
-  {{- else }}
-  COMPONENTS: "WebServer,MongoMigration,BrokerClient,IoHandler"
-  {{- end }}
+  COMPONENTS: "WebServer,MongoMigration,BrokerClient,IoHandler{{ if .Values.studioApi.editor.enabled }},EditorHandler{{ end }}{{ if .Values.studioApi.saas.enabled }},CloudService{{ end }}"
   SESSION_API_ENDPOINT: "http://linto-live-session-api:80/v1"
   DEBUG: "linto:*"
   BROKER_HOST: "linto-live-broker"
@@ -86,6 +82,17 @@ data:
   OIDC_CALLBACK_URI: {{ .Values.studioApi.env.OIDC_CALLBACK_URI | quote }}
   OIDC_URL: {{ .Values.studioApi.env.OIDC_URL | quote }}
   OIDC_SCOPE: {{ .Values.studioApi.env.OIDC_SCOPE | quote }}
+  {{- end }}
+  {{- /* SaaS mode - requires the private lintoai/studio-api-saas image */ -}}
+  {{- if .Values.studioApi.saas.enabled }}
+  STRIPE_MODE: {{ .Values.studioApi.env.STRIPE_MODE | quote }}
+  SAAS_FRONT_URL: "{{ include "linto-studio.scheme" . }}://{{ .Values.global.domain }}"
+  {{- if .Values.studioApi.env.SAAS_DEFAULT_PLAN_KEY }}
+  SAAS_DEFAULT_PLAN_KEY: {{ .Values.studioApi.env.SAAS_DEFAULT_PLAN_KEY | quote }}
+  {{- end }}
+  {{- if .Values.studioApi.env.ALLOW_FAKE_STRIPE }}
+  ALLOW_FAKE_STRIPE: {{ .Values.studioApi.env.ALLOW_FAKE_STRIPE | quote }}
+  {{- end }}
   {{- end }}
 {{- end }}
 ---

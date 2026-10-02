@@ -973,6 +973,10 @@ def get_service_tag(profile: ProfileConfig, service_name: str) -> str:
     return profile.service_tags.get(service_name, profile.image_tag)
 
 
+SAAS_STUDIO_API_REPOSITORY = "lintoai/studio-api-saas"
+DOCKERHUB_REGISTRY_URL = "https://index.docker.io/v1/"
+
+
 def image_values(profile: ProfileConfig, service_name: str) -> dict[str, str]:
     """Return the Helm `image` block (repository/tag) for an app service.
 
@@ -1112,7 +1116,7 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
             "enabled": True,
             "replicas": 1,
             "image": image_values(profile, "studio-frontend"),
-            **({"env": profile.studio_frontend_env} if profile.studio_frontend_env else {}),
+            **({"env": dict(profile.studio_frontend_env)} if profile.studio_frontend_env else {}),
         },
         "studioWebsocket": {
             "enabled": True,
@@ -1145,6 +1149,22 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
     # expose a dedicated /ws/editor ingress to the API (the chart defaults to off).
     if profile.collaborative_editor_enabled:
         values["studioApi"]["editor"] = {"enabled": True, "path": "/ws/editor"}
+
+    # SaaS mode: private image shipping the plugin, CloudService component and the
+    # cloud UI. A service_images override of studio-api keeps priority over the image.
+    if profile.saas_enabled:
+        values["studioApi"]["image"].setdefault("repository", SAAS_STUDIO_API_REPOSITORY)
+        values["studioApi"]["saas"] = {"enabled": True}
+        values["studioApi"]["env"]["STRIPE_MODE"] = profile.stripe_mode
+        if profile.saas_default_plan_key:
+            values["studioApi"]["env"]["SAAS_DEFAULT_PLAN_KEY"] = profile.saas_default_plan_key
+        if profile.stripe_mode == "fake":
+            # the chart runs NODE_ENV=production, where the plugin refuses fake Stripe otherwise
+            values["studioApi"]["env"]["ALLOW_FAKE_STRIPE"] = "true"
+        else:
+            values["studioApi"]["secrets"]["STRIPE_SECRET_KEY"] = profile.stripe_secret_key or ""
+            values["studioApi"]["secrets"]["STRIPE_WEBHOOK_SECRET"] = profile.stripe_webhook_secret or ""
+        values["studioFrontend"].setdefault("env", {})["VUE_APP_MODE"] = "cloud"
 
     # Add service gateway URLs if STT/LLM enabled
     if profile.stt_enabled:
@@ -1994,6 +2014,17 @@ def apply_k3s(profile_name: str, base_dir: Path | None = None) -> None:
                 profile.registry_user,
                 profile.registry_password,
                 kubeconfig,
+            )
+
+        # Docker Hub pull secret for the private SaaS image of studio-api
+        if profile.saas_enabled and profile.dockerhub_user and profile.dockerhub_token:
+            ensure_image_pull_secret(
+                namespace,
+                DOCKERHUB_REGISTRY_URL,
+                profile.dockerhub_user,
+                profile.dockerhub_token,
+                kubeconfig,
+                secret_name="dockerhub-saas",
             )
 
         # Restore TLS certificates from backup (if available)

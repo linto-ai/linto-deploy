@@ -113,6 +113,20 @@ spec:
                   name: {{ include "linto-studio.fullname" . }}-secrets
                   key: socketio-redis-password
             {{- end }}
+            {{- if .Values.studioApi.secrets.STRIPE_SECRET_KEY }}
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-studio.fullname" . }}-secrets
+                  key: stripe-secret-key
+            {{- end }}
+            {{- if .Values.studioApi.secrets.STRIPE_WEBHOOK_SECRET }}
+            - name: STRIPE_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "linto-studio.fullname" . }}-secrets
+                  key: stripe-webhook-secret
+            {{- end }}
           {{- if .Values.global.storage.files.hostPath }}
           volumeMounts:
             - name: storages
