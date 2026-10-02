@@ -66,12 +66,18 @@ studioApi:
     OIDC_CALLBACK_URI: ""
     OIDC_URL: ""
     OIDC_SCOPE: ""
+    # SaaS defaults (only read when saas.enabled)
+    STRIPE_MODE: live
+    SAAS_DEFAULT_PLAN_KEY: ""
+    ALLOW_FAKE_STRIPE: ""
   secrets:
     SMTP_PSWD: ""
     GOOGLE_CLIENT_SECRET: ""
     GITHUB_CLIENT_SECRET: ""
     OIDC_CLIENT_SECRET: ""
     SOCKETIO_REDIS_PASSWORD: ""
+    STRIPE_SECRET_KEY: ""
+    STRIPE_WEBHOOK_SECRET: ""
   service:
     port: 80
   ingress:
@@ -84,6 +90,10 @@ studioApi:
   editor:
     enabled: false
     path: /ws/editor
+  # SaaS mode. When enabled, studio-api loads the CloudService component, which needs
+  # the private image lintoai/studio-api-saas (image.repository) and an imagePullSecret.
+  saas:
+    enabled: false
 
 # Studio Frontend
 # Note: Frontend builds Vue.js at startup, requires significant memory
@@ -112,6 +122,8 @@ studioFrontend:
     # Studio >= 1.8.7: phones (touch screen, short side <= 767px) open the
     # mobile app under /m/. Set to "false" to keep phones on the classic UI.
     VUE_APP_ENABLE_MOBILE_APP: "true"
+    # "cloud" shows the SaaS UI (set with studioApi.saas.enabled), empty otherwise
+    VUE_APP_MODE: ""
 
 # Studio WebSocket
 studioWebsocket:

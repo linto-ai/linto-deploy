@@ -269,6 +269,19 @@ class ProfileConfig(BaseModel):
     # None = let the image .envdefault apply (currently "upload,summary,session").
     organization_default_permissions: str | None = Field(default=None)
 
+    # SaaS mode: studio-api runs the private lintoai/studio-api-saas image with the
+    # CloudService component, the frontend switches to VUE_APP_MODE=cloud. Off by default.
+    saas_enabled: bool = Field(default=False)
+    # Plan of an organization without a subscription. None = the plugin default (free plan).
+    saas_default_plan_key: str | None = Field(default=None)
+    # "live" needs both Stripe secrets; "fake" accepts unsigned webhooks, never for production.
+    stripe_mode: str = Field(default="live")
+    stripe_secret_key: str | None = Field(default=None)
+    stripe_webhook_secret: str | None = Field(default=None)
+    # Docker Hub account pulling the private SaaS image (read-only access token)
+    dockerhub_user: str | None = Field(default=None)
+    dockerhub_token: str | None = Field(default=None)
+
     @field_validator("name")
     @classmethod
     def validate_name(cls, v: str) -> str:
@@ -391,5 +404,18 @@ class ProfileConfig(BaseModel):
             if not self.oidc_native_url:
                 msg = "Native OIDC URL is required when type is set"
                 raise ValueError(msg)
+
+        # SaaS validation
+        if self.saas_enabled:
+            if self.stripe_mode not in ["live", "fake"]:
+                msg = "Stripe mode must be 'live' or 'fake'"
+                raise ValueError(msg)
+            if self.stripe_mode == "live":
+                if not self.stripe_secret_key:
+                    msg = "Stripe secret key is required when SaaS is enabled in live mode"
+                    raise ValueError(msg)
+                if not self.stripe_webhook_secret:
+                    msg = "Stripe webhook secret is required when SaaS is enabled in live mode"
+                    raise ValueError(msg)
 
         return self
