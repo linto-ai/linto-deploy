@@ -1425,6 +1425,10 @@ def generate_stt_values(profile: ProfileConfig) -> dict[str, Any]:
         values["whisperWorkers"]["env"]["PROMPT"] = profile.whisper_prompt
     if profile.whisper_hotwords is not None:
         values["whisperWorkers"]["env"]["HOTWORDS"] = profile.whisper_hotwords
+    if profile.whisper_display_name is not None:
+        values["whisper"]["env"]["GATEWAY_DESCRIPTION"] = json.dumps(
+            profile.whisper_display_name, ensure_ascii=False
+        )
 
     # GPU configuration: use replicasPerGpu for multi-GPU setups
     if gpu_enabled and gpu_count > 1:
