@@ -122,6 +122,9 @@ class ProfileConfig(BaseModel):
     # "" disables the hint (safe with linto-stt >= 2.1.1, which drops empty prompts).
     whisper_prompt: str | None = Field(default=None)
     whisper_hotwords: str | None = Field(default=None)
+    # Name of the Whisper transcription service shown in Studio, per locale
+    # ({"fr": ..., "en": ...}). None keeps "Whisper Large V3".
+    whisper_display_name: dict[str, str] | None = Field(default=None)
 
     # Nemotron diarization (NVIDIA Nemotron 3 Diarization, up to 8 speakers, GPU Ampere or
     # newer). Runs next to pyannote: transcription services route to Nemotron and fall back
