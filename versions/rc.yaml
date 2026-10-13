@@ -4,8 +4,8 @@ linto:
     image: lintoai/studio-api
     tag: 1.8.8
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:b10891e52927ba0eb7ddddeb838957967ea67540b4b10112cd8a323c80026ab1
-    commit: c39802e1e9da682563810c045a63d219ebd9ab58
+    digest: sha256:fc404a102a174e86533c69d8b0bd6c25e34b7e3132e01f18474a2e620fb9d6d2
+    commit: 90db747d082cd24c687e662812c60c8eda0f00c2
   studio-frontend:
     image: lintoai/studio-frontend
     tag: 1.8.8
