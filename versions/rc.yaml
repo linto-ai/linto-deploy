@@ -100,7 +100,7 @@ linto:
     tag: 1.5.0
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:58feef7cab0a48251803629f1269bd2ffd3c398d6d239df56e8cf06c1b800208
-    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
+    commit: 366f549a6c3f56b9e76cc636876d296e6f080a0a
   studio-plugins-botservice:
     image: lintoai/studio-plugins-botservice
     tag: 1.5.0
