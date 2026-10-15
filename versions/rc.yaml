@@ -75,8 +75,8 @@ linto:
     image: lintoai/studio-plugins-migration
     tag: 1.5.0
     repo: https://github.com/linto-ai/linto-studio-plugins
-    digest: sha256:07a1e7c788f4844d3d9fe16496a712f203e412f2d8e58e9e2c0dd6f2a6fe516f
-    commit: e37f39bc9ee15a9a7a2484dfc0c0ddf5da0cf3e3
+    digest: sha256:9c7136ea7415e872e404b8f924f90137fc45c10cf509e3f5f13b279f5a92cc15
+    commit: 366f549a6c3f56b9e76cc636876d296e6f080a0a
   studio-plugins-sessionapi:
     image: lintoai/studio-plugins-sessionapi
     tag: 1.5.0
