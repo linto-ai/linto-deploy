@@ -110,8 +110,8 @@ linto:
 databases:
   studio-mongo:
     image: mongo
-    tag: 6.0.2
-    digest: sha256:53c4915c2c13524007a84b472f8c0b0a3c4f889afcb014306b628b2e82d0b658
+    tag: '9.0'
+    digest: sha256:dc28ed5a9d0fc616903c3f463bb1e53b92b49f441721b91926e87d90bf957ce8
   stt-mongo:
     image: mongo
     tag: 6.0.2
