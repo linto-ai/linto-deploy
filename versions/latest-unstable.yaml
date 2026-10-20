@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-10-19T12:14:28.380685+00:00
+# Last updated: 2026-10-20T10:58:14.885286+00:00
 
 platform_version: latest-unstable
 linto:
@@ -16,13 +16,13 @@ linto:
     image: lintoai/studio-api
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:680fbe929c6875c2f00fac01e1ac7c02123882335a12e3e4a866908212ad4882
+    digest: sha256:e42decab339ace86d4f5df6b964465c82e7f968282ac62831ad620b6d4cfe890
     commit: 2f7030158c2b42f41bd81632ca5a6a9e8482c97a
   studio-frontend:
     image: lintoai/studio-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:4f0c39d0ee96faa8ac5023fb6b3e0e46895898b7d64552ac8421e519f8d347ae
+    digest: sha256:3a96ff84e54888379b9b990aca6dddf09041d2a7163216b95e94e8bd27fa730a
     commit: 2f7030158c2b42f41bd81632ca5a6a9e8482c97a
   studio-websocket:
     image: lintoai/studio-websocket
@@ -80,14 +80,14 @@ linto:
     image: lintoai/llm-gateway
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:0b1c6d1ae555e695471a39984d1ecebb6a6e44e66194b53e1e1cc7a38dde38f7
-    commit: 04d279740b97bc8c87c2f72c49ca386626326b68
+    digest: sha256:98887d6e4df1ae6110552d76754955804b799ac4ede05411c48d06e7881521a5
+    commit: bf155926ecd8b8ade48ace5bbf7288aaaea2eab5
   llm-gateway-frontend:
     image: lintoai/llm-gateway-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:dc383f316fbafa6d4ed1aee9bf127fa325e4a61fad6ef05c35263fcb6f1e75b6
-    commit: 04d279740b97bc8c87c2f72c49ca386626326b68
+    digest: sha256:a35342fa29a5a08add61b802d707417fe325a5e6184eb4c615c743321c08686f
+    commit: bf155926ecd8b8ade48ace5bbf7288aaaea2eab5
   studio-plugins-migration:
     image: lintoai/studio-plugins-migration
     tag: latest-unstable
@@ -128,7 +128,7 @@ databases:
   studio-mongo:
     image: mongo
     tag: '9.0'
-    digest: sha256:dc28ed5a9d0fc616903c3f463bb1e53b92b49f441721b91926e87d90bf957ce8
+    digest: sha256:b609cdfba3a865331378cc4158bc52522a3bf176d59a7ff2c43fab52f5d9d5cb
   stt-mongo:
     image: mongo
     tag: 6.0.2

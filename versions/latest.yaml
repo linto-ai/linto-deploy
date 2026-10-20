@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-10-19T12:14:20.579552+00:00
+# Last updated: 2026-10-20T10:58:06.609487+00:00
 
 platform_version: latest
 linto:
@@ -74,14 +74,14 @@ linto:
     image: lintoai/llm-gateway
     tag: latest
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:f2da4dc5fd85d88d4abcea9919193c349a38d3727b8c8a7a206f99e47eba7d13
-    commit: 04d279740b97bc8c87c2f72c49ca386626326b68
+    digest: sha256:0fcbd0188ae38b47348129ca48b578748e239109f0ff6b0b249f8d8b48464417
+    commit: bf155926ecd8b8ade48ace5bbf7288aaaea2eab5
   llm-gateway-frontend:
     image: lintoai/llm-gateway-frontend
     tag: latest
     repo: https://github.com/linto-ai/llm-gateway
-    digest: sha256:adee1cd5d54e694fea4076a092c69255c567cd5d44b2ef8317b91004e212da53
-    commit: 04d279740b97bc8c87c2f72c49ca386626326b68
+    digest: sha256:dc383f316fbafa6d4ed1aee9bf127fa325e4a61fad6ef05c35263fcb6f1e75b6
+    commit: bf155926ecd8b8ade48ace5bbf7288aaaea2eab5
   studio-plugins-migration:
     image: lintoai/studio-plugins-migration
     tag: latest
@@ -122,7 +122,7 @@ databases:
   studio-mongo:
     image: mongo
     tag: '9.0'
-    digest: sha256:dc28ed5a9d0fc616903c3f463bb1e53b92b49f441721b91926e87d90bf957ce8
+    digest: sha256:b609cdfba3a865331378cc4158bc52522a3bf176d59a7ff2c43fab52f5d9d5cb
   stt-mongo:
     image: mongo
     tag: 6.0.2
