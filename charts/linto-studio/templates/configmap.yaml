@@ -83,6 +83,9 @@ data:
   OIDC_URL: {{ .Values.studioApi.env.OIDC_URL | quote }}
   OIDC_SCOPE: {{ .Values.studioApi.env.OIDC_SCOPE | quote }}
   {{- end }}
+  {{- if .Values.studioApi.env.ORGANIZATION_SSO_CALLBACK_URI }}
+  ORGANIZATION_SSO_CALLBACK_URI: {{ .Values.studioApi.env.ORGANIZATION_SSO_CALLBACK_URI | quote }}
+  {{- end }}
   {{- /* SaaS mode - requires the private lintoai/studio-api-saas image */ -}}
   {{- if .Values.studioApi.saas.enabled }}
   STRIPE_MODE: {{ .Values.studioApi.env.STRIPE_MODE | quote }}
