@@ -589,6 +589,52 @@ class TestOIDCCallbackURIAutoGeneration:
 
         assert values["studioApi"]["env"]["OIDC_CALLBACK_URI"] == "https://example.com/cm-api/auth/oidc/cb"
 
+    def test_organization_sso_callback_uri_format(self):
+        """Organization SSO callback URI should go through the /cm-api ingress."""
+        profile = ProfileConfig(
+            name="test",
+            domain="example.com",
+            backend=DeploymentBackend.K3S,
+            studio_enabled=True,
+            tls_mode=TLSMode.MKCERT,
+        )
+        values = generate_studio_values(profile)
+
+        assert (
+            values["studioApi"]["env"]["ORGANIZATION_SSO_CALLBACK_URI"]
+            == "https://example.com/cm-api/auth/oidc/organization/cb"
+        )
+
+
+class TestSSOEncryptionKey:
+    """Test the SSO encryption key is passed as a secret, only when set."""
+
+    def test_sso_encryption_key_in_secrets(self):
+        """A profile key should land in 'secrets', never in 'env'."""
+        profile = ProfileConfig(
+            name="test",
+            domain="example.com",
+            backend=DeploymentBackend.K3S,
+            studio_enabled=True,
+            sso_encryption_key="sso-key",
+        )
+        values = generate_studio_values(profile)
+
+        assert values["studioApi"]["secrets"]["SSO_ENCRYPTION_KEY"] == "sso-key"
+        assert "SSO_ENCRYPTION_KEY" not in values["studioApi"]["env"]
+
+    def test_sso_encryption_key_unset_keeps_image_default(self):
+        """Without a profile key, the image default applies."""
+        profile = ProfileConfig(
+            name="test",
+            domain="example.com",
+            backend=DeploymentBackend.K3S,
+            studio_enabled=True,
+        )
+        values = generate_studio_values(profile)
+
+        assert "SSO_ENCRYPTION_KEY" not in values["studioApi"]["secrets"]
+
 
 class TestMultipleSSOProvidersEnabled:
     """Test that multiple SSO providers can be enabled simultaneously."""

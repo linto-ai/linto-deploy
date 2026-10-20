@@ -264,6 +264,10 @@ class ProfileConfig(BaseModel):
     oidc_native_client_secret: str | None = Field(default=None)
     oidc_native_url: str | None = Field(default=None)
     oidc_native_scope: str = Field(default="openid,email,profile")
+    # Key encrypting the OIDC auth cookie and the organizations' own SSO secrets.
+    # None = the image default (shared, insecure). Never change it once organizations
+    # have configured their SSO: their stored secrets would no longer decrypt.
+    sso_encryption_key: str | None = Field(default=None)
 
     # Studio organization defaults — comma-separated subset of upload/summary/session.
     # None = let the image .envdefault apply (currently "upload,summary,session").

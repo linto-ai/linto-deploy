@@ -1246,6 +1246,13 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
         if profile.smtp_no_reply_email and "NO_REPLY_EMAIL" not in values["studioApi"]["env"]:
             values["studioApi"]["env"]["NO_REPLY_EMAIL"] = profile.smtp_no_reply_email
 
+    # Organizations' own SSO: the API derives its callback without the /cm-api prefix
+    values["studioApi"]["env"]["ORGANIZATION_SSO_CALLBACK_URI"] = (
+        f"{scheme}://{profile.domain}/cm-api/auth/oidc/organization/cb"
+    )
+    if profile.sso_encryption_key:
+        values["studioApi"]["secrets"]["SSO_ENCRYPTION_KEY"] = profile.sso_encryption_key
+
     return values
 
 
