@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-10-21T11:13:51.978784+00:00
+# Last updated: 2026-10-22T11:13:15.037624+00:00
 
 platform_version: latest-unstable
 linto:
@@ -16,7 +16,7 @@ linto:
     image: lintoai/studio-api
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:e42decab339ace86d4f5df6b964465c82e7f968282ac62831ad620b6d4cfe890
+    digest: sha256:da4804893c4b1cc64060746c9023b8df3c6a2180f4df1e6aefbfe03fca99284c
     commit: 2f7030158c2b42f41bd81632ca5a6a9e8482c97a
   studio-frontend:
     image: lintoai/studio-frontend
@@ -140,7 +140,7 @@ databases:
   live-postgres:
     image: postgres
     tag: 15-alpine
-    digest: sha256:25d430274d8a31184f9435cc5b2f56aff254952065bbbcac0c51acedb5a1d1e7
+    digest: sha256:1d4031d6ed0a9b774b365f99a3c16127217eb19f699d8d43fc43b732748601ef
   live-mosquitto:
     image: eclipse-mosquitto
     tag: '2'
