@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-10-22T11:13:06.968106+00:00
+# Last updated: 2026-10-23T11:04:31.939549+00:00
 
 platform_version: latest
 linto:
@@ -138,7 +138,7 @@ databases:
   live-mosquitto:
     image: eclipse-mosquitto
     tag: '2'
-    digest: sha256:12436df85d6b2b91e63c71184da35ec89400a98abdc688a78b1403a11ecf44b4
+    digest: sha256:888af343ab81912c1f4a88cda46c687a2ce607ed3732754c36d8b8879d17a8b4
 llm:
   vllm-openai:
     image: vllm/vllm-openai
