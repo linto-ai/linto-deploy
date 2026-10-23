@@ -4,14 +4,14 @@ linto:
     image: lintoai/studio-api
     tag: 1.8.8
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:74f28cb39f5d1d78819d4b25e0dc19f15d33a0ad75162ebc54546e6f4d985a87
-    commit: 119a396f8d751a3237483cb330d29d64961e73f3
+    digest: sha256:86640d68869c68140cf336c16d3cf12bccf8e48fd195c2a78fd0939818aebb69
+    commit: a5ea9f418a046937f02cb6792cc3b2dbfd3e3a23
   studio-frontend:
     image: lintoai/studio-frontend
     tag: 1.8.8
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:202e3d7695bb6fe8e87dc53933cb7a4c1d4fd7a9d3fd7e6649748bfce0a7ca52
-    commit: 119a396f8d751a3237483cb330d29d64961e73f3
+    digest: sha256:44db437cb65abb66cafca4f8719a99624802e8cc7e83517575c8475829e5b5ad
+    commit: a5ea9f418a046937f02cb6792cc3b2dbfd3e3a23
   studio-websocket:
     image: lintoai/studio-websocket
     tag: 1.8.8
