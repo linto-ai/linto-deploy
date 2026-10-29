@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-10-28T12:10:40.297850+00:00
+# Last updated: 2026-10-29T12:21:36.844443+00:00
 
 platform_version: latest-unstable
 linto:
@@ -22,7 +22,7 @@ linto:
     image: lintoai/studio-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:2da6ddb7dacdd7a98073e8215da9ba47ff891df94e20a1d3da05f4da90a90dba
+    digest: sha256:8cdac70f4f8204616c2e58b19da3c1b85cf8d50087db5ea9aba2374e3d342a56
     commit: a5ea9f418a046937f02cb6792cc3b2dbfd3e3a23
   studio-websocket:
     image: lintoai/studio-websocket
