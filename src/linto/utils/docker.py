@@ -218,10 +218,12 @@ def run_docker_stack_deploy(
     # Ensure linto network exists
     create_overlay_network("linto")
 
+    # --prune removes services no longer defined in the stack file
     full_command = [
         "docker",
         "stack",
         "deploy",
+        "--prune",
         "-c",
         str(stack_file),
         stack_name,

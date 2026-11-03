@@ -73,46 +73,6 @@ spec:
                 port:
                   number: {{ .Values.studioFrontend.service.port }}
           {{- end }}
----
-{{- if .Values.studioWebsocket.enabled }}
-# WebSocket ingress (with strip prefix middleware)
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: {{ include "linto-studio.fullname" . }}-websocket
-  labels:
-    {{- include "linto-studio.labels" . | nindent 4 }}
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    {{- if .Values.studioWebsocket.ingress.stripPrefix }}
-    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "linto-studio.fullname" . }}-strip-ws@kubernetescrd
-    {{- end }}
-spec:
-  {{- if .Values.global.tls.enabled }}
-  tls:
-    - hosts:
-        - {{ .Values.global.domain }}
-      secretName: {{ include "linto-studio.tlsSecretName" . }}
-  {{- end }}
-  rules:
-    - host: {{ .Values.global.domain }}
-      http:
-        paths:
-          - path: /socket.io/
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "linto-studio.fullname" . }}-websocket
-                port:
-                  number: {{ .Values.studioWebsocket.service.port }}
-          - path: {{ .Values.studioWebsocket.ingress.path }}
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "linto-studio.fullname" . }}-websocket
-                port:
-                  number: {{ .Values.studioWebsocket.service.port }}
-{{- end }}
 {{- else }}
 # TLS is disabled - using HTTP ingress
 apiVersion: networking.k8s.io/v1
@@ -134,22 +94,6 @@ spec:
                 name: {{ include "linto-studio.fullname" . }}-api
                 port:
                   number: {{ .Values.studioApi.service.port }}
-          {{- end }}
-          {{- if .Values.studioWebsocket.enabled }}
-          - path: {{ .Values.studioWebsocket.ingress.path }}
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "linto-studio.fullname" . }}-websocket
-                port:
-                  number: {{ .Values.studioWebsocket.service.port }}
-          - path: /socket.io/
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "linto-studio.fullname" . }}-websocket
-                port:
-                  number: {{ .Values.studioWebsocket.service.port }}
           {{- end }}
           {{- if .Values.studioFrontend.enabled }}
           - path: {{ .Values.studioFrontend.ingress.path }}
@@ -174,20 +118,6 @@ spec:
   stripPrefix:
     prefixes:
       - {{ .Values.studioApi.ingress.path }}
-{{- end }}
----
-{{- if and .Values.studioWebsocket.enabled .Values.studioWebsocket.ingress.stripPrefix }}
-# Traefik middleware for stripping /ws prefix
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: {{ include "linto-studio.fullname" . }}-strip-ws
-  labels:
-    {{- include "linto-studio.labels" . | nindent 4 }}
-spec:
-  stripPrefix:
-    prefixes:
-      - {{ .Values.studioWebsocket.ingress.path }}
 {{- end }}
 ---
 {{- if .Values.global.tls.enabled }}

@@ -163,7 +163,7 @@ def prompt_services() -> tuple[bool, bool]:
     console.print("  Use [cyan]y/n[/cyan] to toggle each service\n")
 
     studio_enabled = Confirm.ask(
-        "  [cyan]LinTO Studio[/cyan] (Web interface, API, WebSocket)",
+        "  [cyan]LinTO Studio[/cyan] (Web interface, API)",
         default=True,
     )
 
