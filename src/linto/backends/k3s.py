@@ -1118,14 +1118,6 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
             "image": image_values(profile, "studio-frontend"),
             **({"env": dict(profile.studio_frontend_env)} if profile.studio_frontend_env else {}),
         },
-        "studioWebsocket": {
-            "enabled": True,
-            "replicas": 1,
-            "image": image_values(profile, "studio-websocket"),
-            "env": {
-                "CM_JWT_SECRET": profile.jwt_secret or "",
-            },
-        },
         "mongodb": {
             "enabled": True,
             "image": {

@@ -38,26 +38,6 @@ spec:
     app.kubernetes.io/component: frontend
 {{- end }}
 ---
-{{- if .Values.studioWebsocket.enabled }}
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ include "linto-studio.fullname" . }}-websocket
-  labels:
-    {{- include "linto-studio.labels" . | nindent 4 }}
-    app.kubernetes.io/component: websocket
-spec:
-  type: ClusterIP
-  ports:
-    - port: {{ .Values.studioWebsocket.service.port }}
-      targetPort: http
-      protocol: TCP
-      name: http
-  selector:
-    {{- include "linto-studio.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: websocket
-{{- end }}
----
 {{- if .Values.mongodb.enabled }}
 apiVersion: v1
 kind: Service

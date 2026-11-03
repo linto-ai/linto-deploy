@@ -25,7 +25,6 @@ class LintoVersions(BaseModel):
 
     studio_api: ServiceVersion = Field(default_factory=ServiceVersion, alias="studio-api")
     studio_frontend: ServiceVersion = Field(default_factory=ServiceVersion, alias="studio-frontend")
-    studio_websocket: ServiceVersion = Field(default_factory=ServiceVersion, alias="studio-websocket")
     linto_api_gateway: ServiceVersion = Field(default_factory=ServiceVersion, alias="linto-api-gateway")
     linto_transcription_service: ServiceVersion = Field(
         default_factory=ServiceVersion, alias="linto-transcription-service"
@@ -233,7 +232,6 @@ class VersionsConfig(BaseModel):
             "linto": {
                 "studio-api": self.get_linto_tag("studio-api"),
                 "studio-frontend": self.get_linto_tag("studio-frontend"),
-                "studio-websocket": self.get_linto_tag("studio-websocket"),
                 "linto-api-gateway": self.get_linto_tag("linto-api-gateway"),
                 "linto-transcription-service": self.get_linto_tag("linto-transcription-service"),
                 "linto-stt-whisper": self.get_linto_tag("linto-stt-whisper"),

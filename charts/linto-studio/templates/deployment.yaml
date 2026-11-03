@@ -222,50 +222,6 @@ spec:
             {{- toYaml .Values.studioFrontend.resources | nindent 12 }}
 {{- end }}
 ---
-{{- if .Values.studioWebsocket.enabled }}
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: {{ include "linto-studio.fullname" . }}-websocket
-  labels:
-    {{- include "linto-studio.labels" . | nindent 4 }}
-    app.kubernetes.io/component: websocket
-spec:
-  revisionHistoryLimit: 5
-  replicas: {{ .Values.studioWebsocket.replicas }}
-  selector:
-    matchLabels:
-      {{- include "linto-studio.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: websocket
-  template:
-    metadata:
-      annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-      labels:
-        {{- include "linto-studio.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: websocket
-    spec:
-      containers:
-        - name: websocket
-          image: "{{ .Values.studioWebsocket.image.repository }}:{{ .Values.studioWebsocket.image.tag | default (include "linto-studio.imageTag" .) }}"
-          imagePullPolicy: {{ include "linto-studio.imagePullPolicy" (dict "tag" .Values.studioWebsocket.image.tag "ctx" .) }}
-          ports:
-            - name: http
-              containerPort: 80
-              protocol: TCP
-          envFrom:
-            - configMapRef:
-                name: {{ include "linto-studio.fullname" . }}-websocket-config
-          env:
-            - name: CM_JWT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "linto-studio.fullname" . }}-secrets
-                  key: jwt-secret
-          resources:
-            {{- toYaml .Values.studioWebsocket.resources | nindent 12 }}
-{{- end }}
----
 {{- if .Values.mongodb.enabled }}
 apiVersion: apps/v1
 kind: Deployment

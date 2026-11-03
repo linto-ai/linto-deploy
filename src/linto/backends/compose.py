@@ -35,7 +35,6 @@ from linto.catalog.services import (
     _studio_api_service,
     _studio_frontend_service,
     _studio_mongodb_service,
-    _studio_websocket_service,
     _task_broker_redis_service,
     _traefik_service,
     _vllm_service,
@@ -93,13 +92,6 @@ def render_compose(profile: ProfileConfig) -> dict[str, Any]:
             image_tag=profile.image_tag,
         )
         services[frontend.name] = service_to_compose_dict(frontend, profile.domain, tls_mode)
-
-        websocket = _studio_websocket_service(
-            domain=profile.domain,
-            image_tag=profile.image_tag,
-            jwt_secret=profile.jwt_secret or "",
-        )
-        services[websocket.name] = service_to_compose_dict(websocket, profile.domain, tls_mode)
 
     # Add STT services
     if profile.stt_enabled:
@@ -385,7 +377,8 @@ def apply_compose(profile_name: str, base_dir: Path | None = None) -> None:
 
     console.print(f"[cyan]Starting deployment for profile '{profile_name}'...[/cyan]")
 
-    result = run_docker_compose(compose_dir, ["up", "-d"])
+    # --remove-orphans drops containers for services no longer in the rendered file
+    result = run_docker_compose(compose_dir, ["up", "-d", "--remove-orphans"])
 
     if result.returncode == 0:
         console.print("[green]Deployment started successfully![/green]")
