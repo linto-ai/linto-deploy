@@ -162,7 +162,6 @@ Namespace: linto
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
 │ pod/studio-api-xxx        │ Running │ 50m/2     │ https://linto.example.com/cm-api│
 │ pod/studio-frontend-xxx   │ Running │ 10m/500m  │ https://linto.example.com/      │
-│ pod/studio-websocket-xxx  │ Running │ 5m/500m   │ https://linto.example.com/ws    │
 └───────────────────────────┴─────────┴───────────┴─────────────────────────────────┘
 ```
 
@@ -420,7 +419,7 @@ Launches an interactive wizard that guides you through creating a deployment pro
 4. **Namespace** - Kubernetes namespace for deployment
 5. **Storage configuration** - StorageClass and host paths
 6. **Service selection** - Choose which services to enable:
-   - Studio (Web UI, API, WebSocket)
+   - Studio (Web UI, API)
    - STT (Speech-to-text with Whisper)
    - Live Session (Real-time streaming)
    - LLM (Language model integration)
@@ -714,7 +713,7 @@ linto logs <profile> <service> [OPTIONS]
 | `--tail` | `-n` | Number of lines to show (default: 100) |
 
 **Service names:**
-- `studio-api`, `studio-frontend`, `studio-websocket`
+- `studio-api`, `studio-frontend`
 - `stt-all-whisper-v3-turbo`, `stt-whisper-workers`, `diarization-pyannote`
 - `session-api`, `session-scheduler`, `session-transcriber`
 - `llm-gateway-api`, `llm-celery-worker`, `llm-gateway-frontend`

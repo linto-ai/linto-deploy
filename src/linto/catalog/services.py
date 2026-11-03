@@ -319,29 +319,6 @@ def _studio_frontend_service(
         traefik_strip_prefix=False,
         environment={
             "VUE_APP_CM_API": f"https://{domain}/cm-api",
-            "VUE_APP_WS_URL": f"wss://{domain}/ws",
-        },
-    )
-
-
-def _studio_websocket_service(
-    domain: str,
-    image_tag: str,
-    jwt_secret: str,
-) -> ServiceDefinition:
-    """Create Studio WebSocket service definition."""
-    return ServiceDefinition(
-        name="studio-websocket",
-        category="studio",
-        image=f"lintoai/studio-websocket:{image_tag}",
-        depends_on=["studio-api"],
-        networks=["linto", "net_studio"],
-        traefik_endpoint="/ws",
-        traefik_strip_prefix=True,
-        environment={
-            "CM_API_URL": "http://studio-api:80",
-            "CM_JWT_SECRET": jwt_secret,
-            "NODE_ENV": "production",
         },
     )
 
@@ -1002,7 +979,6 @@ SERVICES = {
     "studio-mongodb": _studio_mongodb_service,
     "studio-api": _studio_api_service,
     "studio-frontend": _studio_frontend_service,
-    "studio-websocket": _studio_websocket_service,
     "stt-mongo": _stt_mongo_service,
     "task-broker-redis": _task_broker_redis_service,
     "stt-all-whisper-v3-turbo": _stt_whisper_service,
@@ -1037,7 +1013,6 @@ def get_studio_services() -> list[str]:
         "studio-mongodb",
         "studio-api",
         "studio-frontend",
-        "studio-websocket",
     ]
 
 

@@ -35,7 +35,6 @@ from linto.catalog.services import (
     _studio_api_service,
     _studio_frontend_service,
     _studio_mongodb_service,
-    _studio_websocket_service,
     _task_broker_redis_service,
     _traefik_service,
     _vllm_service,
@@ -103,13 +102,6 @@ def render_stack(profile: ProfileConfig) -> dict[str, Any]:
             image_tag=profile.image_tag,
         )
         services[frontend.name] = service_to_swarm_dict(frontend, profile.domain, tls_mode)
-
-        websocket = _studio_websocket_service(
-            domain=profile.domain,
-            image_tag=profile.image_tag,
-            jwt_secret=profile.jwt_secret or "",
-        )
-        services[websocket.name] = service_to_swarm_dict(websocket, profile.domain, tls_mode)
 
     # Add STT services
     if profile.stt_enabled:

@@ -126,27 +126,6 @@ studioFrontend:
     # "cloud" shows the SaaS UI (set with studioApi.saas.enabled), empty otherwise
     VUE_APP_MODE: ""
 
-# Studio WebSocket
-studioWebsocket:
-  enabled: true
-  replicas: 2
-  image:
-    repository: lintoai/studio-websocket
-    pullPolicy: IfNotPresent
-  resources:
-    limits: {}  # No limits - WebSocket can spike under many concurrent connections
-    requests:
-      cpu: 10m
-      memory: 64Mi
-  env:
-    NODE_ENV: production
-    CM_JWT_SECRET: ""
-  service:
-    port: 80
-  ingress:
-    path: /ws
-    stripPrefix: true
-
 # MongoDB
 mongodb:
   enabled: true

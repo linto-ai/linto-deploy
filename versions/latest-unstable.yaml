@@ -24,12 +24,6 @@ linto:
     repo: https://github.com/linto-ai/linto-studio
     digest: sha256:3504d8cc2ce8d9c3b393002108331a35ac3bd0d6fed0355166ea2e4048f626ab
     commit: a7083437f776865a450baa5cb9bea5e7b334794e
-  studio-websocket:
-    image: lintoai/studio-websocket
-    tag: latest-unstable
-    repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:9d7ecfca5b4886aea9c3b0f7e6201381ed005c1f35fd3f8d5d837b912a769653
-    commit: a5ea9f418a046937f02cb6792cc3b2dbfd3e3a23
   linto-api-gateway:
     image: lintoai/linto-api-gateway
     tag: latest-unstable

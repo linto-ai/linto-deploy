@@ -12,5 +12,4 @@ To check status:
 Components deployed:
   - Studio API
   - Studio Frontend
-  - Studio WebSocket
   - MongoDB
