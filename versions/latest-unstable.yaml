@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-11-05T14:02:27.938065+00:00
+# Last updated: 2026-11-06T13:47:17.894111+00:00
 
 platform_version: latest-unstable
 linto:
@@ -22,7 +22,7 @@ linto:
     image: lintoai/studio-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:c60c4a175474e91729c93e675b3cf257e9cfaad439a0cf7a5c5b04aee1fb0d58
+    digest: sha256:428c519edca82fe843d5f4285f82d00c6eeb703f00feb232894ff69a9f1e6015
     commit: a7083437f776865a450baa5cb9bea5e7b334794e
   linto-api-gateway:
     image: lintoai/linto-api-gateway
@@ -134,11 +134,11 @@ databases:
   live-postgres:
     image: postgres
     tag: 15-alpine
-    digest: sha256:1d4031d6ed0a9b774b365f99a3c16127217eb19f699d8d43fc43b732748601ef
+    digest: sha256:d3ab4e7f0ca6e34e8135c95defd881673f7edddfacf63231eeb89caf6db2c1c9
   live-mosquitto:
     image: eclipse-mosquitto
     tag: '2'
-    digest: sha256:888af343ab81912c1f4a88cda46c687a2ce607ed3732754c36d8b8879d17a8b4
+    digest: sha256:22075095e8790eec5592ff3c213b1974cd51aa458275af2f8b0595af4c385df2
 llm:
   vllm-openai:
     image: vllm/vllm-openai
