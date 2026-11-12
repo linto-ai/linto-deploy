@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-11-11T13:38:09.009132+00:00
+# Last updated: 2026-11-12T14:41:24.015422+00:00
 
 platform_version: latest-unstable
 linto:
@@ -16,13 +16,13 @@ linto:
     image: lintoai/studio-api
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:dc29b11d69ec8b39d7ba319dffb81bbfc2a537e0026a09e51b4b721fb7afa0a2
+    digest: sha256:bdf51a9e86ebe4d834e44500af0618fd0d5c1cf17d04a4bf0e31be4bb4d1df9b
     commit: a7083437f776865a450baa5cb9bea5e7b334794e
   studio-frontend:
     image: lintoai/studio-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:b185e97208ee5ade97ac4e57fe9d30daeb8a1d158aa4e99faf0b60944e49e9f0
+    digest: sha256:562d5e7e6a12012b877c1a1af03f84e30474b55c227c86488fd5c4efcba534b5
     commit: a7083437f776865a450baa5cb9bea5e7b334794e
   linto-api-gateway:
     image: lintoai/linto-api-gateway
@@ -122,7 +122,7 @@ databases:
   studio-mongo:
     image: mongo
     tag: '9.0'
-    digest: sha256:ce91889f87a369d312e50ecbc6c0b7f960e915bc4b69c4f6662402fa7011d242
+    digest: sha256:e5964383224061a512e9a886a4beaf6ed299f0237b7239dbf9876cbc7882910d
   stt-mongo:
     image: mongo
     tag: 6.0.2

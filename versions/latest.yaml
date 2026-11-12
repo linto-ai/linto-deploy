@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-11-11T13:38:01.118763+00:00
+# Last updated: 2026-11-12T14:41:18.101560+00:00
 
 platform_version: latest
 linto:
@@ -116,7 +116,7 @@ databases:
   studio-mongo:
     image: mongo
     tag: '9.0'
-    digest: sha256:ce91889f87a369d312e50ecbc6c0b7f960e915bc4b69c4f6662402fa7011d242
+    digest: sha256:e5964383224061a512e9a886a4beaf6ed299f0237b7239dbf9876cbc7882910d
   stt-mongo:
     image: mongo
     tag: 6.0.2
