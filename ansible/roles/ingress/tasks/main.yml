@@ -86,14 +86,9 @@
 # ============================================================================
 # UFW STRICT MODE - Only allow 22, 80, 443 from public + cluster network
 # ============================================================================
-
-- name: Reset UFW to default (clean state)
-  community.general.ufw:
-    state: reset
-  when: ingress_ufw_enabled
-  tags:
-    - ingress
-    - firewall
+# UFW is never reset here: a reset drops the cluster network rules, the
+# fail2ban bans and any rule added on the node, and leaves the firewall
+# disabled until the end of the play.
 
 - name: Set UFW default incoming policy to deny
   community.general.ufw:
@@ -130,9 +125,12 @@
 - name: Allow all traffic from cluster network (private)
   community.general.ufw:
     rule: allow
-    from_ip: "{{ cluster_network }}"
-    comment: "Cluster internal network - allow all"
-  when: ingress_ufw_enabled
+    from_ip: "{{ ingress_cluster_network }}"
+    comment: "Cluster internal network"
+  when:
+    - ingress_ufw_enabled
+    - ingress_cluster_network | length > 0
+    - ingress_cluster_network not in ['0.0.0.0/0', '::/0']
   tags:
     - ingress
     - firewall

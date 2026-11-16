@@ -64,6 +64,12 @@ Internet
 - NFS mounts between server and clients
 - All machines have an IP on this network
 - UFW allows all traffic from this network
+- Required on a multi-node cluster: the `base` role stops if a node has no address in it. Leave it unset on a single node
+
+**K3S API access:**
+- Port 6443 is never open to the world, only to `cluster_network` and to the node itself
+- From a workstation, open an SSH tunnel and use a kubeconfig that points to `https://127.0.0.1:6443`:
+  `ssh -L 6443:127.0.0.1:6443 <user>@<master> -N -f`
 
 **Public network (ingress only):**
 - Public IP or IP on network exposed to Internet
@@ -336,6 +342,8 @@ all:
 
 ### Global Variables (group_vars/all.yml)
 
+A `group_vars/all.yml` placed next to the inventories overrides the `vars:` block of every inventory file in that directory. When several clusters share the directory, set `cluster_network` in each inventory file, not here.
+
 ```yaml
 # Timezone
 base_timezone: "Europe/Paris"
@@ -400,7 +408,7 @@ Prepares Ubuntu servers for K3S:
 - Swap disable
 - sysctl configuration for Kubernetes
 - Kernel module loading
-- UFW firewall configuration
+- UFW firewall configuration: SSH open to the world, everything else from `cluster_network` only
 
 ### ingress Role
 

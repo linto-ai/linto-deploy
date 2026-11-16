@@ -57,13 +57,28 @@ base_ufw_enabled: true
 base_ufw_default_incoming: deny
 base_ufw_default_outgoing: allow
 
-# Ports to open
+# Ports open to the world. The K3S API, kubelet, Flannel and NFS are not
+# listed: nodes reach them through cluster_network only, and an operator
+# reaches the API through an SSH tunnel.
 base_ufw_rules:
   - { port: 22, proto: tcp, comment: "SSH" }
-  - { port: 6443, proto: tcp, comment: "K3S API Server" }
-  - { port: 8472, proto: udp, comment: "Flannel VXLAN" }
-  - { port: 10250, proto: tcp, comment: "Kubelet metrics" }
-  - { port: 10251, proto: tcp, comment: "Kube-scheduler" }
-  - { port: 10252, proto: tcp, comment: "Kube-controller-manager" }
-  - { port: "30000:32767", proto: tcp, comment: "NodePort range" }
-  - { port: 2049, proto: tcp, comment: "NFS" }
+
+# Private network shared by the nodes (CIDR), all traffic from it is allowed.
+# Required on a multi-node cluster, leave unset on a single node.
+base_ufw_cluster_network: "{{ cluster_network | default('') }}"
+
+# Pod network (K3S cluster-cidr), allowed on the CNI bridge so that pods
+# reach the API and the kubelet of their own node.
+base_ufw_pod_network: "10.42.0.0/16"
+base_ufw_pod_interface: "cni0"
+
+# World-open rules created by earlier versions of this role, removed on
+# every run once the rules above are in place.
+base_ufw_legacy_rules:
+  - { port: 6443, proto: tcp }
+  - { port: 8472, proto: udp }
+  - { port: 10250, proto: tcp }
+  - { port: 10251, proto: tcp }
+  - { port: 10252, proto: tcp }
+  - { port: "30000:32767", proto: tcp }
+  - { port: 2049, proto: tcp }

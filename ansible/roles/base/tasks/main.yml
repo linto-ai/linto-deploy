@@ -170,11 +170,77 @@
     - base
     - firewall
 
+- name: Check cluster_network before touching inter-node rules
+  ansible.builtin.assert:
+    that:
+      - base_ufw_cluster_network | length > 0 or groups['all'] | length == 1
+      - base_ufw_cluster_network not in ['0.0.0.0/0', '::/0']
+    fail_msg: >-
+      cluster_network must be the private CIDR shared by the nodes
+      (got '{{ base_ufw_cluster_network }}'). It is required on a multi-node
+      cluster and can never be 0.0.0.0/0.
+  when: base_ufw_enabled
+  tags:
+    - base
+    - firewall
+
+# A wrong cluster_network would cut this node off from the others as soon as
+# the legacy world-open rules are removed below.
+- name: Check that this node has an address in cluster_network
+  ansible.builtin.command:
+    argv:
+      - python3
+      - -c
+      - |
+        import ipaddress, sys
+        net = ipaddress.ip_network(sys.argv[1], strict=False)
+        addrs = [a for a in sys.argv[2].split(",") if a]
+        if not any(ipaddress.ip_address(a) in net for a in addrs):
+            sys.exit("no address of this node (%s) is in cluster_network %s" % (", ".join(addrs), net))
+      - "{{ base_ufw_cluster_network }}"
+      - "{{ ansible_facts['all_ipv4_addresses'] | join(',') }}"
+  changed_when: false
+  check_mode: false
+  when:
+    - base_ufw_enabled
+    - base_ufw_cluster_network | length > 0
+  tags:
+    - base
+    - firewall
+
 - name: Allow cluster network traffic
   community.general.ufw:
     rule: allow
-    from_ip: "{{ nfs_allowed_network | default('192.168.1.0/24') }}"
+    from_ip: "{{ base_ufw_cluster_network }}"
     comment: "Cluster internal network"
+  when:
+    - base_ufw_enabled
+    - base_ufw_cluster_network | length > 0
+  tags:
+    - base
+    - firewall
+
+- name: Allow traffic from the pods of this node
+  community.general.ufw:
+    rule: allow
+    direction: in
+    interface: "{{ base_ufw_pod_interface }}"
+    from_ip: "{{ base_ufw_pod_network }}"
+    comment: "K3S pods of this node"
+  when: base_ufw_enabled
+  tags:
+    - base
+    - firewall
+
+- name: Remove legacy world-open K3S and NFS rules
+  community.general.ufw:
+    rule: allow
+    port: "{{ base_ufw_legacy_rule.port }}"
+    proto: "{{ base_ufw_legacy_rule.proto }}"
+    delete: true
+  loop: "{{ base_ufw_legacy_rules }}"
+  loop_control:
+    loop_var: base_ufw_legacy_rule
   when: base_ufw_enabled
   tags:
     - base

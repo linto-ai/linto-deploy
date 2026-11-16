@@ -18,8 +18,9 @@ logwatch_email: "root@localhost"
 logwatch_detail: "Med"
 logwatch_range: "yesterday"
 
-# Cluster network (private network CIDR)
-cluster_network: "192.168.1.0/24"
+# Private network shared by the nodes (CIDR), set cluster_network in the
+# inventory. Unset on a single node.
+ingress_cluster_network: "{{ cluster_network | default('') }}"
 
 # UFW strict mode settings
 ingress_ufw_enabled: true
