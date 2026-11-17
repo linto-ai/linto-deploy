@@ -414,6 +414,58 @@ spec:
             medium: Memory
             sizeLimit: {{ .Values.botService.shmSize | default "1Gi" }}
 {{- end }}
+{{- if .Values.visioBotService.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "linto-live.fullname" . }}-visio-bot-service
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: visio-bot-service
+spec:
+  revisionHistoryLimit: 5
+  replicas: {{ .Values.visioBotService.replicas }}
+  selector:
+    matchLabels:
+      {{- include "linto-live.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: visio-bot-service
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "linto-live.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: visio-bot-service
+    spec:
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: visio-bot-service
+          image: "{{ .Values.visioBotService.image.repository }}:{{ .Values.visioBotService.image.tag | default (include "linto-live.imageTag" .) }}"
+          imagePullPolicy: {{ include "linto-live.imagePullPolicy" (dict "tag" .Values.visioBotService.image.tag "ctx" .) }}
+          ports:
+            - name: health
+              containerPort: 8081
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "linto-live.fullname" . }}-visio-bot-service-config
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: health
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthcheck
+              port: health
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.visioBotService.resources | nindent 12 }}
+{{- end }}
 ---
 {{/* Streaming STT services */}}
 {{- if .Values.streamingStt.whisper.enabled }}

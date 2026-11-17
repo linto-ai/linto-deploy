@@ -2,7 +2,7 @@
 
 Complete reference of the environment variables for the studio-plugins services
 deployed by the `linto-live` chart: **Session API**, **Scheduler**, **Transcriber**,
-**BotService**, **Translator** (and the one-shot **migration** job).
+**BotService**, **Visio native bot**, **Translator** (and the one-shot **migration** job).
 
 Canonical source of truth: `linto-studio-plugins/.envdefault` (+ `.envdefault.docker`).
 Defaults below are the **image defaults**; the chart overrides the host/port/wiring
@@ -15,7 +15,7 @@ Variables added in the current `next` cycle are tagged **(next)**.
 |---|---|---|
 | Non-secret env | Per-service `ConfigMap` (`templates/configmap.yaml`), via `envFrom` | Literals in the template; hosts come from `_helpers.tpl` (`brokerHost`, `postgresHost`, `transcriberHost`) |
 | Secrets | One `{release}-linto-live-secrets` Secret (`templates/secrets.yaml`), via `secretKeyRef` | `postgres-password` → `DB_PASSWORD`, `crypt-key` → `SECURITY_CRYPT_KEY` |
-| Overrides | `values.yaml` (`botService.env`, `translator.env`, `sessionApi.env`, …) and CLI profile fields | A variable **absent from the ConfigMap keeps its image default** |
+| Overrides | `values.yaml` (`botService.env`, `visioBotService.env`, `translator.env`, `sessionApi.env`, …) and CLI profile fields | A variable **absent from the ConfigMap keeps its image default** |
 
 A variable can therefore be: set by the chart ConfigMap, injected from the Secret, or
 left at its `.envdefault` value. The "Wired" column in the per-service section tells
@@ -50,6 +50,7 @@ Comma-separated list of components loaded, in order.
 | `SESSION_API_COMPONENTS` | `WebServer,BrokerClient` | Session API |
 | `DELIVERY_COMPONENTS` | `BrokerClient,WebServer,IoHandler` | Delivery (not deployed by this chart) |
 | `BOTSERVICE_COMPONENTS` **(next)** | `BrokerClient,Healthcheck` | BotService |
+| `VISIOBOT_COMPONENTS` **(next)** | `BrokerClient,Healthcheck` | Visio native bot |
 
 ## BotService **(next)** — meeting bot
 
@@ -75,6 +76,85 @@ overridden via `botService.env`. Sizing: [botservice-sizing.md](./botservice-siz
 
 The BotService docker entrypoint also honours `USER_ID` / `GROUP_ID` (runtime uid/gid,
 default `33`) and `DEVELOPMENT` (skip chown on dev volume mounts).
+
+## Visio native bot **(next)** — `studio-plugins-visio-botservice`
+
+A Python LiveKit agent (no Chromium) for La Suite Meet. It joins the meeting room as a
+hidden participant with the join token the Meet backend minted for the Studio session,
+streams the meeting audio to the Transcriber, and republishes the captions into the
+room as LiveKit transcription segments: the Meet live panel only reads those. The web
+BotService joins the same room as a visible guest and publishes no segments, so a Meet
+run that lands on it shows no caption in the panel.
+
+Off by default (`visioBotService.enabled`). From the CLI, profile fields:
+
+| Profile field | Chart value | Default | Role |
+|---|---|---|---|
+| `visio_bot_service_enabled` | `visioBotService.enabled` | `false` | Deploy the bot and route the `visio` provider to it |
+| `visio_bot_service_replicas` | `visioBotService.replicas` | `1` | Replicas |
+| `visio_bot_livekit_allowed_hosts` | `visioBotService.livekitAllowedHosts` | `[]` | LiveKit hostnames the bot may dial (`VISIOBOT_LIVEKIT_ALLOWED_HOSTS`) |
+| `service_tags["studio-plugins-visio-botservice"]` | `visioBotService.image.tag` | `image_tag` | Image tag, like the other plugins services |
+
+Wired by the chart:
+
+| Variable | Value | Role |
+|---|---|---|
+| `BROKER_HOST` / `BROKER_PORT` | `{release}-broker` / `1883` | MQTT, the only link with the Scheduler (no inbound Service) |
+| `VISIOBOT_COMPONENTS` | `BrokerClient,Healthcheck` | Components |
+| `VISIOBOT_HEALTHCHECK_HTTP` | `8081` | `/healthcheck` port of the probes |
+| `BOT_CAPABILITIES` | `visio-native` | Capability the Scheduler routes on |
+| `LIVEKIT_TOKEN_FROM_PAYLOAD` | `true` | Join with the token Meet minted (`session.meta.native["visio-native"].token`). The replica holds **no LiveKit key**; a session without a token never joins |
+| `VISIOBOT_LIVEKIT_ALLOWED_HOSTS` | `livekitAllowedHosts` joined, unset when empty | Accept-list of the LiveKit host taken from the session meta. **Set it in production** to the LiveKit hosts of the Meet deployments served. Empty = any public host; loopback, link-local and private addresses are refused unless listed |
+| `BOT_PERSTREAM` | `false` (`visioBotService.env`) | One mixed audio flow per meeting: one ASR, speaker from the mixer's energy VAD. `true` = one flow per participant (one ASR each, exact speaker), which needs `TRANSCRIBER_PERSTREAM_DIARIZATION: "true"` (and a `MAX_CONCURRENT_ASR_PER_CHANNEL` cap) in `sessionTranscriber.env` |
+
+Image defaults kept (override through `visioBotService.env`):
+
+| Variable | Default | Role |
+|---|---|---|
+| `EMPTY_MEETING_TIMEOUT_SECONDS` | `60` | Leave, and end the session, this long after the last participant left |
+| `JOIN_TIMEOUT_SECONDS` | `120` | Leave (join failure) when nobody was ever seen in the room |
+| `BOT_VAD_ENERGY_THRESHOLD` | `300` | RMS above which a 20 ms frame counts as speech |
+| `BOT_SPEAKER_HOLD_MS` | `300` | Mixed mode: hysteresis before a speaker change |
+| `BOT_VAD_HANGOVER_MS` | `800` | Per-stream mode: trailing silence that ends an utterance |
+| `BOT_MIXER_BUFFER_FRAMES` | `160` | Per-participant mix buffer (20 ms frames) |
+| `VISIOBOT_PUBLISH_NATIVE_SUBS` | `true` | Kill switch of the caption republishing |
+| `VISIOBOT_WS_RECONNECT_RETRIES` | `3` | Transcriber WS reconnection attempts |
+| `VISIOBOT_WS_RECONNECT_BASE_MS` | `1000` | First reconnection backoff |
+| `VISIOBOT_WS_MAX_QUEUE_FRAMES` | `500` | Frames queued while the Transcriber socket is down |
+
+### Scheduler routing
+
+Rendered in the Scheduler ConfigMap only when the bot is enabled:
+
+| Variable | Value | Role |
+|---|---|---|
+| `BOT_PROVIDER_FALLBACK_VISIO` | `visio-native,visio` | A `visio` bot goes to the native bot first, to the web bot otherwise (no native replica up, or a native join failure) |
+
+The Scheduler only sends a session to the native bot when it carries a Meet join
+token (`meta.native["visio-native"].token`, built-in gate on every `-native`
+capability): Studio-UI and other web-bot sessions keep the web bot.
+
+Without `BOT_PROVIDER_FALLBACK_VISIO` the Scheduler sends every `visio` bot to the web
+BotService, even with the native bot deployed.
+
+### Prerequisites and rollout
+
+- **Plugins version**: Session-API (keeps the join token out of its read routes and
+  through meta rewrites), Scheduler (`visio-native` routing) and the bot itself come from
+  the same plugins version, the first one shipping `VisioBotService` with its
+  microphone-only subscription. With an older Scheduler the variables above are
+  ignored and Meet runs land on the web bot.
+- **Meet side** (La Suite Meet fork): `LINTO_VISIO_NATIVE_ENABLED: True` and
+  `LINTO_NATIVE_LIVEKIT_URL` (public `wss://` URL of its LiveKit), and its LiveKit host
+  in `visio_bot_livekit_allowed_hosts`.
+- **Network**: outbound access from the bot pods to that LiveKit: WebSocket signalling
+  (`wss`, 443) and WebRTC media (the server's UDP range, or its TCP / TURN fallback).
+- **Restart**: the plugins Deployments share one `checksum/config` (all ConfigMaps), so
+  enabling the bot or changing its values also restarts the Session API, Scheduler,
+  Transcriber, Translator and web bot: do it outside live meetings. Disabled, its
+  values change nothing in the rendered ConfigMaps.
+- **Sizing**: a replica keeps real time up to a load set by its single Python thread;
+  formulas, measurements and replica count in [visio-bot-sizing.md](./visio-bot-sizing.md).
 
 ## Audio streaming buffers (Transcriber)
 

@@ -14,4 +14,7 @@ Components deployed:
   - Session Scheduler
   - Session Transcriber
   - Bot Service
+{{- if .Values.visioBotService.enabled }}
+  - Visio native bot
+{{- end }}
   - PostgreSQL
