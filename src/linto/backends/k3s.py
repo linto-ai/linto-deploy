@@ -1192,6 +1192,12 @@ def generate_studio_values(profile: ProfileConfig) -> dict[str, Any]:
     tls_mode = profile.tls_mode.value if isinstance(profile.tls_mode, TLSMode) else profile.tls_mode
     scheme = "https" if tls_mode != "off" else "http"
 
+    # Extra CORS origins (mobile apps...). The chart defaults the whitelist to
+    # <scheme>://<domain>; only override when asked.
+    if profile.studio_cors_extra_origins:
+        origins = [f"{scheme}://{profile.domain}", *profile.studio_cors_extra_origins]
+        values["studioApi"]["env"]["CORS_API_WHITELIST"] = ",".join(dict.fromkeys(origins))
+
     # Default organization permissions override (image defaults to upload,summary,session)
     if profile.organization_default_permissions is not None:
         values["studioApi"]["env"]["ORGANIZATION_DEFAULT_PERMISSIONS"] = (

@@ -276,6 +276,10 @@ class ProfileConfig(BaseModel):
     # None = let the image .envdefault apply (currently "upload,summary,session").
     organization_default_permissions: str | None = Field(default=None)
 
+    # Extra CORS origins for studio-api, on top of <scheme>://<domain> (e.g. mobile apps:
+    # "https://localhost", "capacitor://localhost"). Matched exactly by studio-api (scheme + host + port).
+    studio_cors_extra_origins: list[str] = Field(default_factory=list)
+
     # SaaS mode: studio-api runs the private lintoai/studio-api-saas image with the
     # CloudService component, the frontend switches to VUE_APP_MODE=cloud. Off by default.
     saas_enabled: bool = Field(default=False)
