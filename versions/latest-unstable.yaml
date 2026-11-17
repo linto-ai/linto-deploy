@@ -118,6 +118,10 @@ linto:
     repo: https://github.com/linto-ai/linto-studio-plugins
     digest: sha256:9dcc8e3b527563efc21b41ff3ec426c80947c3139a98f6f5ad073dc9bfccaec5
     commit: 366f549a6c3f56b9e76cc636876d296e6f080a0a
+  studio-plugins-visio-botservice:
+    image: lintoai/studio-plugins-visio-botservice
+    tag: latest-unstable
+    repo: https://github.com/linto-ai/linto-studio-plugins
 databases:
   studio-mongo:
     image: mongo
