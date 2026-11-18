@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-11-17T15:32:02.344553+00:00
+# Last updated: 2026-11-18T15:09:53.862626+00:00
 
 platform_version: latest-unstable
 linto:
@@ -122,6 +122,8 @@ linto:
     image: lintoai/studio-plugins-visio-botservice
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio-plugins
+    digest: sha256:688b6677eea10b4cb8727c15b4869dde7b640c2e6c0061dc97df0bb21c4c3d7b
+    commit: 366f549a6c3f56b9e76cc636876d296e6f080a0a
 databases:
   studio-mongo:
     image: mongo
@@ -142,7 +144,7 @@ databases:
   live-mosquitto:
     image: eclipse-mosquitto
     tag: '2'
-    digest: sha256:22075095e8790eec5592ff3c213b1974cd51aa458275af2f8b0595af4c385df2
+    digest: sha256:339bc867f81aff6a22c106563858b2b52612b38e4aa783d8a8e018202168d984
 llm:
   vllm-openai:
     image: vllm/vllm-openai
