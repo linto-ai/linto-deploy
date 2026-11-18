@@ -1553,6 +1553,12 @@ def generate_live_values(profile: ProfileConfig) -> dict[str, Any]:
             "replicas": profile.bot_service_replicas,
             "image": image_values(profile, "studio-plugins-botservice"),
         },
+        "visioBotService": {
+            "enabled": profile.visio_bot_service_enabled,
+            "replicas": profile.visio_bot_service_replicas,
+            "image": image_values(profile, "studio-plugins-visio-botservice"),
+            "livekitAllowedHosts": profile.visio_bot_livekit_allowed_hosts,
+        },
         "streamingStt": {},
     }
 

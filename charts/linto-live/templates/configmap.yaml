@@ -60,6 +60,9 @@ data:
   STREAMING_WS_TCP_PORT: "8080"
   STREAMING_WS_ENDPOINT: transcriber-ws
   STREAMING_WS_SECURE: "false"
+  {{- if .Values.visioBotService.enabled }}
+  BOT_PROVIDER_FALLBACK_VISIO: "visio-native,visio"
+  {{- end }}
 {{- end }}
 ---
 {{- if .Values.sessionTranscriber.enabled }}
@@ -140,6 +143,29 @@ data:
   LOG_FORMAT: text
   LOG_LEVEL: debug
   {{- range $key, $value := .Values.botService.env }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+{{- end }}
+{{- if .Values.visioBotService.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "linto-live.fullname" . }}-visio-bot-service-config
+  labels:
+    {{- include "linto-live.labels" . | nindent 4 }}
+    app.kubernetes.io/component: visio-bot-service
+data:
+  BROKER_HOST: {{ include "linto-live.brokerHost" . | quote }}
+  BROKER_PORT: "1883"
+  VISIOBOT_COMPONENTS: "BrokerClient,Healthcheck"
+  VISIOBOT_HEALTHCHECK_HTTP: "8081"
+  BOT_CAPABILITIES: "visio-native"
+  LIVEKIT_TOKEN_FROM_PAYLOAD: "true"
+  {{- with .Values.visioBotService.livekitAllowedHosts }}
+  VISIOBOT_LIVEKIT_ALLOWED_HOSTS: {{ join "," . | quote }}
+  {{- end }}
+  {{- range $key, $value := .Values.visioBotService.env }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}
 {{- end }}

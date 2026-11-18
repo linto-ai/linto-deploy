@@ -181,6 +181,35 @@ botService:
       memory: 1Gi
   env: {}  # extra env merged into the ConfigMap; tunables keep image defaults otherwise
 
+# Native Visio bot (LiveKit agent for La Suite Meet; broker-only, no inbound Service)
+visioBotService:
+  enabled: false
+  replicas: 1
+  image:
+    repository: lintoai/studio-plugins-visio-botservice
+    pullPolicy: IfNotPresent
+  livekitAllowedHosts: []  # empty = any public host
+  # Measured per replica (docs/visio-bot-sizing.md), M meetings, P microphones in all
+  # (muted ones included), node core k times slower than the reference (k = node time
+  # of the doc's Python loop / 0.43 s; a 2013 2.7 GHz Xeon: 3.3):
+  #   real time holds while k × (P + 4×M) <= 60 (75 = saturation of its Python thread)
+  #   CPU    = k × (30m × P + 50m × M), about 1.5 cores at that limit whatever k
+  #   memory = 80Mi + 2.5Mi × P, kept after the peak
+  # Beyond the limit add replicas: the Scheduler sends each bot to the least loaded one.
+  # requests.cpu 1500m: the CPU at the limit, so a busy node cannot shrink it.
+  # limits.cpu 2: above the 1.7 cores measured in overload.
+  # requests.memory 256Mi: P = 70, more than any replica holds in real time.
+  # limits.memory 512Mi: P = 170, overload margin.
+  resources:
+    limits:
+      cpu: "2"
+      memory: 512Mi
+    requests:
+      cpu: 1500m
+      memory: 256Mi
+  env:
+    BOT_PERSTREAM: "false"  # one mixed audio flow per meeting
+
 # Streaming STT variants
 streamingStt:
   whisper:

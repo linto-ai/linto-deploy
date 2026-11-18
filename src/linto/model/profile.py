@@ -158,6 +158,10 @@ class ProfileConfig(BaseModel):
     kyutai_gpu_architecture: GPUArchitecture | None = Field(default=None)
     session_transcriber_replicas: int = Field(default=4, ge=1)
     bot_service_replicas: int = Field(default=1, ge=1)
+    # Native Visio bot (La Suite Meet live captions)
+    visio_bot_service_enabled: bool = Field(default=False)
+    visio_bot_service_replicas: int = Field(default=1, ge=1)
+    visio_bot_livekit_allowed_hosts: list[str] = Field(default_factory=list)
 
     # Translator (external translation service)
     translator_enabled: bool = Field(default=False)
