@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-11-24T17:00:18.381166+00:00
+# Last updated: 2026-11-25T16:50:49.458127+00:00
 
 platform_version: latest-unstable
 linto:
@@ -22,7 +22,7 @@ linto:
     image: lintoai/studio-frontend
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-studio
-    digest: sha256:ff434eb9a0f129b1e89bc4c7a3789d6409acc1bdcf84ae4a03655b230b065c0a
+    digest: sha256:6b68f5e27a2430d08d2fdfeabae7523846232a6476c5cb3edf7f1ca2c386c42e
     commit: a7083437f776865a450baa5cb9bea5e7b334794e
   linto-api-gateway:
     image: lintoai/linto-api-gateway
@@ -136,7 +136,7 @@ databases:
   stt-redis:
     image: redis/redis-stack-server
     tag: latest
-    digest: sha256:75cb09fe427163df4ba306b8d9668ac6af75555d88e3145171bb0324a57b00c1
+    digest: sha256:39adcbb083b240642cd5738a75c4959c0393ef2a40fa545f2e1c7b55798eeda4
   live-postgres:
     image: postgres
     tag: 15-alpine
