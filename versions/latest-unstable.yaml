@@ -8,7 +8,7 @@
 #   - platform.YYYY.MM.yaml: Stable releases
 #
 # DO NOT EDIT MANUALLY - This file is auto-generated
-# Last updated: 2026-11-26T16:27:50.118158+00:00
+# Last updated: 2026-11-27T16:12:55.987609+00:00
 
 platform_version: latest-unstable
 linto:
@@ -34,13 +34,13 @@ linto:
     image: lintoai/linto-transcription-service
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:3601bea3f40171eef6ae667f94821c9e87b38ae1b311798f18a6a2b19fd73104
+    digest: sha256:d884af5f0f89a6b14abf4d4fe9af83e5aa7b80529a4c138183685c21aa529ad5
     commit: 5d94f22ac9f5367177771de8209217b3714d7a7f
   linto-stt-whisper:
     image: lintoai/linto-stt-whisper
     tag: latest-unstable
     repo: https://github.com/linto-ai/linto-stt
-    digest: sha256:60f3a87016fc044d80c76da20b9bf6998c2d35b2442bf559c774af052f095d0e
+    digest: sha256:41177ba419060135dd3a8285ba8837f17ca2ac74d14a7be83d102db12e52057c
     commit: 5d94f22ac9f5367177771de8209217b3714d7a7f
   linto-diarization-pyannote:
     image: lintoai/linto-diarization-pyannote
